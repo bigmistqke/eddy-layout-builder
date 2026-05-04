@@ -1,5 +1,5 @@
 import type { StoreSetter } from "@solidjs/signals"
-import { createTrackedEffect, omit } from "@solidjs/signals"
+import { omit } from "@solidjs/signals"
 import {
   ComponentProps,
   createContext,
@@ -25,6 +25,7 @@ export const Context = createContext<{
   setSelection: StoreSetter<Selection>
   mode: () => Mode
   setMode: (mode: Mode) => void
+  view: () => View
 }>()
 
 function pathEquals(a: number[], b: number[]) {
@@ -82,6 +83,7 @@ function NodeComponent(props: {
   const context = useContext(Context)!
 
   const handleDirections = createMemo(() => {
+    if (context.view() !== "layout-builder") return []
     const s = context.selection
     const m = context.mode()
     const targetedPath = s.path.slice(0, s.path.length - s.depth)
@@ -169,8 +171,6 @@ export function App() {
   const [mode, setMode] = createSignal<Mode>("append")
   const [view, setView] = createSignal<View>("recording")
 
-  createTrackedEffect(() => console.log([...selection.path]))
-
   function appendToContainer(containerPath: number[], insertAtStart: boolean) {
     const newEntity = createEntity()
     const newIndex = insertAtStart
@@ -218,7 +218,7 @@ export function App() {
   }
 
   return (
-    <Context value={{ layout, selection, setSelection, mode, setMode }}>
+    <Context value={{ layout, selection, setSelection, mode, setMode, view }}>
       <div style={{ display: "flex", width: "100vw", height: "100%" }}>
         <Show when={view() === "recording"}>
           <div class={styles.recordingView}>
