@@ -1,0 +1,116 @@
+.layoutBuilder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: relative;
+}
+
+.breadcrumb {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb button {
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #9ca3af;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.breadcrumb button:hover {
+  color: #e5e7eb;
+}
+
+.breadcrumb button.active {
+  background: #1e3a5f;
+  color: #60a5fa;
+  border: 1px solid #2563eb;
+}
+
+.breadcrumb .separator {
+  color: #4b5563;
+  font-size: 13px;
+  user-select: none;
+}
+
+.bottomBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: #111;
+  border-top: 1px solid #222;
+  border-radius: 14px 14px 0 0;
+  padding: 10px 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bottomBar::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+}
+
+.modeToggle {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #374151;
+  flex-shrink: 0;
+}
+
+.modeToggle button {
+  width: 80px;
+  background: #1f2937;
+  border: none;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.modeToggle button.active {
+  background: #14532d;
+  color: #86efac;
+}
+
+.doneButton {
+  background: #1d4ed8;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.doneButton:hover {
+  background: #2563eb;
+}
