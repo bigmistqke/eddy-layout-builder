@@ -14,9 +14,25 @@ import {
   useContext,
 } from "solid-js"
 import styles from "./app.module.css"
-import { Frame } from "./frame"
+import { Frame, Notch } from "./frame"
 import { LayoutBuilder } from "./layout-builder"
 import type { Container, Entity, Mode, Node, View } from "./types"
+
+function RecordIcon() {
+  return (
+    <svg width="38" height="37" viewBox="0 0 38 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M34 18.5C34 10.5918 27.3855 4 19 4C10.6145 4 4 10.5918 4 18.5C4 26.4082 10.6145 33 19 33V37C8.50659 37 0 28.7173 0 18.5C0 8.28273 8.50659 0 19 0C29.4934 0 38 8.28273 38 18.5C38 28.7173 29.4934 37 19 37V33C27.3855 33 34 26.4082 34 18.5Z" fill="#E94949"/>
+    </svg>
+  )
+}
+
+function PlayIcon() {
+  return (
+    <svg width="31" height="35" viewBox="0 0 31 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 1.40616C0.0001188 0.320836 1.20893 -0.353989 2.16895 0.195213L30.2891 16.2891C31.237 16.8318 31.237 18.1682 30.2891 18.7109L2.16895 34.8048L1.98633 34.8937C1.12401 35.2431 0.140842 34.6942 0.0136719 33.7921L0 33.5938V1.40616ZM3 30.8721L26.3652 17.5L3 4.12688V30.8721Z" fill="#D3D3D3"/>
+    </svg>
+  )
+}
 
 type Selection = { path: Array<number>; depth: number }
 
@@ -280,9 +296,21 @@ export function App() {
         <Show when={view() === "recording"}>
           <div class={styles.recordingView}>
             <NodeComponent layout={layout} path={[]} onAppend={handleAppend} onSplit={splitNode} />
-            <button class={styles.addButton} onClick={() => setView("layout-builder")}>
-              +
-            </button>
+            <Notch class={styles.recordingBar}>
+              <div class={styles.recordingBarContent}>
+                <button class={styles.barButton} onClick={() => setView("layout-builder")}>
+                  <svg width="35" height="35" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M33 19L19.5 19L19.5 33C19.5 34.1046 18.6046 35 17.5 35C16.3954 35 15.5 34.1046 15.5 33L15.5 19L2 19C0.895431 19 -8.69891e-07 18.1046 -8.16818e-07 17C-7.63746e-07 15.8954 0.895431 15 2 15L15.5 15L15.5 2C15.5 0.89543 16.3954 -7.39833e-07 17.5 -6.95908e-07C18.6046 -6.51984e-07 19.5 0.89543 19.5 2L19.5 15L33 15C34.1046 15 35 15.8954 35 17C35 18.1046 34.1046 19 33 19Z" fill="#D3D3D3"/>
+                  </svg>
+                </button>
+                <button class={styles.barButton}>
+                  <RecordIcon />
+                </button>
+                <button class={styles.barButton}>
+                  <PlayIcon />
+                </button>
+              </div>
+            </Notch>
           </div>
         </Show>
         <Show when={view() === "layout-builder"}>
