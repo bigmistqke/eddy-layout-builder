@@ -1,61 +1,23 @@
-.notch {
-  --notch-bg: black;
-  --color: white;
-
+.background {
+  position: absolute;
+  inset: 0px;
   display: flex;
-  flex: 1;
-  flex-direction: row;
-  min-width: 110px;
 
-  & > *:not(svg) {
+  & > * {
     background: var(--notch-bg);
-    position: relative;
+    corner-bottom-shape: square;
+  }
+
+  & > *:first-child {
+    corner-top-shape: notch;
+    margin-block: var(--height);
+  }
+
+  & > *:first-child {
+    corner-top-shape: notch;
   }
 }
 
-.arrow {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-}
-
-.arrow-notch {
-  position: absolute;
-  z-index: 20;
-
-  &.bottom {
-    bottom: 0px;
-    left: 50%;
-    translate: -50% 0%;
-  }
-
-  &.top {
-    top: 0px;
-    left: 50%;
-    translate: -50% 0%;
-    rotate: 180deg;
-  }
-
-  &.left {
-    top: 50%;
-    left: 0px;
-    rotate: 90deg;
-    transform-origin: top center;
-  }
-
-  &.right {
-    top: 50%;
-    right: 0px;
-    rotate: -90deg;
-    transform-origin: top center;
-  }
-}
-.frame {
-  position: relative;
-  flex: 1;
-}
 .container {
   display: flex;
   flex: 1;

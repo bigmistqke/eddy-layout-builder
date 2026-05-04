@@ -96,8 +96,7 @@ function NodeComponent(props: {
     // Append mode: find the container whose handles to show
     try {
       const targeted = resolveNode(context.layout, targetedPath)
-      const containerPath =
-        targeted.type === "container" ? targetedPath : targetedPath.slice(0, -1)
+      const containerPath = targeted.type === "container" ? targetedPath : targetedPath.slice(0, -1)
       if (!pathEquals(props.path, containerPath)) return []
       const container = (
         targeted.type === "container" ? targeted : resolveNode(context.layout, containerPath)
@@ -218,7 +217,11 @@ export function App() {
       }
       setLayout(proxy => {
         proxy.direction = splitDir
-        proxy.children.splice(0, proxy.children.length, ...(newEntityFirst ? [newEntity, inner] : [inner, newEntity]))
+        proxy.children.splice(
+          0,
+          proxy.children.length,
+          ...(newEntityFirst ? [newEntity, inner] : [inner, newEntity]),
+        )
       })
       setSelection(() => ({ path: [newEntityIndex], depth: 0 }))
       return

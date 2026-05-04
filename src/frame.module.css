@@ -1,0 +1,79 @@
+.frame {
+  position: relative;
+  flex: 1;
+}
+
+.notch {
+  --notch-bg: black;
+  --radius: 20px;
+
+  height: 75px;
+  position: absolute;
+  z-index: 1;
+
+  &.bottom {
+    left: 50%;
+    bottom: 0px;
+    rotate: 180deg;
+    transform-origin: center center;
+    height: 120px;
+  }
+
+  &.top {
+    left: 50%;
+    top: 0px;
+  }
+
+  &.left {
+    left: 0px;
+    top: 50%;
+    rotate: -90deg;
+    transform-origin: top;
+  }
+
+  &.right {
+    right: 0px;
+    top: 50%;
+    rotate: 90deg;
+    transform-origin: top;
+  }
+}
+
+.notch-backdrop {
+  translate: -50%;
+  display: flex;
+  position: absolute;
+  flex-direction: column;
+  z-index: 1;
+  width: 100px;
+  height: 100%;
+
+  & > .root,
+  & > .edge,
+  & > .center {
+    background: var(--notch-bg);
+  }
+
+  & > .root,
+  & > .edge {
+    border-radius: var(--radius);
+    content: "";
+    flex: 0 var(--radius);
+    overflow: hidden;
+  }
+
+  & > .root {
+    corner-bottom-shape: scoop;
+    corner-top-shape: square;
+  }
+
+  & > .center {
+    flex: 1;
+    margin-inline: var(--radius);
+  }
+
+  & > .edge {
+    corner-top-shape: square;
+    margin-inline: var(--radius);
+  }
+}
