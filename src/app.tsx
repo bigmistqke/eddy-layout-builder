@@ -142,6 +142,24 @@ export function App() {
 
   createTrackedEffect(() => console.log([...selection.path]))
 
+  function appendToContainer(containerPath: number[], insertAtStart: boolean) {
+    const newEntity = createEntity()
+    setLayout(proxy => {
+      const container = resolveNode(proxy, containerPath) as Container
+      if (insertAtStart) {
+        container.children.unshift(newEntity)
+      } else {
+        container.children.push(newEntity)
+      }
+    })
+    if (insertAtStart) {
+      setSelection(() => ({ path: [...containerPath, 0], depth: 0 }))
+    } else {
+      const len = (resolveNode(layout, containerPath) as Container).children.length
+      setSelection(() => ({ path: [...containerPath, len - 1], depth: 0 }))
+    }
+  }
+
   return (
     <Context value={{ layout, selection, setSelection, mode, setMode }}>
       <div style={{ display: "flex", width: "100vw", height: "100%" }}>
