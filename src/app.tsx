@@ -209,26 +209,20 @@ export function App() {
     setSelection(() => ({ path: [...nodePath, newEntityIndex], depth: 0 }))
   }
 
-  const canvas = (
-    <NodeComponent
-      layout={layout}
-      path={[]}
-      onAddFrame={(path, direction) => {
-        if (mode() === "append") {
-          appendToContainer(path, direction === "top" || direction === "left")
-        } else {
-          splitNode(path, direction)
-        }
-      }}
-    />
-  )
+  function handleAddFrame(path: number[], direction: "top" | "bottom" | "left" | "right") {
+    if (mode() === "append") {
+      appendToContainer(path, direction === "top" || direction === "left")
+    } else {
+      splitNode(path, direction)
+    }
+  }
 
   return (
     <Context value={{ layout, selection, setSelection, mode, setMode }}>
       <div style={{ display: "flex", width: "100vw", height: "100%" }}>
         <Show when={view() === "recording"}>
           <div class={styles.recordingView}>
-            {canvas}
+            <NodeComponent layout={layout} path={[]} onAddFrame={handleAddFrame} />
             <button class={styles.addButton} onClick={() => setView("layout-builder")}>
               +
             </button>
@@ -236,7 +230,7 @@ export function App() {
         </Show>
         <Show when={view() === "layout-builder"}>
           <LayoutBuilder onDone={() => setView("recording")}>
-            {canvas}
+            <NodeComponent layout={layout} path={[]} onAddFrame={handleAddFrame} />
           </LayoutBuilder>
         </Show>
       </div>
