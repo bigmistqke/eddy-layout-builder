@@ -8,12 +8,14 @@ import {
   createStore,
   For,
   Match,
+  Show,
   Switch,
   useContext,
 } from "solid-js"
 import styles from "./app.module.css"
 import { Frame } from "./frame"
-import type { Container, Entity, Mode, Node } from "./types"
+import { LayoutBuilder } from "./layout-builder"
+import type { Container, Entity, Mode, Node, View } from "./types"
 
 type Selection = { path: Array<number>; depth: number }
 
@@ -165,6 +167,7 @@ export function App() {
   })
 
   const [mode, setMode] = createSignal<Mode>("append")
+  const [view, setView] = createSignal<View>("recording")
 
   createTrackedEffect(() => console.log([...selection.path]))
 
@@ -206,20 +209,36 @@ export function App() {
     setSelection(() => ({ path: [...nodePath, newEntityIndex], depth: 0 }))
   }
 
+  const canvas = (
+    <NodeComponent
+      layout={layout}
+      path={[]}
+      onAddFrame={(path, direction) => {
+        if (mode() === "append") {
+          appendToContainer(path, direction === "top" || direction === "left")
+        } else {
+          splitNode(path, direction)
+        }
+      }}
+    />
+  )
+
   return (
     <Context value={{ layout, selection, setSelection, mode, setMode }}>
       <div style={{ display: "flex", width: "100vw", height: "100%" }}>
-        <NodeComponent
-          layout={layout}
-          path={[]}
-          onAddFrame={(path, direction) => {
-            if (mode() === "append") {
-              appendToContainer(path, direction === "top" || direction === "left")
-            } else {
-              splitNode(path, direction)
-            }
-          }}
-        />
+        <Show when={view() === "recording"}>
+          <div class={styles.recordingView}>
+            {canvas}
+            <button class={styles.addButton} onClick={() => setView("layout-builder")}>
+              +
+            </button>
+          </div>
+        </Show>
+        <Show when={view() === "layout-builder"}>
+          <LayoutBuilder onDone={() => setView("recording")}>
+            {canvas}
+          </LayoutBuilder>
+        </Show>
       </div>
     </Context>
   )
