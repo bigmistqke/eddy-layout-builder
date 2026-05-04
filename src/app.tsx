@@ -112,7 +112,7 @@ function NodeComponent(props: {
                 context.setSelection(selection => {
                   return {
                     ...selection,
-                    depth: (selection.depth + 1) % selection.path.length,
+                    depth: (selection.depth + 1) % (selection.path.length + 1),
                   }
                 })
               } else {
