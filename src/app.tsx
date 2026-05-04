@@ -78,9 +78,12 @@ function isNodeActive(path: number[], selection: Selection) {
   )
 }
 
+type Direction = "top" | "bottom" | "left" | "right"
+
 function NodeComponent(props: {
   layout: Node
-  onAddFrame(path: number[], direction: "top" | "bottom" | "left" | "right"): void
+  onAppend(path: number[], direction: Direction): void
+  onSplit(path: number[], direction: Direction): void
   path: Array<number>
 }) {
   const context = useContext(Context)!
@@ -119,7 +122,11 @@ function NodeComponent(props: {
           <Frame
             handleDirections={handleDirections()}
             style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
-            onAddFrame={direction => props.onAddFrame(props.path, direction)}
+            onAddFrame={direction =>
+              context.mode() === "append"
+                ? props.onAppend(props.path, direction)
+                : props.onSplit(props.path, direction)
+            }
             class={styles.container}
           >
             <For each={layout().children}>
@@ -127,7 +134,8 @@ function NodeComponent(props: {
                 <NodeComponent
                   layout={child()}
                   path={[...props.path, index()]}
-                  onAddFrame={props.onAddFrame}
+                  onAppend={props.onAppend}
+                  onSplit={props.onSplit}
                 />
               )}
             </For>
@@ -139,7 +147,11 @@ function NodeComponent(props: {
           <EntityFrame
             entity={entity()}
             handleDirections={handleDirections()}
-            onAddFrame={direction => props.onAddFrame(props.path, direction)}
+            onAddFrame={direction =>
+              context.mode() === "append"
+                ? props.onAppend(props.path, direction)
+                : props.onSplit(props.path, direction)
+            }
             onClick={() => {
               const m = context.mode()
               if (m === "append") {
@@ -246,12 +258,8 @@ export function App() {
     setSelection(() => ({ path: [...nodePath, newEntityIndex], depth: 0 }))
   }
 
-  function handleAddFrame(path: number[], direction: "top" | "bottom" | "left" | "right") {
-    if (mode() === "append") {
-      appendToContainer(path, direction === "top" || direction === "left")
-    } else {
-      splitNode(path, direction)
-    }
+  function handleAppend(path: number[], direction: Direction) {
+    appendToContainer(path, direction === "top" || direction === "left")
   }
 
   return (
@@ -259,7 +267,7 @@ export function App() {
       <div style={{ display: "flex", width: "100vw", height: "100%" }}>
         <Show when={view() === "recording"}>
           <div class={styles.recordingView}>
-            <NodeComponent layout={layout} path={[]} onAddFrame={handleAddFrame} />
+            <NodeComponent layout={layout} path={[]} onAppend={handleAppend} onSplit={splitNode} />
             <button class={styles.addButton} onClick={() => setView("layout-builder")}>
               +
             </button>
@@ -267,7 +275,7 @@ export function App() {
         </Show>
         <Show when={view() === "layout-builder"}>
           <LayoutBuilder onDone={() => setView("recording")}>
-            <NodeComponent layout={layout} path={[]} onAddFrame={handleAddFrame} />
+            <NodeComponent layout={layout} path={[]} onAppend={handleAppend} onSplit={splitNode} />
           </LayoutBuilder>
         </Show>
       </div>

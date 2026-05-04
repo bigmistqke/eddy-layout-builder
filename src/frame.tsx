@@ -29,7 +29,7 @@ export function Notch(props: {
   onClick?(): void
 }) {
   return (
-    <div ref={props.ref} class={[styles.notch, props.class]} style={props.style}>
+    <div ref={props.ref} class={[styles.notch, props.class]} style={props.style} onClick={e => e.stopPropagation()}>
       <div class={styles["notch-backdrop"]}>
         <div class={styles.edge} onClick={props.onClick} />
         <div class={styles.center} onClick={props.onClick} />
