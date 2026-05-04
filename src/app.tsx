@@ -88,30 +88,44 @@ function NodeComponent(props: {
 }) {
   const context = useContext(Context)!
 
-  const handleDirections = createMemo(() => {
-    if (context.view() !== "layout-builder") return []
+  const handles = createMemo(() => {
+    const empty = { directions: [] as Direction[], buttons: [] as Direction[] }
+    if (context.view() !== "layout-builder") return empty
     const s = context.selection
     const m = context.mode()
     const targetedPath = s.path.slice(0, s.path.length - s.depth)
 
     if (m === "split") {
-      if (!pathEquals(props.path, targetedPath)) return []
-      return ["top", "bottom", "left", "right"] as ("top" | "bottom" | "left" | "right")[]
+      if (!pathEquals(props.path, targetedPath)) return empty
+      return { directions: ["top", "bottom", "left", "right"] as Direction[], buttons: [] as Direction[] }
     }
 
-    // Append mode: find the container whose handles to show
+    // Append mode: show edge handles on direct children of the targeted container.
+    // First child gets leading + trailing; others get only trailing.
+    // Outer edges (before first, after last) use ArrowNotch; inner edges use EdgeButton.
     try {
       const targeted = resolveNode(context.layout, targetedPath)
       const containerPath = targeted.type === "container" ? targetedPath : targetedPath.slice(0, -1)
-      if (!pathEquals(props.path, containerPath)) return []
-      const container = (
-        targeted.type === "container" ? targeted : resolveNode(context.layout, containerPath)
-      ) as Container
-      return container.direction === "horizontal"
-        ? (["left", "right"] as ("top" | "bottom" | "left" | "right")[])
-        : (["top", "bottom"] as ("top" | "bottom" | "left" | "right")[])
+      const isDirectChild =
+        props.path.length === containerPath.length + 1 &&
+        pathEquals(props.path.slice(0, -1), containerPath)
+      if (!isDirectChild) return empty
+      const container = resolveNode(context.layout, containerPath) as Container
+      const childIdx = props.path[props.path.length - 1]
+      const isFirst = childIdx === 0
+      const isLast = childIdx === container.children.length - 1
+
+      if (container.direction === "horizontal") {
+        const directions = isFirst ? (["left", "right"] as Direction[]) : (["right"] as Direction[])
+        const buttons = (!isLast ? ["right"] : []) as Direction[]
+        return { directions, buttons }
+      } else {
+        const directions = isFirst ? (["top", "bottom"] as Direction[]) : (["bottom"] as Direction[])
+        const buttons = (!isLast ? ["bottom"] : []) as Direction[]
+        return { directions, buttons }
+      }
     } catch {
-      return []
+      return empty
     }
   })
 
@@ -120,7 +134,8 @@ function NodeComponent(props: {
       <Match when={props.layout?.type === "container" && props.layout}>
         {layout => (
           <Frame
-            handleDirections={handleDirections()}
+            handleDirections={handles().directions}
+            buttonDirections={handles().buttons}
             style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
             onAddFrame={direction =>
               context.mode() === "append"
@@ -146,7 +161,8 @@ function NodeComponent(props: {
         {entity => (
           <EntityFrame
             entity={entity()}
-            handleDirections={handleDirections()}
+            handleDirections={handles().directions}
+            buttonDirections={handles().buttons}
             onAddFrame={direction =>
               context.mode() === "append"
                 ? props.onAppend(props.path, direction)
@@ -200,20 +216,13 @@ export function App() {
   const [view, setView] = createSignal<View>("recording")
   const [bottomBarEl, setBottomBarEl] = createSignal<HTMLElement | undefined>()
 
-  function appendToContainer(containerPath: number[], insertAtStart: boolean) {
+  function appendToContainer(containerPath: number[], insertIndex: number) {
     const newEntity = createEntity()
-    const newIndex = insertAtStart
-      ? 0
-      : (resolveNode(layout, containerPath) as Container).children.length
     setLayout(proxy => {
       const container = resolveNode(proxy, containerPath) as Container
-      if (insertAtStart) {
-        container.children.unshift(newEntity)
-      } else {
-        container.children.push(newEntity)
-      }
+      container.children.splice(insertIndex, 0, newEntity)
     })
-    setSelection(() => ({ path: [...containerPath, newIndex], depth: 0 }))
+    setSelection(() => ({ path: [...containerPath, insertIndex], depth: 0 }))
   }
 
   function splitNode(nodePath: number[], direction: "top" | "bottom" | "left" | "right") {
@@ -259,7 +268,10 @@ export function App() {
   }
 
   function handleAppend(path: number[], direction: Direction) {
-    appendToContainer(path, direction === "top" || direction === "left")
+    const containerPath = path.slice(0, -1)
+    const childIndex = path[path.length - 1]
+    const insertAfter = direction === "right" || direction === "bottom"
+    appendToContainer(containerPath, insertAfter ? childIndex + 1 : childIndex)
   }
 
   return (
