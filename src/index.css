@@ -2,5 +2,6 @@
   --hud-color-back: black;
   --hud-color-front: white;
   --hud-radius: 20px;
-  --hud-height-notch: 50px;
+  --hud-height-notch: 60px;
+  --color-selection: yellow;
 }

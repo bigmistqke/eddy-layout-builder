@@ -18,32 +18,28 @@
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  background: black;
+  border-radius: 8px;
+  padding: 6px 10px;
 }
 
 .breadcrumb button {
   background: none;
   border: none;
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: #9ca3af;
+  padding: 0;
+  color: white;
   font-size: 13px;
   cursor: pointer;
-  line-height: 1.4;
-}
-
-.breadcrumb button:hover {
-  color: #e5e7eb;
 }
 
 .breadcrumb button.active {
-  background: #1e3a5f;
-  color: #60a5fa;
-  border: 1px solid #2563eb;
+  color: var(--color-selection);
+  font-weight: 600;
 }
 
 .breadcrumb .separator {
-  color: #4b5563;
+  color: white;
   font-size: 13px;
   user-select: none;
 }

@@ -10,7 +10,10 @@ export function Breadcrumb() {
     const { path } = context.selection
     const segs: Array<{ label: string; depth: number }> = []
 
-    segs.push({ label: "root", depth: path.length })
+    segs.push({
+      label: context.layout.direction === "vertical" ? "col" : "row",
+      depth: path.length,
+    })
 
     let current: Node = context.layout
     for (let i = 0; i < path.length; i++) {
@@ -24,7 +27,7 @@ export function Breadcrumb() {
         })
       } else {
         segs.push({
-          label: String.fromCharCode(65 + path[i]),
+          label: String(path[i] + 1),
           depth: 0,
         })
       }
@@ -39,7 +42,7 @@ export function Breadcrumb() {
         {(seg, i) => (
           <>
             <Show when={i() > 0}>
-              <span class={styles.separator}>›</span>
+              <span class={styles.separator}>&gt;</span>
             </Show>
             <button
               class={seg().depth === context.selection.depth ? styles.active : ""}
