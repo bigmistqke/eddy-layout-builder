@@ -160,6 +160,28 @@ export function App() {
     }
   }
 
+  function splitNode(nodePath: number[], direction: "top" | "bottom" | "left" | "right") {
+    if (nodePath.length === 0) return // cannot split root
+    const node = resolveNode(layout, nodePath)
+    const newEntity = createEntity()
+    const newContainer: Container = {
+      type: "container",
+      direction: direction === "left" || direction === "right" ? "horizontal" : "vertical",
+      children:
+        direction === "top" || direction === "left"
+          ? [newEntity, cloneNode(node)]
+          : [cloneNode(node), newEntity],
+    }
+    const parentPath = nodePath.slice(0, -1)
+    const nodeIndex = nodePath[nodePath.length - 1]
+    setLayout(proxy => {
+      const parent = resolveNode(proxy, parentPath) as Container
+      parent.children.splice(nodeIndex, 1, newContainer)
+    })
+    const newEntityIndex = direction === "top" || direction === "left" ? 0 : 1
+    setSelection(() => ({ path: [...nodePath, newEntityIndex], depth: 0 }))
+  }
+
   return (
     <Context value={{ layout, selection, setSelection, mode, setMode }}>
       <div style={{ display: "flex", width: "100vw", height: "100%" }}>
