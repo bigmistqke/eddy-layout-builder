@@ -20,6 +20,15 @@ const Context = createContext<{
   setSelection: StoreSetter<Selection>
 }>()
 
+function pathEquals(a: number[], b: number[]) {
+  return a.length === b.length && a.every((v, i) => v === b[i])
+}
+
+function cloneNode(node: Node): Node {
+  if (node.type === "entity") return { ...node }
+  return { type: "container", direction: node.direction, children: node.children.map(cloneNode) }
+}
+
 function resolveNode(layout: Container, path: number[]) {
   let current: Entity | Container = layout
 
