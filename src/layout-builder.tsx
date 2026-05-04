@@ -1,0 +1,64 @@
+import { createMemo, For, Show, useContext } from "solid-js"
+import { Context } from "./app"
+import styles from "./layout-builder.module.css"
+import type { Container, Node } from "./types"
+
+function resolveNode(root: Node, path: number[]): Node {
+  let current = root
+  for (let i = 0; i < path.length; i++) {
+    if (current.type !== "container") throw new Error("not a container")
+    current = current.children[path[i]]
+  }
+  return current
+}
+
+export function Breadcrumb() {
+  const context = useContext(Context)!
+
+  const segments = createMemo(() => {
+    const { path } = context.selection
+    const segs: Array<{ label: string; depth: number }> = []
+
+    segs.push({ label: "root", depth: path.length })
+
+    let current: Node = context.layout
+    for (let i = 0; i < path.length; i++) {
+      if (current.type !== "container") break
+      current = current.children[path[i]]
+      const depth = path.length - 1 - i
+      if (current.type === "container") {
+        segs.push({
+          label: current.direction === "vertical" ? "col" : "row",
+          depth,
+        })
+      } else {
+        segs.push({
+          label: String.fromCharCode(65 + path[i]),
+          depth: 0,
+        })
+      }
+    }
+
+    return segs
+  })
+
+  return (
+    <div class={styles.breadcrumb}>
+      <For each={segments()}>
+        {(seg, i) => (
+          <>
+            <Show when={i() > 0}>
+              <span class={styles.separator}>›</span>
+            </Show>
+            <button
+              class={seg().depth === context.selection.depth ? styles.active : ""}
+              onClick={() => context.setSelection(s => ({ ...s, depth: seg().depth }))}
+            >
+              {seg().label}
+            </button>
+          </>
+        )}
+      </For>
+    </div>
+  )
+}
