@@ -106,7 +106,6 @@ export function ArrowNotch(
 export function Frame(
   props: ParentProps<{
     onClick?: JSX.EventHandlersElement<HTMLDivElement>["onClick"]
-    active?: boolean
     handleDirections?: ("top" | "bottom" | "left" | "right")[]
     style?: JSX.CSSProperties
     class?: string

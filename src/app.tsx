@@ -78,34 +78,33 @@ function NodeComponent(props: {
   path: Array<number>
 }) {
   const context = useContext(Context)!
-  const isActive = () => isNodeActive(props.path, context.selection)
 
   const handleDirections = createMemo(() => {
     const s = context.selection
     const m = context.mode()
     const targetedPath = s.path.slice(0, s.path.length - s.depth)
 
-    let handlePath: number[]
     if (m === "split") {
-      handlePath = targetedPath
-    } else {
-      try {
-        const targeted = resolveNode(context.layout, targetedPath)
-        handlePath =
-          targeted.type === "container" ? targetedPath : targetedPath.slice(0, -1)
-      } catch {
-        return []
-      }
+      if (targetedPath.length === 0) return []
+      if (!pathEquals(props.path, targetedPath)) return []
+      return ["top", "bottom", "left", "right"] as ("top" | "bottom" | "left" | "right")[]
     }
 
-    if (!pathEquals(props.path, handlePath)) return []
-
-    if (m === "split") return ["top", "bottom", "left", "right"] as ("top" | "bottom" | "left" | "right")[]
-
-    const container = resolveNode(context.layout, handlePath) as Container
-    return container.direction === "horizontal"
-      ? (["left", "right"] as ("top" | "bottom" | "left" | "right")[])
-      : (["top", "bottom"] as ("top" | "bottom" | "left" | "right")[])
+    // Append mode: find the container whose handles to show
+    try {
+      const targeted = resolveNode(context.layout, targetedPath)
+      const containerPath =
+        targeted.type === "container" ? targetedPath : targetedPath.slice(0, -1)
+      if (!pathEquals(props.path, containerPath)) return []
+      const container = (
+        targeted.type === "container" ? targeted : resolveNode(context.layout, containerPath)
+      ) as Container
+      return container.direction === "horizontal"
+        ? (["left", "right"] as ("top" | "bottom" | "left" | "right")[])
+        : (["top", "bottom"] as ("top" | "bottom" | "left" | "right")[])
+    } catch {
+      return []
+    }
   })
 
   return (
@@ -113,7 +112,6 @@ function NodeComponent(props: {
       <Match when={props.layout?.type === "container" && props.layout}>
         {layout => (
           <Frame
-            active={isActive()}
             handleDirections={handleDirections()}
             style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
             onAddFrame={direction => props.onAddFrame(props.path, direction)}
@@ -135,7 +133,6 @@ function NodeComponent(props: {
         {entity => (
           <EntityFrame
             entity={entity()}
-            active={isActive()}
             handleDirections={handleDirections()}
             onAddFrame={direction => props.onAddFrame(props.path, direction)}
             onClick={() => {
