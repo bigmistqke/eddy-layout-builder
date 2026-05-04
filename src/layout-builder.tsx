@@ -1,5 +1,6 @@
 import { ComponentProps, createMemo, For, onSettled, Show, useContext } from "solid-js"
 import { Context } from "./app"
+import { Notch } from "./frame"
 import styles from "./layout-builder.module.css"
 import type { Node } from "./types"
 
@@ -72,25 +73,27 @@ export function LayoutBuilder(props: {
         <Breadcrumb />
         {props.children}
       </div>
-      <div class={styles.bottomBar} ref={bottomBarRef}>
-        <div class={styles.modeToggle}>
-          <button
-            class={context.mode() === "append" ? styles.active : ""}
-            onClick={() => context.setMode("append")}
-          >
-            ⊞ Append
-          </button>
-          <button
-            class={context.mode() === "split" ? styles.active : ""}
-            onClick={() => context.setMode("split")}
-          >
-            ÷ Split
+      <Notch ref={el => (bottomBarRef = el)} class={styles.bottomBar}>
+        <div class={styles.bottomBarContent}>
+          <div class={styles.modeToggle}>
+            <button
+              class={context.mode() === "append" ? styles.active : ""}
+              onClick={() => context.setMode("append")}
+            >
+              ⊞ Append
+            </button>
+            <button
+              class={context.mode() === "split" ? styles.active : ""}
+              onClick={() => context.setMode("split")}
+            >
+              ÷ Split
+            </button>
+          </div>
+          <button class={styles.doneButton} onClick={props.onDone}>
+            Done
           </button>
         </div>
-        <button class={styles.doneButton} onClick={props.onDone}>
-          Done
-        </button>
-      </div>
+      </Notch>
     </div>
   )
 }

@@ -14,43 +14,50 @@
   &.bottom {
     left: 50%;
     bottom: 0px;
-    rotate: 180deg;
-    transform-origin: center center;
   }
 
   &.top {
     left: 50%;
     top: 0px;
+    rotate: 180deg;
+    transform-origin: center center;
   }
 
   &.left {
     left: 0px;
     top: 50%;
-    rotate: -90deg;
+    rotate: 90deg;
     transform-origin: top;
+    translate: calc((75px + var(--extend, 0px))) 0;
   }
 
   &.right {
     right: 0px;
     top: 50%;
-    rotate: 90deg;
+    rotate: -90deg;
     transform-origin: top;
+    translate: calc(-1 * (75px + var(--extend, 0px))) 0;
   }
 }
 
 .notch-backdrop {
-  translate: -50%;
+  translate: var(--backdrop-x, -50%);
   display: flex;
   position: absolute;
   flex-direction: column;
-  z-index: 1;
-  width: 100px;
+  z-index: -1;
+  width: var(--backdrop-width, 100px);
   height: 100%;
 
   & > .root,
   & > .edge,
   & > .center {
     background: var(--notch-bg);
+  }
+
+  & > .center,
+  & > .edge {
+    margin-inline: /* var(--center-margin,  */ var(--radius) /* ) */;
   }
 
   & > .root,
@@ -62,17 +69,25 @@
   }
 
   & > .root {
-    corner-bottom-shape: scoop;
-    corner-top-shape: square;
+    corner-top-shape: scoop;
+    corner-bottom-shape: square;
   }
 
   & > .center {
     flex: 1;
-    margin-inline: var(--radius);
   }
 
   & > .edge {
-    corner-top-shape: square;
-    margin-inline: var(--radius);
+    corner-bottom-shape: square;
   }
+}
+
+.arrow {
+  --color: white;
+  position: absolute;
+  translate: -50% 0;
+  top: calc(var(--radius) / 2);
+  transform-origin: center bottom;
+  z-index: 2;
+  pointer-events: none;
 }

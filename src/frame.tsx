@@ -2,10 +2,11 @@ import { createEffect, createSignal, Show, useContext, type JSX, type ParentProp
 import { Context } from "./app"
 import styles from "./frame.module.css"
 
-export function Arrow(props: { style: JSX.CSSProperties }) {
+export function Arrow(props: { style?: JSX.CSSProperties; class?: string }) {
   return (
     <svg
       style={props.style}
+      class={props.class}
       width="28"
       height="35"
       viewBox="0 0 28 35"
@@ -20,20 +21,21 @@ export function Arrow(props: { style: JSX.CSSProperties }) {
   )
 }
 
-function Notch(props: {
+export function Notch(props: {
+  ref?: (el: HTMLDivElement) => void
   style?: JSX.CSSProperties
   children: JSX.Element
   class: string
   onClick?(): void
 }) {
   return (
-    <div class={[styles.notch, props.class]} style={props.style}>
-      {props.children}
+    <div ref={props.ref} class={[styles.notch, props.class]} style={props.style}>
       <div class={styles["notch-backdrop"]}>
-        <div class={styles.root} onClick={props.onClick} />
-        <div class={styles.center} onClick={props.onClick} />
         <div class={styles.edge} onClick={props.onClick} />
+        <div class={styles.center} onClick={props.onClick} />
+        <div class={styles.root} onClick={props.onClick} />
       </div>
+      {props.children}
     </div>
   )
 }
@@ -41,16 +43,7 @@ function Notch(props: {
 function ArrowNotch(props: { style?: JSX.CSSProperties; class: string; onClick?(): void }) {
   return (
     <Notch style={props.style} class={props.class} onClick={props.onClick}>
-      <Arrow
-        style={{
-          "--color": "white",
-          position: "absolute",
-          translate: "-50% 0",
-          bottom: "calc(var(--radius) / 2)",
-          "transform-origin": "center bottom",
-          "z-index": 2,
-        }}
-      />
+      <Arrow class={styles.arrow} />
     </Notch>
   )
 }
