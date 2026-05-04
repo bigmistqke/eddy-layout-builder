@@ -1,5 +1,5 @@
 import type { StoreSetter } from "@solidjs/signals"
-import { createTrackedEffect, omit, storePath } from "@solidjs/signals"
+import { createTrackedEffect, omit } from "@solidjs/signals"
 import {
   ComponentProps,
   createContext,
@@ -189,135 +189,10 @@ export function App() {
           layout={layout}
           path={[]}
           onAddFrame={(path, direction) => {
-            const node = resolveNode(layout, path)
-
-            if (node.type === "entity") {
-              console.log("onAddFrame", "entity")
-
-              setLayout(proxy => {
-                const container = resolveNode(proxy, path.slice(0, -1)) as Container
-                container.children.splice(path[path.length - 1], 1, {
-                  type: "container",
-                  direction:
-                    direction === "bottom" || direction === "top" ? "vertical" : "horizontal",
-                  children:
-                    direction === "top" || direction === "left"
-                      ? [createEntity(), node]
-                      : [node, createEntity()],
-                })
-              })
-
-              setSelection(selection => {
-                const newSelection = {
-                  path: [...selection.path, direction === "top" || direction === "left" ? 0 : 1],
-                  depth: 0,
-                }
-
-                console.log(newSelection.path)
-
-                return newSelection
-              })
-
-              return
-            }
-
-            if (node.direction === "horizontal") {
-              switch (direction) {
-                case "bottom": {
-                  setLayout(
-                    storePath(
-                      // @ts-expect-error
-                      ...path.flatMap(path => ["children", path]),
-                      {
-                        type: "container",
-                        direction: "vertical",
-                        children: [{ ...node }, createEntity()],
-                      },
-                    ),
-                  )
-                  setSelection(() => ({ path: [...path, 1], depth: 0 }))
-
-                  return
-                }
-                case "top": {
-                  setLayout(
-                    storePath(
-                      // @ts-expect-error
-                      ...path.flatMap(path => ["children", path]),
-                      {
-                        type: "container",
-                        direction: "vertical",
-                        children: [createEntity(), { ...node }],
-                      },
-                    ),
-                  )
-                  setSelection(() => ({ path: [...path, 0], depth: 0 }))
-                  return
-                }
-              }
-            } else if (node.direction === "vertical") {
-              switch (direction) {
-                case "left": {
-                  setLayout(
-                    storePath(
-                      // @ts-expect-error
-                      ...path.slice(0, -1).flatMap(path => ["children", path]),
-                      value => {
-                        if (value && value.type === "container") {
-                          value.children.splice(path[path.length - 1], 0, createEntity())
-                          return value
-                        }
-
-                        return {
-                          type: "container",
-                          direction: "horizontal",
-                          children: [createEntity(), { ...node }],
-                        }
-                      },
-                    ),
-                  )
-
-                  setSelection(() => ({ path: [...path], depth: 0 }))
-                  return
-                }
-                case "right": {
-                  setLayout(
-                    storePath(
-                      // @ts-expect-error
-                      ...path.slice(0, -1).flatMap(path => ["children", path]),
-                      value => {
-                        if (value && value.type === "container") {
-                          value.children.splice(path[path.length - 1] + 1, 0, createEntity())
-                          return value
-                        }
-                        return {
-                          type: "container",
-                          direction: "horizontal",
-                          children: [node, createEntity()],
-                        }
-                      },
-                    ),
-                  )
-                  setSelection(() => ({ path: [...path.slice(0, -1), path[path.length - 1] + 1], depth: 0 }))
-                  return
-                }
-              }
-            }
-
-            setLayout(proxy => {
-              const node = resolveNode(proxy, path) as Container
-              if (direction === "top" || direction === "left") {
-                node.children.unshift(createEntity())
-              } else {
-                node.children.push(createEntity())
-              }
-            })
-
-            if (direction === "top" || direction === "left") {
-              setSelection(() => ({ path: [...path, 0], depth: 0 }))
+            if (mode() === "append") {
+              appendToContainer(path, direction === "top" || direction === "left")
             } else {
-              const container = resolveNode(layout, path) as Container
-              setSelection(() => ({ path: [...path, container.children.length - 1], depth: 0 }))
+              splitNode(path, direction)
             }
           }}
         />
