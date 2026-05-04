@@ -16,12 +16,50 @@ import {
 import styles from "./app.module.css"
 import { Frame, Notch } from "./frame"
 import { LayoutBuilder } from "./layout-builder"
-import type { Container, Entity, Mode, Node, View } from "./types"
+import type { AppState, Container, Entity, Node } from "./types"
+
+function PlusIcon() {
+  return (
+    <svg width="35" height="35" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M33 19L19.5 19L19.5 33C19.5 34.1046 18.6046 35 17.5 35C16.3954 35 15.5 34.1046 15.5 33L15.5 19L2 19C0.895431 19 -8.69891e-07 18.1046 -8.16818e-07 17C-7.63746e-07 15.8954 0.895431 15 2 15L15.5 15L15.5 2C15.5 0.89543 16.3954 -7.39833e-07 17.5 -6.95908e-07C18.6046 -6.51984e-07 19.5 0.89543 19.5 2L19.5 15L33 15C34.1046 15 35 15.8954 35 17C35 18.1046 34.1046 19 33 19Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function SplitIcon() {
+  return (
+    <svg width="35" height="27" viewBox="0 0 35 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M17.1716 15.5386L22.6762 17.5421C22.36 17.9611 22.1102 18.4257 21.936 18.922C20.9167 21.8263 22.5739 25.0113 26.1744 26.3217C27.9453 26.9662 29.6534 26.985 31.1048 26.3839C32.553 25.784 33.5815 24.6288 34.0489 23.2662C35.022 20.4286 33.5022 17.2258 29.955 15.9347L23.0192 13.4102L29.955 10.8858C33.5022 9.59464 35.022 6.39184 34.0489 3.55419C33.5815 2.19164 32.553 1.0364 31.1048 0.436565C29.6534 -0.164603 27.9453 -0.145793 26.1744 0.498675C22.5739 1.80917 20.9167 4.99408 21.936 7.89846C22.1102 8.39474 22.36 8.85931 22.6762 9.27831L17.1716 11.2819L2.68466 6.00906C1.64677 5.63137 0.499039 6.16654 0.121237 7.2044C-0.256533 8.24232 0.278707 9.39 1.31658 9.76783L11.3239 13.4102L1.31658 17.0526C0.27871 17.4304 -0.256532 18.5781 0.121239 19.616C0.499038 20.6539 1.64677 21.1891 2.68466 20.8114L17.1716 15.5386ZM28.5869 19.6934C29.5207 20.0333 29.9634 20.5147 30.1601 20.8875C30.363 21.2719 30.3719 21.6583 30.2653 21.9691C30.1604 22.2747 29.9345 22.5391 29.5743 22.6883C29.2171 22.8363 28.5617 22.9339 27.5425 22.563C26.5244 22.1924 26.0407 21.68 25.8283 21.2937C25.6133 20.9023 25.6095 20.5317 25.7096 20.2466C25.8083 19.9653 26.0306 19.6992 26.4207 19.5462C26.8121 19.3928 27.5167 19.3039 28.5869 19.6934ZM28.5869 7.12699C29.5207 6.78711 29.9634 6.30568 30.1601 5.93293C30.363 5.54854 30.3719 5.16216 30.2653 4.85127C30.1604 4.54576 29.9345 4.28135 29.5743 4.13211C29.2171 3.98416 28.5617 3.88654 27.5425 4.25745C26.5244 4.628 26.0407 5.14039 25.8283 5.52672C25.6133 5.9181 25.6095 6.28873 25.7096 6.57385C25.8083 6.8551 26.0306 7.12118 26.4207 7.27423C26.8121 7.42767 27.5167 7.51648 28.5869 7.12699Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M25.3346 3.41421L15.7886 12.9602L25.6881 22.8596C26.4692 23.6407 26.4692 24.907 25.6881 25.6881C24.9071 26.4691 23.6408 26.4691 22.8597 25.6881L12.9602 15.7886L3.41428 25.3345C2.63323 26.1156 1.3669 26.1156 0.58585 25.3345C-0.195197 24.5535 -0.195199 23.2871 0.585849 22.5061L10.1318 12.9602L0.939403 3.76776C0.158356 2.98672 0.158356 1.72039 0.939403 0.939338C1.72045 0.15829 2.98678 0.158291 3.76783 0.939339L12.9602 10.1317L22.5062 0.585786C23.2872 -0.195262 24.5535 -0.195262 25.3346 0.585786C26.1156 1.36684 26.1156 2.63317 25.3346 3.41421Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
 
 function RecordIcon() {
   return (
     <svg width="38" height="37" viewBox="0 0 38 37" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M34 18.5C34 10.5918 27.3855 4 19 4C10.6145 4 4 10.5918 4 18.5C4 26.4082 10.6145 33 19 33V37C8.50659 37 0 28.7173 0 18.5C0 8.28273 8.50659 0 19 0C29.4934 0 38 8.28273 38 18.5C38 28.7173 29.4934 37 19 37V33C27.3855 33 34 26.4082 34 18.5Z" fill="#E94949"/>
+      <path
+        d="M34 18.5C34 10.5918 27.3855 4 19 4C10.6145 4 4 10.5918 4 18.5C4 26.4082 10.6145 33 19 33V37C8.50659 37 0 28.7173 0 18.5C0 8.28273 8.50659 0 19 0C29.4934 0 38 8.28273 38 18.5C38 28.7173 29.4934 37 19 37V33C27.3855 33 34 26.4082 34 18.5Z"
+        fill="#E94949"
+      />
     </svg>
   )
 }
@@ -29,7 +67,10 @@ function RecordIcon() {
 function PlayIcon() {
   return (
     <svg width="31" height="35" viewBox="0 0 31 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 1.40616C0.0001188 0.320836 1.20893 -0.353989 2.16895 0.195213L30.2891 16.2891C31.237 16.8318 31.237 18.1682 30.2891 18.7109L2.16895 34.8048L1.98633 34.8937C1.12401 35.2431 0.140842 34.6942 0.0136719 33.7921L0 33.5938V1.40616ZM3 30.8721L26.3652 17.5L3 4.12688V30.8721Z" fill="#D3D3D3"/>
+      <path
+        d="M0 1.40616C0.0001188 0.320836 1.20893 -0.353989 2.16895 0.195213L30.2891 16.2891C31.237 16.8318 31.237 18.1682 30.2891 18.7109L2.16895 34.8048L1.98633 34.8937C1.12401 35.2431 0.140842 34.6942 0.0136719 33.7921L0 33.5938V1.40616ZM3 30.8721L26.3652 17.5L3 4.12688V30.8721Z"
+        fill="currentColor"
+      />
     </svg>
   )
 }
@@ -40,9 +81,8 @@ export const Context = createContext<{
   layout: Container
   selection: Selection
   setSelection: StoreSetter<Selection>
-  mode: () => Mode
-  setMode: (mode: Mode) => void
-  view: () => View
+  appState: AppState
+  setAppState: StoreSetter<AppState>
   bottomBarEl: Accessor<HTMLElement | undefined>
   setBottomBarEl: (el: HTMLElement | undefined) => void
 }>()
@@ -106,14 +146,17 @@ function NodeComponent(props: {
 
   const handles = createMemo(() => {
     const empty = { directions: [] as Direction[], buttons: [] as Direction[] }
-    if (context.view() !== "layout-builder") return empty
+    if (context.appState.view.type !== "layout") return empty
     const s = context.selection
-    const m = context.mode()
+    const { mode } = context.appState.view as { type: "layout"; mode: "append" | "split" }
     const targetedPath = s.path.slice(0, s.path.length - s.depth)
 
-    if (m === "split") {
+    if (mode === "split") {
       if (!pathEquals(props.path, targetedPath)) return empty
-      return { directions: ["top", "bottom", "left", "right"] as Direction[], buttons: [] as Direction[] }
+      return {
+        directions: ["top", "bottom", "left", "right"] as Direction[],
+        buttons: [] as Direction[],
+      }
     }
 
     // Append mode: show edge handles on direct children of the targeted container.
@@ -136,7 +179,9 @@ function NodeComponent(props: {
         const buttons = (!isLast ? ["right"] : []) as Direction[]
         return { directions, buttons }
       } else {
-        const directions = isFirst ? (["top", "bottom"] as Direction[]) : (["bottom"] as Direction[])
+        const directions = isFirst
+          ? (["top", "bottom"] as Direction[])
+          : (["bottom"] as Direction[])
         const buttons = (!isLast ? ["bottom"] : []) as Direction[]
         return { directions, buttons }
       }
@@ -144,6 +189,11 @@ function NodeComponent(props: {
       return empty
     }
   })
+
+  const layoutView = () =>
+    context.appState.view.type === "layout"
+      ? (context.appState.view as { type: "layout"; mode: "append" | "split" })
+      : null
 
   return (
     <Switch>
@@ -154,7 +204,7 @@ function NodeComponent(props: {
             buttonDirections={handles().buttons}
             style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
             onAddFrame={direction =>
-              context.mode() === "append"
+              layoutView()?.mode === "append"
                 ? props.onAppend(props.path, direction)
                 : props.onSplit(props.path, direction)
             }
@@ -180,25 +230,23 @@ function NodeComponent(props: {
             handleDirections={handles().directions}
             buttonDirections={handles().buttons}
             onAddFrame={direction =>
-              context.mode() === "append"
+              layoutView()?.mode === "append"
                 ? props.onAppend(props.path, direction)
                 : props.onSplit(props.path, direction)
             }
             onClick={() => {
-              const m = context.mode()
-              if (m === "append") {
+              const lv = layoutView()
+              if (!lv) return
+              if (lv.mode === "append") {
                 if (isNodeActive(props.path, { ...context.selection, depth: 0 })) {
-                  // This entity is the leaf of current selection — cycle containers only (skip depth 0)
                   context.setSelection(s => ({
                     ...s,
                     depth: (s.depth % s.path.length) + 1,
                   }))
                 } else {
-                  // New entity tapped — immediately target parent container
                   context.setSelection(() => ({ path: props.path, depth: 1 }))
                 }
               } else {
-                // Split mode: original behavior, can select entity at depth 0
                 if (isNodeActive(props.path, { ...context.selection, depth: 0 })) {
                   context.setSelection(s => ({
                     ...s,
@@ -228,8 +276,7 @@ export function App() {
     depth: 0,
   })
 
-  const [mode, setMode] = createSignal<Mode>("append")
-  const [view, setView] = createSignal<View>("recording")
+  const [appState, setAppState] = createStore<AppState>({ view: { type: "recording" } })
   const [bottomBarEl, setBottomBarEl] = createSignal<HTMLElement | undefined>()
 
   function appendToContainer(containerPath: number[], insertIndex: number) {
@@ -249,8 +296,6 @@ export function App() {
     const newEntity = createEntity()
 
     if (nodePath.length === 0) {
-      // Root has no parent — restructure root itself:
-      // wrap existing children in an inner container, then set root to the split direction
       const inner: Container = {
         type: "container",
         direction: layout.direction,
@@ -290,34 +335,81 @@ export function App() {
     appendToContainer(containerPath, insertAfter ? childIndex + 1 : childIndex)
   }
 
+  const layoutView = () =>
+    appState.view.type === "layout"
+      ? (appState.view as { type: "layout"; mode: "append" | "split" })
+      : null
+
   return (
-    <Context value={{ layout, selection, setSelection, mode, setMode, view, bottomBarEl, setBottomBarEl }}>
-      <div style={{ display: "flex", width: "100vw", height: "100%" }}>
-        <Show when={view() === "recording"}>
+    <Context
+      value={{
+        layout,
+        selection,
+        setSelection,
+        appState,
+        setAppState,
+        bottomBarEl,
+        setBottomBarEl,
+      }}
+    >
+      <div style={{ display: "flex", width: "100vw", height: "100%", position: "relative" }}>
+        <Show when={appState.view.type === "recording"}>
           <div class={styles.recordingView}>
             <NodeComponent layout={layout} path={[]} onAppend={handleAppend} onSplit={splitNode} />
-            <Notch class={styles.recordingBar}>
-              <div class={styles.recordingBarContent}>
-                <button class={styles.barButton} onClick={() => setView("layout-builder")}>
-                  <svg width="35" height="35" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M33 19L19.5 19L19.5 33C19.5 34.1046 18.6046 35 17.5 35C16.3954 35 15.5 34.1046 15.5 33L15.5 19L2 19C0.895431 19 -8.69891e-07 18.1046 -8.16818e-07 17C-7.63746e-07 15.8954 0.895431 15 2 15L15.5 15L15.5 2C15.5 0.89543 16.3954 -7.39833e-07 17.5 -6.95908e-07C18.6046 -6.51984e-07 19.5 0.89543 19.5 2L19.5 15L33 15C34.1046 15 35 15.8954 35 17C35 18.1046 34.1046 19 33 19Z" fill="#D3D3D3"/>
-                  </svg>
-                </button>
-                <button class={styles.barButton}>
-                  <RecordIcon />
-                </button>
-                <button class={styles.barButton}>
-                  <PlayIcon />
-                </button>
-              </div>
-            </Notch>
           </div>
         </Show>
-        <Show when={view() === "layout-builder"}>
-          <LayoutBuilder onDone={() => setView("recording")}>
+        <Show when={appState.view.type === "layout"}>
+          <LayoutBuilder>
             <NodeComponent layout={layout} path={[]} onAppend={handleAppend} onSplit={splitNode} />
           </LayoutBuilder>
         </Show>
+        <Notch ref={el => setBottomBarEl(el)} class={styles.bottomBar}>
+          <div class={styles.bottomBarContent}>
+            <Show
+              when={appState.view.type === "recording"}
+              fallback={
+                <>
+                  <button
+                    class={[
+                      styles.modeButton,
+                      layoutView()?.mode === "append" ? styles.active : "",
+                    ]}
+                    onClick={() =>
+                      setAppState(() => ({ view: { type: "layout", mode: "append" } }))
+                    }
+                  >
+                    <PlusIcon />
+                  </button>
+                  <button
+                    class={[styles.modeButton, layoutView()?.mode === "split" ? styles.active : ""]}
+                    onClick={() => setAppState(() => ({ view: { type: "layout", mode: "split" } }))}
+                  >
+                    <SplitIcon />
+                  </button>
+                  <button
+                    class={styles.closeButton}
+                    onClick={() => setAppState(() => ({ view: { type: "recording" } }))}
+                  >
+                    <CloseIcon />
+                  </button>
+                </>
+              }
+            >
+              <button
+                class={styles.barButton}
+                onClick={() => setAppState(() => ({ view: { type: "layout", mode: "append" } }))}
+              >
+                <PlusIcon />
+              </button>
+              <button class={styles.barButton}>
+                <RecordIcon />
+              </button>
+              <button class={styles.barButton}>
+                <PlayIcon />
+              </button>
+            </Show>
+          </div>
+        </Notch>
       </div>
     </Context>
   )

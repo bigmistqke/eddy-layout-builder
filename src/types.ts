@@ -6,5 +6,5 @@ export type Container = {
 export type Entity = { type: "entity"; color: string }
 export type Node = Container | Entity
 
-export type Mode = "append" | "split"
-export type View = "recording" | "layout-builder"
+export type AppView = { type: "recording" } | { type: "layout"; mode: "append" | "split" }
+export type AppState = { view: AppView }

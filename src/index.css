@@ -1,0 +1,5 @@
+#root {
+  --hud-color-back: black;
+  --hud-color-front: white;
+  --hud-radius: 20px;
+}

@@ -4,9 +4,6 @@
 }
 
 .notch {
-  --notch-bg: black;
-  --radius: 20px;
-
   height: calc(75px + var(--extend, 0px));
   position: absolute;
   z-index: 1;
@@ -52,19 +49,19 @@
   & > .root,
   & > .edge,
   & > .center {
-    background: var(--notch-bg);
+    background: var(--hud-color-back);
   }
 
   & > .center,
   & > .edge {
-    margin-inline: /* var(--center-margin,  */ var(--radius) /* ) */;
+    margin-inline: /* var(--center-margin,  */ var(--hud-radius) /* ) */;
   }
 
   & > .root,
   & > .edge {
-    border-radius: var(--radius);
+    border-radius: var(--hud-radius);
     content: "";
-    flex: 0 var(--radius);
+    flex: 0 var(--hud-radius);
     overflow: hidden;
   }
 
@@ -86,7 +83,7 @@
   --color: white;
   position: absolute;
   translate: -50% 0;
-  top: calc(var(--radius) / 2);
+  top: calc(var(--hud-radius) / 2);
   transform-origin: center bottom;
   z-index: 2;
   pointer-events: none;
@@ -99,7 +96,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--notch-bg, black);
+  background: var(--hud-color-back, black);
   border: none;
   display: flex;
   align-items: center;
@@ -113,8 +110,24 @@
     height: 14px;
   }
 
-  &.left   { left: 0;   top: 50%;    translate: -50% -50%; }
-  &.right  { right: 0;  top: 50%;    translate: 50% -50%;  }
-  &.top    { top: 0;    left: 50%;   translate: -50% -50%; }
-  &.bottom { bottom: 0; left: 50%;   translate: -50% 50%;  }
+  &.left {
+    left: 0;
+    top: 50%;
+    translate: -50% -50%;
+  }
+  &.right {
+    right: 0;
+    top: 50%;
+    translate: 50% -50%;
+  }
+  &.top {
+    top: 0;
+    left: 50%;
+    translate: -50% -50%;
+  }
+  &.bottom {
+    bottom: 0;
+    left: 50%;
+    translate: -50% 50%;
+  }
 }

@@ -1,6 +1,5 @@
-import { ComponentProps, createMemo, For, onSettled, Show, useContext } from "solid-js"
+import { ComponentProps, createMemo, For, Show, useContext } from "solid-js"
 import { Context } from "./app"
-import { Notch } from "./frame"
 import styles from "./layout-builder.module.css"
 import type { Node } from "./types"
 
@@ -57,43 +56,13 @@ export function Breadcrumb() {
 
 export function LayoutBuilder(props: {
   children: ComponentProps<"div">["children"]
-  onDone(): void
 }) {
-  const context = useContext(Context)!
-  let bottomBarRef!: HTMLDivElement
-
-  onSettled(() => {
-    context.setBottomBarEl(bottomBarRef)
-    return () => context.setBottomBarEl(undefined)
-  })
-
   return (
     <div class={styles.layoutBuilder}>
       <div class={styles.canvas}>
         <Breadcrumb />
         {props.children}
       </div>
-      <Notch ref={el => (bottomBarRef = el)} class={styles.bottomBar}>
-        <div class={styles.bottomBarContent}>
-          <div class={styles.modeToggle}>
-            <button
-              class={context.mode() === "append" ? styles.active : ""}
-              onClick={() => context.setMode("append")}
-            >
-              ⊞ Append
-            </button>
-            <button
-              class={context.mode() === "split" ? styles.active : ""}
-              onClick={() => context.setMode("split")}
-            >
-              ÷ Split
-            </button>
-          </div>
-          <button class={styles.doneButton} onClick={props.onDone}>
-            Done
-          </button>
-        </div>
-      </Notch>
     </div>
   )
 }
