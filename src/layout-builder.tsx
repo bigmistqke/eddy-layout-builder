@@ -1,16 +1,7 @@
 import { ComponentProps, createMemo, For, Show, useContext } from "solid-js"
 import { Context } from "./app"
 import styles from "./layout-builder.module.css"
-import type { Container, Node } from "./types"
-
-function resolveNode(root: Node, path: number[]): Node {
-  let current = root
-  for (let i = 0; i < path.length; i++) {
-    if (current.type !== "container") throw new Error("not a container")
-    current = current.children[path[i]]
-  }
-  return current
-}
+import type { Node } from "./types"
 
 export function Breadcrumb() {
   const context = useContext(Context)!
