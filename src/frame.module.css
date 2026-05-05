@@ -12,6 +12,11 @@
   &.bottom {
     left: 50%;
     bottom: var(--frame-padding, 0px);
+
+    & > .notch-backdrop {
+      scale: calc(1 / var(--canvas-scale, 1));
+      transform-origin: bottom center;
+    }
   }
 
   &.top {
@@ -19,6 +24,12 @@
     top: var(--frame-padding, 0px);
     rotate: 180deg;
     transform-origin: center center;
+
+    & > .notch-backdrop {
+      scale: calc(1 / var(--canvas-scale, 1));
+      /* element is rotated 180deg, so viewport-top edge = local-bottom edge */
+      transform-origin: bottom center;
+    }
   }
 
   &.left {
@@ -27,6 +38,12 @@
     rotate: 90deg;
     transform-origin: top;
     translate: calc((var(--hud-height-notch) + var(--extend, 0px))) 0;
+
+    & > .notch-backdrop {
+      scale: calc(1 / var(--canvas-scale, 1));
+      /* element is rotated 90deg, so viewport-left edge = local-top edge */
+      transform-origin: top center;
+    }
   }
 
   &.right {
@@ -35,6 +52,12 @@
     rotate: -90deg;
     transform-origin: top;
     translate: calc(-1 * (var(--hud-height-notch) + var(--extend, 0px))) 0;
+
+    & > .notch-backdrop {
+      scale: calc(1 / var(--canvas-scale, 1));
+      /* element is rotated -90deg, so viewport-right edge = local-top edge */
+      transform-origin: top center;
+    }
   }
 }
 
