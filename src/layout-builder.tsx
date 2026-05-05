@@ -11,11 +11,11 @@ export function Breadcrumb() {
     const segs: Array<{ label: string; depth: number }> = []
 
     segs.push({
-      label: context.layout.direction === "vertical" ? "col" : "row",
+      label: context.app.layout.direction === "vertical" ? "col" : "row",
       depth: path.length,
     })
 
-    let current: Node = context.layout
+    let current: Node = context.app.layout
     for (let i = 0; i < path.length; i++) {
       if (current.type !== "container") break
       current = current.children[path[i]]
@@ -57,9 +57,7 @@ export function Breadcrumb() {
   )
 }
 
-export function LayoutBuilder(props: {
-  children: ComponentProps<"div">["children"]
-}) {
+export function LayoutBuilder(props: { children: ComponentProps<"div">["children"] }) {
   return (
     <div class={styles.layoutBuilder}>
       <div class={styles.canvas}>

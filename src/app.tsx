@@ -1,4 +1,4 @@
-import { createSignal, createStore, Show } from "solid-js"
+import { createEffect, createSignal, createStore, Match, onCleanup, Show, Switch } from "solid-js"
 import styles from "./app.module.css"
 import { Context } from "./context"
 import { Notch } from "./frame"
@@ -21,20 +21,42 @@ function createEntity(): Entity {
 }
 
 export function App() {
-  const [layout, setLayout] = createStore<Container>({
-    type: "container",
-    direction: "horizontal",
-    children: [createEntity()],
+  const [selection, setSelection] = createStore({ path: [0] as Array<number>, depth: 0 })
+  const [app, setApp] = createStore<AppState>({
+    view: {
+      type: "recording",
+    },
+    layout: {
+      type: "container",
+      direction: "horizontal",
+      children: [createEntity()],
+    },
+  })
+  const [bottomBarEl, setBottomBarEl] = createSignal<HTMLElement | undefined>()
+
+  const frameCallbacks = new Set<() => void>()
+  const controller = new AbortController()
+  const resizeObserver = new ResizeObserver(() => frameCallbacks.forEach(cb => cb()))
+  window.addEventListener("resize", () => frameCallbacks.forEach(cb => cb()), controller)
+
+  onCleanup(() => {
+    resizeObserver.disconnect()
+    controller.abort()
   })
 
-  const [selection, setSelection] = createStore({ path: [0] as Array<number>, depth: 0 })
-  const [appState, setAppState] = createStore<AppState>({ view: { type: "recording" } })
-  const [bottomBarEl, setBottomBarEl] = createSignal<HTMLElement | undefined>()
+  function observeFrame(el: HTMLElement, cb: () => void) {
+    frameCallbacks.add(cb)
+    resizeObserver.observe(el)
+    return () => {
+      frameCallbacks.delete(cb)
+      resizeObserver.unobserve(el)
+    }
+  }
 
   function appendToContainer(containerPath: number[], insertIndex: number) {
     const newEntity = createEntity()
-    setLayout(proxy => {
-      const container = resolveNode(proxy, containerPath) as Container
+    setApp(proxy => {
+      const container = resolveNode(proxy.layout, containerPath) as Container
       container.children.splice(insertIndex, 0, newEntity)
     })
     setSelection(() => ({ path: [...containerPath, insertIndex], depth: 1 }))
@@ -50,14 +72,14 @@ export function App() {
     if (nodePath.length === 0) {
       const inner: Container = {
         type: "container",
-        direction: layout.direction,
-        children: layout.children.map(cloneNode) as (Entity | Container)[],
+        direction: app.layout.direction,
+        children: app.layout.children.map(cloneNode) as (Entity | Container)[],
       }
-      setLayout(proxy => {
-        proxy.direction = splitDir
-        proxy.children.splice(
+      setApp(proxy => {
+        proxy.layout.direction = splitDir
+        proxy.layout.children.splice(
           0,
-          proxy.children.length,
+          proxy.layout.children.length,
           ...(newEntityFirst ? [newEntity, inner] : [inner, newEntity]),
         )
       })
@@ -67,11 +89,11 @@ export function App() {
 
     const parentPath = nodePath.slice(0, -1)
     const nodeIndex = nodePath[nodePath.length - 1]
-    const parent = resolveNode(layout, parentPath) as Container
+    const parent = resolveNode(app.layout, parentPath) as Container
 
     if (parent.children.length === 1) {
-      setLayout(proxy => {
-        const p = resolveNode(proxy, parentPath) as Container
+      setApp(proxy => {
+        const p = resolveNode(proxy.layout, parentPath) as Container
         p.direction = splitDir
         p.children.splice(newEntityFirst ? 0 : 1, 0, newEntity)
       })
@@ -79,14 +101,14 @@ export function App() {
       return
     }
 
-    const node = resolveNode(layout, nodePath)
+    const node = resolveNode(app.layout, nodePath)
     const newContainer: Container = {
       type: "container",
       direction: splitDir,
       children: newEntityFirst ? [newEntity, cloneNode(node)] : [cloneNode(node), newEntity],
     }
-    setLayout(proxy => {
-      const p = resolveNode(proxy, parentPath) as Container
+    setApp(proxy => {
+      const p = resolveNode(proxy.layout, parentPath) as Container
       p.children.splice(nodeIndex, 1, newContainer)
     })
     setSelection(() => ({ path: [...nodePath, newEntityIndex], depth: 0 }))
@@ -100,75 +122,99 @@ export function App() {
   }
 
   function enterAppendMode() {
-    setAppState(() => ({ view: { type: "layout", mode: "append" } }))
+    setApp(store => {
+      store.view = { type: "layout", mode: "append" }
+    })
     if (selection.depth === 0) setSelection(s => ({ ...s, depth: 1 }))
   }
 
   const layoutView = () =>
-    appState.view.type === "layout"
-      ? (appState.view as { type: "layout"; mode: "append" | "split" })
-      : null
+    app.view.type === "layout" ? (app.view as { type: "layout"; mode: "append" | "split" }) : null
+
+  createEffect(bottomBarEl, bar => {
+    if (!bar) return
+    resizeObserver.observe(bar)
+    return () => {
+      resizeObserver.unobserve(bar)
+    }
+  })
 
   return (
     <Context
       value={{
-        layout,
         selection,
         setSelection,
-        appState,
-        setAppState,
+        app,
+        setApp: setApp,
         bottomBarEl,
         setBottomBarEl,
+        observeFrame,
       }}
     >
       <div style={{ display: "flex", width: "100vw", height: "100%", position: "relative" }}>
-        <Show when={appState.view.type === "recording"}>
+        <Show when={app.view.type === "recording"}>
           <div class={styles.recordingView}>
-            <NodeComponent layout={layout} path={[]} onAppend={handleAppend} onSplit={splitNode} />
+            <NodeComponent
+              layout={app.layout}
+              path={[]}
+              onAppend={handleAppend}
+              onSplit={splitNode}
+            />
           </div>
         </Show>
-        <Show when={appState.view.type === "layout"}>
+        <Show when={app.view.type === "layout"}>
           <LayoutBuilder>
-            <NodeComponent layout={layout} path={[]} onAppend={handleAppend} onSplit={splitNode} />
+            <NodeComponent
+              layout={app.layout}
+              path={[]}
+              onAppend={handleAppend}
+              onSplit={splitNode}
+            />
           </LayoutBuilder>
         </Show>
-        <Notch ref={el => setBottomBarEl(el)} class={styles.bottomBar}>
+        <Notch ref={setBottomBarEl} class={styles.bottomBar}>
           <div class={styles.bottomBarContent}>
-            <Show
-              when={appState.view.type === "recording"}
-              fallback={
-                <>
-                  <button
-                    class={[styles.modeButton, layoutView()?.mode === "append" ? styles.active : ""]}
-                    onClick={() => enterAppendMode()}
-                  >
-                    <PlusIcon />
-                  </button>
-                  <button
-                    class={[styles.modeButton, layoutView()?.mode === "split" ? styles.active : ""]}
-                    onClick={() => setAppState(() => ({ view: { type: "layout", mode: "split" } }))}
-                  >
-                    <SplitIcon />
-                  </button>
-                  <button
-                    class={styles.closeButton}
-                    onClick={() => setAppState(() => ({ view: { type: "recording" } }))}
-                  >
-                    <CloseIcon />
-                  </button>
-                </>
-              }
-            >
-              <button class={styles.barButton} onClick={() => enterAppendMode()}>
-                <PlusIcon />
-              </button>
-              <button class={styles.barButton}>
-                <RecordIcon />
-              </button>
-              <button class={styles.barButton}>
-                <PlayIcon />
-              </button>
-            </Show>
+            <Switch>
+              <Match when={app.view.type === "recording"}>
+                <button class={styles.barButton} onClick={() => enterAppendMode()}>
+                  <PlusIcon />
+                </button>
+                <button class={styles.barButton}>
+                  <RecordIcon />
+                </button>
+                <button class={styles.barButton}>
+                  <PlayIcon />
+                </button>
+              </Match>
+              <Match when={app.view.type === "layout"}>
+                <button
+                  class={[styles.modeButton, layoutView()?.mode === "append" ? styles.active : ""]}
+                  onClick={() => enterAppendMode()}
+                >
+                  <PlusIcon />
+                </button>
+                <button
+                  class={[styles.modeButton, layoutView()?.mode === "split" ? styles.active : ""]}
+                  onClick={() => {
+                    setApp(app => {
+                      app.view = { type: "layout", mode: "split" }
+                    })
+                  }}
+                >
+                  <SplitIcon />
+                </button>
+                <button
+                  class={styles.closeButton}
+                  onClick={() => {
+                    setApp(app => {
+                      app.view = { type: "recording" }
+                    })
+                  }}
+                >
+                  <CloseIcon />
+                </button>
+              </Match>
+            </Switch>
           </div>
         </Notch>
       </div>

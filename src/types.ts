@@ -10,17 +10,17 @@ export type Entity = { type: "entity"; color: string }
 export type Node = Container | Entity
 
 export type AppView = { type: "recording" } | { type: "layout"; mode: "append" | "split" }
-export type AppState = { view: AppView }
+export type AppState = { view: AppView; layout: Container }
 
 export type Direction = "top" | "bottom" | "left" | "right"
 export type Selection = { path: Array<number>; depth: number }
 
 export type AppContext = {
-  layout: Container
   selection: Selection
   setSelection: StoreSetter<Selection>
-  appState: AppState
-  setAppState: StoreSetter<AppState>
+  app: AppState
+  setApp: StoreSetter<AppState>
   bottomBarEl: Accessor<HTMLElement | undefined>
   setBottomBarEl: (el: HTMLElement | undefined) => void
+  observeFrame: (el: HTMLElement, onResize: () => void) => () => void
 }

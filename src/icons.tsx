@@ -1,3 +1,24 @@
+import { JSX } from "solid-js/jsx-runtime"
+
+export function ArrowIcon(props: { style?: JSX.CSSProperties; class?: string }) {
+  return (
+    <svg
+      style={props.style}
+      class={props.class}
+      width="28"
+      height="35"
+      viewBox="0 0 28 35"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M11.9998 32.8486L11.9998 7.72461L3.42365 16.4229C2.64809 17.2091 1.38197 17.2178 0.595527 16.4424C-0.190875 15.6668 -0.199508 14.4007 0.575996 13.6143L13.9998 7.72388e-07L27.4237 13.6143C28.1992 14.4007 28.1905 15.6668 27.4041 16.4424C26.6177 17.2179 25.3516 17.2091 24.576 16.4229L15.9998 7.72461L15.9998 32.8486C15.9998 33.9532 15.1044 34.8486 13.9998 34.8486C12.8953 34.8486 11.9998 33.9532 11.9998 32.8486Z"
+        fill="var(--color-front)"
+      />
+    </svg>
+  )
+}
+
 export function PlusIcon() {
   return (
     <svg width="35" height="35" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">

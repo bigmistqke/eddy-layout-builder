@@ -1,6 +1,6 @@
 import { omit } from "@solidjs/signals"
-import { createMemo, For, Match, Switch, useContext } from "solid-js"
 import type { ComponentProps, JSX } from "solid-js"
+import { createMemo, For, Match, Switch, useContext } from "solid-js"
 import styles from "./app.module.css"
 import { Context } from "./context"
 import { Frame } from "./frame"
@@ -25,7 +25,12 @@ function EntityFrame(
   },
 ) {
   const rest = omit(props, "entity")
-  return <Frame {...rest} style={{ ...(props.style as JSX.CSSProperties), background: props.entity?.color }} />
+  return (
+    <Frame
+      {...rest}
+      style={{ ...(props.style as JSX.CSSProperties), background: props.entity?.color }}
+    />
+  )
 }
 
 export function NodeComponent(props: {
@@ -38,9 +43,9 @@ export function NodeComponent(props: {
 
   const handles = createMemo(() => {
     const empty = { directions: [] as Direction[], buttons: [] as Direction[] }
-    if (context.appState.view.type !== "layout") return empty
+    if (context.app.view.type !== "layout") return empty
     const s = context.selection
-    const { mode } = context.appState.view as { type: "layout"; mode: "append" | "split" }
+    const { mode } = context.app.view as { type: "layout"; mode: "append" | "split" }
     const targetedPath = s.path.slice(0, s.path.length - s.depth)
 
     if (mode === "split") {
@@ -52,13 +57,13 @@ export function NodeComponent(props: {
     }
 
     try {
-      const targeted = resolveNode(context.layout, targetedPath)
+      const targeted = resolveNode(context.app.layout, targetedPath)
       const containerPath = targeted.type === "container" ? targetedPath : targetedPath.slice(0, -1)
       const isDirectChild =
         props.path.length === containerPath.length + 1 &&
         pathEquals(props.path.slice(0, -1), containerPath)
       if (!isDirectChild) return empty
-      const container = resolveNode(context.layout, containerPath) as Container
+      const container = resolveNode(context.app.layout, containerPath) as Container
       const childIdx = props.path[props.path.length - 1]
       const isFirst = childIdx === 0
       const isLast = childIdx === container.children.length - 1
@@ -68,7 +73,9 @@ export function NodeComponent(props: {
         const buttons = (!isLast ? ["right"] : []) as Direction[]
         return { directions, buttons }
       } else {
-        const directions = isFirst ? (["top", "bottom"] as Direction[]) : (["bottom"] as Direction[])
+        const directions = isFirst
+          ? (["top", "bottom"] as Direction[])
+          : (["bottom"] as Direction[])
         const buttons = (!isLast ? ["bottom"] : []) as Direction[]
         return { directions, buttons }
       }
@@ -78,11 +85,11 @@ export function NodeComponent(props: {
   })
 
   const layoutView = () =>
-    context.appState.view.type === "layout"
-      ? (context.appState.view as { type: "layout"; mode: "append" | "split" })
+    context.app.view.type === "layout"
+      ? (context.app.view as { type: "layout"; mode: "append" | "split" })
       : null
 
-  const inLayoutView = () => context.appState.view.type === "layout"
+  const inLayoutView = () => context.app.view.type === "layout"
 
   return (
     <Switch>
