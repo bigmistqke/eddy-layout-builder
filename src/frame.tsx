@@ -177,12 +177,19 @@ export function Frame(
     }
   }
 
+  // Re-run when any HUD ref changes OR when the collision registry changes
+  // (handles mount/unmount on mode switches inside the same Frame instance —
+  // the createEffect itself doesn't re-run on those, but collisionVersion
+  // bumps and re-fires it). Returning a tuple is required: Solid 2.x's
+  // createEffect memoizes on the compute's return value, so returning
+  // undefined would only fire the effect on initial mount.
   createEffect(
-    () => {
-      context.bottomBarEl()
-      context.breadcrumbEl()
-      context.contextualToolbarEl()
-    },
+    () => [
+      context.bottomBarEl(),
+      context.breadcrumbEl(),
+      context.contextualToolbarEl(),
+      context.collisionVersion(),
+    ],
     () => checkAllHandles(),
   )
   onSettled(() => context.observeFrame(frameRef, checkAllHandles))

@@ -70,12 +70,17 @@ export function App() {
   }
 
   const collidables = new Set<Collidable>()
+  // Bumped on every register/unregister so consumers can re-run their
+  // collision checks whenever the registry changes.
+  const [collisionVersion, setCollisionVersion] = createSignal(0)
 
   function registerCollidable(el: HTMLElement, kind: CollisionKind) {
     const entry: Collidable = { el, kind }
     collidables.add(entry)
+    setCollisionVersion(v => v + 1)
     return () => {
       collidables.delete(entry)
+      setCollisionVersion(v => v + 1)
     }
   }
 
@@ -192,6 +197,7 @@ export function App() {
         observeFrame,
         registerCollidable,
         findCollisions,
+        collisionVersion,
         isCanvasZoomed,
         setIsCanvasZoomed,
       }}

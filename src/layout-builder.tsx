@@ -108,12 +108,13 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     return context.observeFrame(canvasEl, () => setResizeTick(t => t + 1))
   })
 
+  // Returns a tuple so the effect re-runs whenever either dep changes.
+  // (Solid 2.x's createEffect memoizes on the compute's return value, so
+  // returning a string would skip the effect when resizeTick changes but
+  // the selection key happens to be the same.)
   createEffect(
-    () => {
-      resizeTick()
-      return selectedPathKey(context.selection)
-    },
-    key => {
+    () => [resizeTick(), selectedPathKey(context.selection)] as const,
+    ([, key]) => {
       if (!innerEl || !canvasEl) return
       const rect = canvasEl.getBoundingClientRect()
       const baseW = rect.width
