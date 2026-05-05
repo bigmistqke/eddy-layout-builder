@@ -101,7 +101,20 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   const context = useContext(Context)!
   let canvasEl!: HTMLDivElement
   let innerEl!: HTMLDivElement
-  const [viewport, setViewport] = createSignal<ViewportState>(INITIAL_VIEWPORT)
+  // ownedWrite: signals can be written from the effect callback below
+  // (which runs in unowned scope per @solidjs/signals, but this is a defensive
+  // opt-in in case any caller path is owned).
+  // equals: short-circuits no-op updates so re-running the effect with an
+  // identical viewport doesn't trigger a JSX re-render or CSS transition.
+  const [viewport, setViewport] = createSignal<ViewportState>(INITIAL_VIEWPORT, {
+    ownedWrite: true,
+    equals: (a, b) =>
+      a.scale === b.scale &&
+      a.x === b.x &&
+      a.y === b.y &&
+      a.baseW === b.baseW &&
+      a.baseH === b.baseH,
+  })
   const [resizeTick, setResizeTick] = createSignal(0)
 
   onSettled(() => {
@@ -121,21 +134,25 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
       const baseW = rect.width
       const baseH = rect.height
 
+      // Empty key = no selection (back button cleared it). Reset to identity.
       if (key === "") {
         setViewport({ ...IDENTITY_VIEWPORT, baseW, baseH })
         return
       }
       const node = innerEl.querySelector<HTMLElement>(`[data-path="${key}"]`)
-      if (!node) {
-        setViewport({ ...IDENTITY_VIEWPORT, baseW, baseH })
-        return
-      }
+      if (!node) return
+
       // Pass the current scale so the math can recover base-size measurements
       // from the currently-rendered (zoom-multiplied) ones. Read via untrack
       // because we're in an effect callback (unowned, untracked scope).
-      const currentScale = untrack(() => viewport().scale)
-      const t = computeViewportTransform(node, innerEl, baseW, baseH, currentScale)
-      setViewport({ ...t, baseW, baseH })
+      const prev = untrack(() => viewport())
+      const t = computeViewportTransform(node, innerEl, baseW, baseH, prev.scale)
+      // If the new selection doesn't need zoom (identity returned), preserve
+      // the current viewport rather than resetting to identity. Selecting a
+      // normal-sized frame should not move the camera — the back button is
+      // what returns to root.
+      const isIdentity = t.scale === 1 && t.x === 0 && t.y === 0
+      setViewport(isIdentity ? { ...prev, baseW, baseH } : { ...t, baseW, baseH })
     },
   )
 

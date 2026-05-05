@@ -13,4 +13,6 @@
   --z-notch-backdrop: -1;
 
   --padding: 8px;
+
+  background: var(--color-back);
 }
