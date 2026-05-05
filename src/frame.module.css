@@ -4,13 +4,6 @@
   box-sizing: border-box;
 }
 
-[data-selection="targeted"] {
-  border: 2px solid black;
-}
-
-[data-selection="trail"] {
-  border: 2px solid grey;
-}
 
 .notch {
   height: calc(var(--hud-height-notch) + var(--extend, 0px));

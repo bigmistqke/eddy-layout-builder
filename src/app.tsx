@@ -15,6 +15,7 @@ import {
 } from "solid-js"
 import styles from "./app.module.css"
 import { Frame, Notch } from "./frame"
+import type { JSX } from "solid-js"
 import { LayoutBuilder } from "./layout-builder"
 import type { AppState, Container, Entity, Node } from "./types"
 
@@ -122,7 +123,7 @@ function EntityFrame(
   },
 ) {
   const rest = omit(props, "entity")
-  return <Frame style={{ background: props.entity?.color }} {...rest} />
+  return <Frame {...rest} style={{ ...props.style as JSX.CSSProperties, background: props.entity?.color }} />
 }
 
 function isNodeActive(path: number[], selection: Selection) {
@@ -195,19 +196,13 @@ function NodeComponent(props: {
       ? (context.appState.view as { type: "layout"; mode: "append" | "split" })
       : null
 
-  const selection = createMemo((): "targeted" | "trail" | undefined => {
-    if (context.appState.view.type !== "layout") return undefined
-    const { path, depth } = context.selection
-    const targetedPath = path.slice(0, path.length - depth)
-    if (pathEquals(props.path, targetedPath)) return "targeted"
-    // trail: any node whose path is a prefix of the full selection path (ancestors above or descendants below the target)
-    if (
-      props.path.length <= path.length &&
-      pathEquals(props.path, path.slice(0, props.path.length))
-    )
-      return "trail"
-    return undefined
-  })
+  const inLayoutView = () => context.appState.view.type === "layout"
+
+  const layoutContainerStyle = (): JSX.CSSProperties =>
+    inLayoutView() ? { padding: "8px", gap: "8px", "border-radius": "8px" } : {}
+
+  const layoutEntityStyle = (): JSX.CSSProperties =>
+    inLayoutView() ? { "border-radius": "8px" } : {}
 
   return (
     <Switch>
@@ -216,8 +211,7 @@ function NodeComponent(props: {
           <Frame
             handleDirections={handles().directions}
             buttonDirections={handles().buttons}
-            selection={selection()}
-            style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
+            style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column", ...layoutContainerStyle() }}
             onAddFrame={direction =>
               layoutView()?.mode === "append"
                 ? props.onAppend(props.path, direction)
@@ -244,7 +238,7 @@ function NodeComponent(props: {
             entity={entity()}
             handleDirections={handles().directions}
             buttonDirections={handles().buttons}
-            selection={selection()}
+            style={layoutEntityStyle()}
             onAddFrame={direction =>
               layoutView()?.mode === "append"
                 ? props.onAppend(props.path, direction)
