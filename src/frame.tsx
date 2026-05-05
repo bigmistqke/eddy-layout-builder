@@ -1,7 +1,6 @@
 import {
   createEffect,
   createSignal,
-  createStore,
   onSettled,
   Show,
   untrack,
@@ -89,13 +88,16 @@ export function Frame(
   const context = useContext(Context)
   type Direction = "top" | "bottom" | "left" | "right"
 
-  const [extendByDir, setExtendByDir] = createStore<Record<Direction, number>>({
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  })
-  const [handlesHidden, setHandlesHidden] = createSignal(false)
+  // ownedWrite: true allows writing these from inside owned scopes —
+  // checkAllHandles is invoked synchronously from registerCollidable's
+  // notify path, which fires from within the registry's owned cleanup.
+  // (Plain createStore doesn't expose ownedWrite, so extendByDir is a
+  // signal of the whole record rather than a store.)
+  const [extendByDir, setExtendByDir] = createSignal<Record<Direction, number>>(
+    { top: 0, bottom: 0, left: 0, right: 0 },
+    { ownedWrite: true },
+  )
+  const [handlesHidden, setHandlesHidden] = createSignal(false, { ownedWrite: true })
   let frameRef!: HTMLDivElement
 
   // Per-direction signal-driven handle registration. Each ref just calls a
@@ -214,7 +216,7 @@ export function Frame(
               <ArrowNotch
                 ref={setTopEl}
                 class={styles.top}
-                style={extendByDir.top > 0 ? { "--extend": `${extendByDir.top}px` } : undefined}
+                style={extendByDir().top > 0 ? { "--extend": `${extendByDir().top}px` } : undefined}
                 onClick={() => props.onAddFrame("top")}
               />
             }
@@ -233,7 +235,7 @@ export function Frame(
               <ArrowNotch
                 ref={setBottomEl}
                 class={styles.bottom}
-                style={extendByDir.bottom > 0 ? { "--extend": `${extendByDir.bottom}px` } : undefined}
+                style={extendByDir().bottom > 0 ? { "--extend": `${extendByDir().bottom}px` } : undefined}
                 onClick={() => props.onAddFrame("bottom")}
               />
             }
@@ -252,7 +254,7 @@ export function Frame(
               <ArrowNotch
                 ref={setLeftEl}
                 class={styles.left}
-                style={extendByDir.left > 0 ? { "--extend": `${extendByDir.left}px` } : undefined}
+                style={extendByDir().left > 0 ? { "--extend": `${extendByDir().left}px` } : undefined}
                 onClick={() => props.onAddFrame("left")}
               />
             }
@@ -271,7 +273,7 @@ export function Frame(
               <ArrowNotch
                 ref={setRightEl}
                 class={styles.right}
-                style={extendByDir.right > 0 ? { "--extend": `${extendByDir.right}px` } : undefined}
+                style={extendByDir().right > 0 ? { "--extend": `${extendByDir().right}px` } : undefined}
                 onClick={() => props.onAddFrame("right")}
               />
             }
