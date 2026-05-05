@@ -109,16 +109,17 @@ export function Frame(
 
   function registerHandle(dir: Direction) {
     return (el: HTMLElement) => {
-      handleRefs[dir] = el
       // ArrowNotch's wrapper has zero in-flow width because both children
       // (.notch-backdrop and .arrow) are absolute-positioned. Use the visible
       // .notch-backdrop child for collision detection so its rect actually
       // overlaps with HUDs and other handles. EdgeButton has explicit CSS
-      // dimensions, so the button itself is correct.
+      // dimensions, so the button itself is correct. Store the same element
+      // we register so checkAllHandles queries with the correct bbox.
       const collidableEl =
         el.tagName === "BUTTON"
           ? el
           : ((el.firstElementChild as HTMLElement) ?? el)
+      handleRefs[dir] = collidableEl
       runWithOwner(owner, () => onCleanup(context.registerCollidable(collidableEl, "handle")))
     }
   }
@@ -157,7 +158,13 @@ export function Frame(
       }
       newExtends[dir] = extend
 
-      const stillCollidesWithHandle = hits.some(h => h.kind === "handle")
+      // Only count handle-vs-handle as "this frame's UI doesn't fit" when
+      // the other handle is on the *same* frame. Cross-frame handle overlaps
+      // (adjacent frames whose 100px-wide handles meet across an 8px gap)
+      // shouldn't hide either frame's handles.
+      const stillCollidesWithHandle = hits.some(
+        h => h.kind === "handle" && h.el.closest("[data-path]") === frameRef,
+      )
       if (stillCollidesWithHandle) anyStillCollides = true
     }
 
