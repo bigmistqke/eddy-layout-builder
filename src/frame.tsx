@@ -1,7 +1,11 @@
 import {
   createEffect,
   createSignal,
+  createStore,
+  getOwner,
+  onCleanup,
   onSettled,
+  runWithOwner,
   Show,
   useContext,
   type JSX,
@@ -37,17 +41,18 @@ export function Notch(props: {
   )
 }
 
-function ArrowNotch(props: { style?: JSX.CSSProperties; class: string; onClick?(): void }) {
+function ArrowNotch(props: { ref?: (el: HTMLDivElement) => void; style?: JSX.CSSProperties; class: string; onClick?(): void }) {
   return (
-    <Notch style={props.style} class={props.class} onClick={props.onClick}>
+    <Notch ref={props.ref} style={props.style} class={props.class} onClick={props.onClick}>
       <ArrowIcon class={styles.arrow} />
     </Notch>
   )
 }
 
-function EdgeButton(props: { class: string; onClick?(): void }) {
+function EdgeButton(props: { ref?: (el: HTMLButtonElement) => void; class: string; onClick?(): void }) {
   return (
     <button
+      ref={props.ref}
       class={[styles["edge-button"], props.class]}
       onClick={e => {
         e.stopPropagation()
@@ -84,25 +89,87 @@ export function Frame(
   const dirs = () => props.handleDirections ?? []
   const buttonDirs = () => props.buttonDirections ?? []
   const context = useContext(Context)
-  const [bottomExtend, setBottomExtend] = createSignal(0)
-  let frameRef!: HTMLDivElement
+  type Direction = "top" | "bottom" | "left" | "right"
 
-  function checkOverlap() {
-    const bar = context.bottomBarEl()
-    if (!bar || !frameRef) {
-      setBottomExtend(0)
-      return
+  // Captured at component scope so we can re-enter it inside unowned ref callbacks.
+  // See node_modules/@solidjs/web/dist/web.js:268 — `ref(fn, el)` runs the user
+  // callback under `runWithOwner(null, ...)`, so onCleanup inside a ref is a no-op
+  // unless we restore the component owner first.
+  const owner = getOwner()
+
+  const [extendByDir, setExtendByDir] = createStore<Record<Direction, number>>({
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  })
+  const [handlesHidden, setHandlesHidden] = createSignal(false)
+  let frameRef!: HTMLDivElement
+  const handleRefs: Partial<Record<Direction, HTMLElement>> = {}
+
+  function registerHandle(dir: Direction) {
+    return (el: HTMLElement) => {
+      handleRefs[dir] = el
+      runWithOwner(owner, () => onCleanup(context.registerCollidable(el, "handle")))
     }
-    const frameRect = frameRef.getBoundingClientRect()
-    const barRect = bar.getBoundingClientRect()
-    const verticalOverlap = frameRect.bottom > barRect.top + 1
-    const notchCenterX = (frameRect.left + frameRect.right) / 2
-    const horizontalOverlap = notchCenterX + 50 > barRect.left && notchCenterX - 50 < barRect.right
-    setBottomExtend(verticalOverlap && horizontalOverlap ? barRect.height : 0)
   }
 
-  createEffect(context.bottomBarEl, checkOverlap)
-  onSettled(() => context.observeFrame(frameRef, checkOverlap))
+  function overlapAmount(handle: DOMRect, hud: DOMRect, dir: Direction): number {
+    switch (dir) {
+      case "bottom":
+        return Math.max(0, handle.bottom - hud.top)
+      case "top":
+        return Math.max(0, hud.bottom - handle.top)
+      case "right":
+        return Math.max(0, handle.right - hud.left)
+      case "left":
+        return Math.max(0, hud.right - handle.left)
+    }
+  }
+
+  function checkAllHandles() {
+    const directions: Direction[] = ["top", "bottom", "left", "right"]
+    let anyStillCollides = false
+    const newExtends: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
+
+    for (const dir of directions) {
+      const handle = handleRefs[dir]
+      if (!handle) continue
+
+      const hits = context.findCollisions(handle)
+      if (hits.length === 0) continue
+
+      const handleRect = handle.getBoundingClientRect()
+      let extend = 0
+      for (const hit of hits) {
+        if (hit.kind === "hud") {
+          extend = Math.max(extend, overlapAmount(handleRect, hit.rect, dir))
+        }
+      }
+      newExtends[dir] = extend
+
+      const stillCollidesWithHandle = hits.some(h => h.kind === "handle")
+      if (stillCollidesWithHandle) anyStillCollides = true
+    }
+
+    if (anyStillCollides) {
+      setHandlesHidden(true)
+      setExtendByDir(() => ({ top: 0, bottom: 0, left: 0, right: 0 }))
+    } else {
+      setHandlesHidden(false)
+      setExtendByDir(() => newExtends)
+    }
+  }
+
+  createEffect(
+    () => {
+      context.bottomBarEl()
+      context.breadcrumbEl()
+      context.contextualToolbarEl()
+    },
+    () => checkAllHandles(),
+  )
+  onSettled(() => context.observeFrame(frameRef, checkAllHandles))
 
   return (
     <div
@@ -112,42 +179,82 @@ export function Frame(
       class={[props.class, styles.frame]}
       data-path={props["data-path"]}
     >
-      <Show when={dirs().includes("top")}>
-        <Show
-          when={buttonDirs().includes("top")}
-          fallback={<ArrowNotch class={styles.top} onClick={() => props.onAddFrame("top")} />}
-        >
-          <EdgeButton class={styles.top} onClick={() => props.onAddFrame("top")} />
+      <Show when={!handlesHidden()}>
+        <Show when={dirs().includes("top")}>
+          <Show
+            when={buttonDirs().includes("top")}
+            fallback={
+              <ArrowNotch
+                ref={registerHandle("top")}
+                class={styles.top}
+                style={extendByDir.top > 0 ? { "--extend": `${extendByDir.top}px` } : undefined}
+                onClick={() => props.onAddFrame("top")}
+              />
+            }
+          >
+            <EdgeButton
+              ref={registerHandle("top")}
+              class={styles.top}
+              onClick={() => props.onAddFrame("top")}
+            />
+          </Show>
         </Show>
-      </Show>
-      <Show when={dirs().includes("bottom")}>
-        <Show
-          when={buttonDirs().includes("bottom")}
-          fallback={
-            <ArrowNotch
+        <Show when={dirs().includes("bottom")}>
+          <Show
+            when={buttonDirs().includes("bottom")}
+            fallback={
+              <ArrowNotch
+                ref={registerHandle("bottom")}
+                class={styles.bottom}
+                style={extendByDir.bottom > 0 ? { "--extend": `${extendByDir.bottom}px` } : undefined}
+                onClick={() => props.onAddFrame("bottom")}
+              />
+            }
+          >
+            <EdgeButton
+              ref={registerHandle("bottom")}
               class={styles.bottom}
-              style={bottomExtend() > 0 ? { "--extend": `${bottomExtend()}px` } : undefined}
               onClick={() => props.onAddFrame("bottom")}
             />
-          }
-        >
-          <EdgeButton class={styles.bottom} onClick={() => props.onAddFrame("bottom")} />
+          </Show>
         </Show>
-      </Show>
-      <Show when={dirs().includes("left")}>
-        <Show
-          when={buttonDirs().includes("left")}
-          fallback={<ArrowNotch class={styles.left} onClick={() => props.onAddFrame("left")} />}
-        >
-          <EdgeButton class={styles.left} onClick={() => props.onAddFrame("left")} />
+        <Show when={dirs().includes("left")}>
+          <Show
+            when={buttonDirs().includes("left")}
+            fallback={
+              <ArrowNotch
+                ref={registerHandle("left")}
+                class={styles.left}
+                style={extendByDir.left > 0 ? { "--extend": `${extendByDir.left}px` } : undefined}
+                onClick={() => props.onAddFrame("left")}
+              />
+            }
+          >
+            <EdgeButton
+              ref={registerHandle("left")}
+              class={styles.left}
+              onClick={() => props.onAddFrame("left")}
+            />
+          </Show>
         </Show>
-      </Show>
-      <Show when={dirs().includes("right")}>
-        <Show
-          when={buttonDirs().includes("right")}
-          fallback={<ArrowNotch class={styles.right} onClick={() => props.onAddFrame("right")} />}
-        >
-          <EdgeButton class={styles.right} onClick={() => props.onAddFrame("right")} />
+        <Show when={dirs().includes("right")}>
+          <Show
+            when={buttonDirs().includes("right")}
+            fallback={
+              <ArrowNotch
+                ref={registerHandle("right")}
+                class={styles.right}
+                style={extendByDir.right > 0 ? { "--extend": `${extendByDir.right}px` } : undefined}
+                onClick={() => props.onAddFrame("right")}
+              />
+            }
+          >
+            <EdgeButton
+              ref={registerHandle("right")}
+              class={styles.right}
+              onClick={() => props.onAddFrame("right")}
+            />
+          </Show>
         </Show>
       </Show>
       {props.children}

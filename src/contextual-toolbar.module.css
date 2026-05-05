@@ -1,0 +1,32 @@
+.toolbarNotch {
+  --notch-bg: #111;
+  --backdrop-x: 0%;
+  --backdrop-width: 100%;
+  position: absolute;
+  top: 12px;
+  right: 0;
+  width: var(--hud-height-notch);
+  height: auto;
+  z-index: var(--z-hud);
+}
+
+.toolbarContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-block: var(--hud-radius);
+  width: 100%;
+  color: var(--color-front);
+}
+
+.toolbarButton {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-front);
+}
