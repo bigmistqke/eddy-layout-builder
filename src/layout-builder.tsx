@@ -6,6 +6,7 @@ import {
   For,
   onSettled,
   Show,
+  untrack,
   useContext,
 } from "solid-js"
 import { Context } from "./context"
@@ -130,8 +131,10 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
         return
       }
       // Pass the current scale so the math can recover base-size measurements
-      // from the currently-rendered (zoom-multiplied) ones.
-      const t = computeViewportTransform(node, innerEl, baseW, baseH, viewport().scale)
+      // from the currently-rendered (zoom-multiplied) ones. Read via untrack
+      // because we're in an effect callback (unowned, untracked scope).
+      const currentScale = untrack(() => viewport().scale)
+      const t = computeViewportTransform(node, innerEl, baseW, baseH, currentScale)
       setViewport({ ...t, baseW, baseH })
     },
   )
