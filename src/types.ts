@@ -23,6 +23,10 @@ export type AppContext = {
   setApp: StoreSetter<AppState>
   bottomBarEl: Accessor<HTMLElement | undefined>
   setBottomBarEl: (el: HTMLElement | undefined) => void
+  breadcrumbEl: Accessor<HTMLElement | undefined>
+  setBreadcrumbEl: (el: HTMLElement | undefined) => void
+  contextualToolbarEl: Accessor<HTMLElement | undefined>
+  setContextualToolbarEl: (el: HTMLElement | undefined) => void
   observeFrame: (el: HTMLElement, onResize: () => void) => () => void
   registerCollidable: (el: HTMLElement, kind: CollisionKind) => () => void
   findCollisions: (el: HTMLElement) => CollisionHit[]

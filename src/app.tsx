@@ -35,6 +35,8 @@ export function App() {
     },
   })
   const [bottomBarEl, setBottomBarEl] = createSignal<HTMLElement | undefined>()
+  const [breadcrumbEl, setBreadcrumbEl] = createSignal<HTMLElement | undefined>()
+  const [contextualToolbarEl, setContextualToolbarEl] = createSignal<HTMLElement | undefined>()
 
   const frameCallbacks = new Set<() => void>()
   const controller = new AbortController()
@@ -171,6 +173,10 @@ export function App() {
         setApp: setApp,
         bottomBarEl,
         setBottomBarEl,
+        breadcrumbEl,
+        setBreadcrumbEl,
+        contextualToolbarEl,
+        setContextualToolbarEl,
         observeFrame,
         registerCollidable,
         findCollisions,
