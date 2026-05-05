@@ -120,7 +120,10 @@ export function Frame(
           ? el
           : ((el.firstElementChild as HTMLElement) ?? el)
       handleRefs[dir] = collidableEl
-      runWithOwner(owner, () => onCleanup(context.registerCollidable(collidableEl, "handle")))
+      // Register outside runWithOwner — see app.tsx. The ref callback is
+      // unowned, so signal writes inside registerCollidable are allowed.
+      const unregister = context.registerCollidable(collidableEl, "handle")
+      runWithOwner(owner, () => onCleanup(unregister))
     }
   }
 

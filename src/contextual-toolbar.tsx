@@ -16,7 +16,9 @@ export function ContextualToolbar() {
       <Notch
         ref={el => {
           context.setContextualToolbarEl(el)
-          runWithOwner(owner, () => onCleanup(context.registerCollidable(el, "hud")))
+          // See app.tsx for why register runs outside runWithOwner.
+          const unregister = context.registerCollidable(el, "hud")
+          runWithOwner(owner, () => onCleanup(unregister))
         }}
         class={styles.toolbarNotch}
         orientation="right"

@@ -226,7 +226,13 @@ export function App() {
         <Notch
           ref={el => {
             setBottomBarEl(el)
-            runWithOwner(owner, () => onCleanup(registerCollidable(el, "hud")))
+            // Register OUTSIDE runWithOwner — registerCollidable bumps a signal,
+            // and signal writes are forbidden in owned reactive scopes. The
+            // ref callback itself runs unowned (per @solidjs/web ref()), so
+            // it's the right place to write. Only re-enter the component
+            // owner to attach onCleanup, which is just a registration call.
+            const unregister = registerCollidable(el, "hud")
+            runWithOwner(owner, () => onCleanup(unregister))
           }}
           class={styles.bottomBar}
         >

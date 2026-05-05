@@ -61,7 +61,9 @@ export function Breadcrumb() {
     <Notch
       ref={el => {
         context.setBreadcrumbEl(el)
-        runWithOwner(owner, () => onCleanup(context.registerCollidable(el, "hud")))
+        // See app.tsx for why register runs outside runWithOwner.
+        const unregister = context.registerCollidable(el, "hud")
+        runWithOwner(owner, () => onCleanup(unregister))
       }}
       class={styles.breadcrumbNotch}
       orientation="top"
