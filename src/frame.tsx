@@ -75,6 +75,7 @@ export function Frame(
     buttonDirections?: ("top" | "bottom" | "left" | "right")[]
     style?: JSX.CSSProperties
     class?: string
+    "data-path"?: string
     onAddFrame(direction: "top" | "bottom" | "left" | "right"): void
   }>,
 ) {
@@ -107,6 +108,7 @@ export function Frame(
       onClick={props.onClick}
       style={props.style}
       class={[props.class, styles.frame]}
+      data-path={props["data-path"]}
     >
       <Show when={dirs().includes("top")}>
         <Show
