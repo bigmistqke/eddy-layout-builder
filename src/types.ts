@@ -1,5 +1,6 @@
 import type { StoreSetter } from "@solidjs/signals"
 import type { Accessor } from "solid-js"
+import type { CollisionHit, CollisionKind } from "./collision"
 
 export type Container = {
   type: "container"
@@ -23,4 +24,6 @@ export type AppContext = {
   bottomBarEl: Accessor<HTMLElement | undefined>
   setBottomBarEl: (el: HTMLElement | undefined) => void
   observeFrame: (el: HTMLElement, onResize: () => void) => () => void
+  registerCollidable: (el: HTMLElement, kind: CollisionKind) => () => void
+  findCollisions: (el: HTMLElement) => CollisionHit[]
 }

@@ -1,5 +1,7 @@
 import { createEffect, createSignal, createStore, Match, onCleanup, Show, Switch } from "solid-js"
 import styles from "./app.module.css"
+import type { Collidable, CollisionHit, CollisionKind } from "./collision"
+import { rectsOverlap } from "./collision"
 import { Context } from "./context"
 import { Notch } from "./frame"
 import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "./icons"
@@ -51,6 +53,27 @@ export function App() {
       frameCallbacks.delete(cb)
       resizeObserver.unobserve(el)
     }
+  }
+
+  const collidables = new Set<Collidable>()
+
+  function registerCollidable(el: HTMLElement, kind: CollisionKind) {
+    const entry: Collidable = { el, kind }
+    collidables.add(entry)
+    return () => {
+      collidables.delete(entry)
+    }
+  }
+
+  function findCollisions(el: HTMLElement): CollisionHit[] {
+    const target = el.getBoundingClientRect()
+    const hits: CollisionHit[] = []
+    for (const c of collidables) {
+      if (c.el === el) continue
+      const rect = c.el.getBoundingClientRect()
+      if (rectsOverlap(target, rect)) hits.push({ el: c.el, kind: c.kind, rect })
+    }
+    return hits
   }
 
   function appendToContainer(containerPath: number[], insertIndex: number) {
@@ -149,6 +172,8 @@ export function App() {
         bottomBarEl,
         setBottomBarEl,
         observeFrame,
+        registerCollidable,
+        findCollisions,
       }}
     >
       <div style={{ display: "flex", width: "100vw", height: "100%", position: "relative" }}>
