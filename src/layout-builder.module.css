@@ -35,7 +35,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding-inline: var(--hud-radius);
+  padding-inline: calc(var(--hud-radius) * 2);
   height: 100%;
   color: var(--color-front);
   font-size: 13px;

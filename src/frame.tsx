@@ -4,6 +4,7 @@ import {
   createStore,
   onSettled,
   Show,
+  untrack,
   useContext,
   type JSX,
   type ParentProps,
@@ -153,7 +154,10 @@ export function Frame(
     const newExtends: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
 
     for (const dir of directions) {
-      const wrapper = handleEls[dir]()
+      // checkAllHandles runs from outside Solid's tracking scope (called via
+      // registerUpdateCollision, observeFrame, etc.), so untrack the signal
+      // read to silence the STRICT_READ_UNTRACKED dev warning.
+      const wrapper = untrack(() => handleEls[dir]())
       if (!wrapper) continue
       const handle = visibleCollidable(wrapper)
 
@@ -188,21 +192,10 @@ export function Frame(
     }
   }
 
-  // Re-run when any HUD ref changes OR when the collision registry changes
-  // (handles mount/unmount on mode switches inside the same Frame instance —
-  // the createEffect itself doesn't re-run on those, but collisionVersion
-  // bumps and re-fires it). Returning a tuple is required: Solid 2.x's
-  // createEffect memoizes on the compute's return value, so returning
-  // undefined would only fire the effect on initial mount.
-  createEffect(
-    () => [
-      context.bottomBarEl(),
-      context.breadcrumbEl(),
-      context.contextualToolbarEl(),
-      context.collisionVersion(),
-    ],
-    () => checkAllHandles(),
-  )
+  // Subscribe to "registry changed" notifications so checkAllHandles re-runs
+  // whenever any handle / HUD mounts or unmounts (including HUD el changes
+  // since those go through registerCollidable too).
+  onSettled(() => context.registerUpdateCollision(checkAllHandles))
   onSettled(() => context.observeFrame(frameRef, checkAllHandles))
 
   return (

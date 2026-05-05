@@ -4,7 +4,6 @@ import {
   createStore,
   Match,
   onCleanup,
-  runWithOwner,
   Show,
   Switch,
 } from "solid-js"
@@ -68,25 +67,30 @@ export function App() {
   }
 
   const collidables = new Set<Collidable>()
-  // Bumped on every register/unregister so consumers can re-run their
-  // collision checks whenever the registry changes.
-  const [collisionVersion, setCollisionVersion] = createSignal(0)
+  // Subscribers re-run their collision checks whenever the registry changes.
+  // Plain Set + iteration — no Solid signal — so register/unregister can be
+  // called freely from owned scopes (cleanups, effect callbacks, etc.) with
+  // no SIGNAL_WRITE_IN_OWNED_SCOPE concerns.
+  const updateSubscribers = new Set<() => void>()
 
-  function bumpCollisionVersion() {
-    // Both register and unregister can be called from owned reactive scopes
-    // (cleanups fire during disposal of effects/computations). Solid 2.x
-    // forbids signal writes there, so escape to a null owner — this is
-    // exactly the "intentional, set ownedWrite" case the error references.
-    runWithOwner(null, () => setCollisionVersion(v => v + 1))
+  function registerUpdateCollision(cb: () => void) {
+    updateSubscribers.add(cb)
+    return () => {
+      updateSubscribers.delete(cb)
+    }
+  }
+
+  function notifyCollisionUpdate() {
+    for (const cb of updateSubscribers) cb()
   }
 
   function registerCollidable(el: HTMLElement, kind: CollisionKind) {
     const entry: Collidable = { el, kind }
     collidables.add(entry)
-    bumpCollisionVersion()
+    notifyCollisionUpdate()
     return () => {
       collidables.delete(entry)
-      bumpCollisionVersion()
+      notifyCollisionUpdate()
     }
   }
 
@@ -211,7 +215,7 @@ export function App() {
         observeFrame,
         registerCollidable,
         findCollisions,
-        collisionVersion,
+        registerUpdateCollision,
         isCanvasZoomed,
         setIsCanvasZoomed,
       }}

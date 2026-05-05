@@ -30,9 +30,10 @@ export type AppContext = {
   observeFrame: (el: HTMLElement, onResize: () => void) => () => void
   registerCollidable: (el: HTMLElement, kind: CollisionKind) => () => void
   findCollisions: (el: HTMLElement) => CollisionHit[]
-  /** Bumps every time a collidable is registered or unregistered. Reading
-   *  it inside an effect's compute is the way to re-run on registry changes. */
-  collisionVersion: Accessor<number>
+  /** Subscribe to "registry changed" notifications. Frames register their
+   *  checkAllHandles callback here so they re-evaluate whenever any
+   *  collidable mounts or unmounts. Returns a cleanup. */
+  registerUpdateCollision: (cb: () => void) => () => void
   isCanvasZoomed: Accessor<boolean>
   setIsCanvasZoomed: (zoomed: boolean) => void
 }
