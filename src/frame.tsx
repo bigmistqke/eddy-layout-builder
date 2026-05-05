@@ -110,7 +110,16 @@ export function Frame(
   function registerHandle(dir: Direction) {
     return (el: HTMLElement) => {
       handleRefs[dir] = el
-      runWithOwner(owner, () => onCleanup(context.registerCollidable(el, "handle")))
+      // ArrowNotch's wrapper has zero in-flow width because both children
+      // (.notch-backdrop and .arrow) are absolute-positioned. Use the visible
+      // .notch-backdrop child for collision detection so its rect actually
+      // overlaps with HUDs and other handles. EdgeButton has explicit CSS
+      // dimensions, so the button itself is correct.
+      const collidableEl =
+        el.tagName === "BUTTON"
+          ? el
+          : ((el.firstElementChild as HTMLElement) ?? el)
+      runWithOwner(owner, () => onCleanup(context.registerCollidable(collidableEl, "handle")))
     }
   }
 

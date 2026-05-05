@@ -49,15 +49,29 @@ function offsetRelativeToRoot(el: HTMLElement, root: HTMLElement) {
  * size — i.e., the selected node would render smaller than the worst-case
  * handle footprint. Otherwise we return identity (no scale, no pan), so a
  * normal-sized selection doesn't move the camera at all.
+ *
+ * `currentScale` must be passed when the canvas is already enlarged so we can
+ * recover the node's *base* (un-zoomed) dimensions: `offsetWidth`/`offsetTop`
+ * reflect the currently rendered size, which is `base * currentScale`. Without
+ * this, recomputing the viewport while already zoomed would oscillate between
+ * scale 1 and the target scale (the rendered size hits the threshold from
+ * different sides at different scales).
  */
 export function computeViewportTransform(
   node: HTMLElement,
   layoutRoot: HTMLElement,
   canvasW: number,
   canvasH: number,
+  currentScale = 1,
 ): ViewportTransform {
-  const { x: nx, y: ny, width: nw, height: nh } = offsetRelativeToRoot(node, layoutRoot)
-  if (nw === 0 || nh === 0) return IDENTITY_VIEWPORT
+  const { x: rawX, y: rawY, width: rawW, height: rawH } = offsetRelativeToRoot(node, layoutRoot)
+  if (rawW === 0 || rawH === 0) return IDENTITY_VIEWPORT
+
+  // Recover base (un-zoomed) measurements.
+  const nw = rawW / currentScale
+  const nh = rawH / currentScale
+  const nx = rawX / currentScale
+  const ny = rawY / currentScale
 
   // Smallest multiplier at which two opposing handles no longer overlap.
   const handleScale = Math.max((2 * HANDLE_VIEWPORT_W) / nw, (2 * HANDLE_VIEWPORT_H) / nh)

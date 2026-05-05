@@ -128,7 +128,9 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
         setViewport({ ...IDENTITY_VIEWPORT, baseW, baseH })
         return
       }
-      const t = computeViewportTransform(node, innerEl, baseW, baseH)
+      // Pass the current scale so the math can recover base-size measurements
+      // from the currently-rendered (zoom-multiplied) ones.
+      const t = computeViewportTransform(node, innerEl, baseW, baseH, viewport().scale)
       setViewport({ ...t, baseW, baseH })
     },
   )

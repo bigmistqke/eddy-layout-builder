@@ -66,18 +66,11 @@
     overflow: hidden;
   }
 
-  & > .root {
-    corner-top-shape: scoop;
-    corner-bottom-shape: square;
-  }
-
   & > .center {
     flex: 1;
   }
-
-  & > .edge {
-    corner-bottom-shape: square;
-  }
+  /* Per-orientation rules below own the .root and .edge corner shapes
+   * so they don't have to fight an unprefixed default. */
 }
 
 .arrow {
@@ -155,11 +148,12 @@
   flex-direction: column-reverse;
 }
 .hud-top > .notch-backdrop > .root {
-  corner-top-shape: square;
-  corner-bottom-shape: scoop;
+  corner-top-shape: square; /* outer (screen edge) */
+  corner-bottom-shape: scoop; /* meets .center */
 }
 .hud-top > .notch-backdrop > .edge {
-  corner-top-shape: square;
+  corner-top-shape: square; /* meets .center */
+  /* corner-bottom-shape stays default = round (canvas-meeting outer cap) */
 }
 
 /* Right — row direction so children stack horizontally. .root on the right
@@ -174,14 +168,15 @@
   margin-block: var(--hud-radius);
 }
 .hud-right > .notch-backdrop > .root {
-  corner-top-left-shape: scoop;
-  corner-bottom-left-shape: scoop;
-  corner-top-right-shape: square;
-  corner-bottom-right-shape: square;
+  corner-top-left-shape: scoop; /* meets .center */
+  corner-bottom-left-shape: scoop; /* meets .center */
+  corner-top-right-shape: square; /* outer screen edge */
+  corner-bottom-right-shape: square; /* outer screen edge */
 }
 .hud-right > .notch-backdrop > .edge {
-  corner-top-right-shape: square;
-  corner-bottom-right-shape: square;
+  corner-top-right-shape: square; /* meets .center */
+  corner-bottom-right-shape: square; /* meets .center */
+  /* top-left and bottom-left stay default = round (canvas-meeting outer cap) */
 }
 
 /* Left — mirror of right via row-reverse. .root on the left (screen edge). */
@@ -194,12 +189,13 @@
   margin-block: var(--hud-radius);
 }
 .hud-left > .notch-backdrop > .root {
-  corner-top-right-shape: scoop;
-  corner-bottom-right-shape: scoop;
-  corner-top-left-shape: square;
-  corner-bottom-left-shape: square;
+  corner-top-right-shape: scoop; /* meets .center */
+  corner-bottom-right-shape: scoop; /* meets .center */
+  corner-top-left-shape: square; /* outer screen edge */
+  corner-bottom-left-shape: square; /* outer screen edge */
 }
 .hud-left > .notch-backdrop > .edge {
-  corner-top-left-shape: square;
-  corner-bottom-left-shape: square;
+  corner-top-left-shape: square; /* meets .center */
+  corner-bottom-left-shape: square; /* meets .center */
+  /* top-right and bottom-right stay default = round (canvas-meeting outer cap) */
 }
