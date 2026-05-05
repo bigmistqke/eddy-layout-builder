@@ -41,6 +41,8 @@ export function NodeComponent(props: {
 }) {
   const context = useContext(Context)!
 
+  const pathKey = createMemo(() => props.path.join("."))
+
   const handles = createMemo(() => {
     const empty = { directions: [] as Direction[], buttons: [] as Direction[] }
     if (context.app.view.type !== "layout") return empty
@@ -112,6 +114,7 @@ export function NodeComponent(props: {
                   : styles.layoutContainer
                 : "",
             ].join(" ")}
+            data-path={pathKey()}
           >
             <For each={layout().children}>
               {(child, index) => (
@@ -130,6 +133,7 @@ export function NodeComponent(props: {
         {entity => (
           <EntityFrame
             entity={entity()}
+            data-path={pathKey()}
             handleDirections={handles().directions}
             buttonDirections={handles().buttons}
             class={inLayoutView() ? styles.layoutEntity : undefined}
