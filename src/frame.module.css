@@ -147,3 +147,53 @@
     translate: -50% 50%;
   }
 }
+
+/* HUD-orientation modifiers for the Notch component. */
+
+.hud-bottom > .notch-backdrop > .root,
+.hud-bottom > .notch-backdrop > .edge {
+  corner-top-shape: scoop;
+  corner-bottom-shape: square;
+}
+
+.hud-top > .notch-backdrop > .root,
+.hud-top > .notch-backdrop > .edge {
+  corner-top-shape: square;
+  corner-bottom-shape: scoop;
+}
+
+.hud-right > .notch-backdrop {
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+.hud-right > .notch-backdrop > .root,
+.hud-right > .notch-backdrop > .edge {
+  flex: 0 var(--hud-radius);
+}
+.hud-right > .notch-backdrop > .root {
+  corner-top-left-shape: scoop;
+  corner-bottom-left-shape: scoop;
+  corner-top-right-shape: square;
+  corner-bottom-right-shape: square;
+}
+.hud-right > .notch-backdrop > .edge {
+  corner-top-left-shape: scoop;
+  corner-bottom-left-shape: scoop;
+}
+
+.hud-left > .notch-backdrop {
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+.hud-left > .notch-backdrop > .root,
+.hud-left > .notch-backdrop > .edge {
+  flex: 0 var(--hud-radius);
+}
+.hud-left > .notch-backdrop > .root {
+  corner-top-right-shape: scoop;
+  corner-bottom-right-shape: scoop;
+  corner-top-left-shape: square;
+  corner-bottom-left-shape: square;
+}

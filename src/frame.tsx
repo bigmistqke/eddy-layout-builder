@@ -17,11 +17,13 @@ export function Notch(props: {
   children: JSX.Element
   class: string
   onClick?(): void
+  orientation?: "top" | "bottom" | "left" | "right"
 }) {
+  const orient = () => props.orientation ?? "bottom"
   return (
     <div
       ref={props.ref}
-      class={[styles.notch, props.class]}
+      class={[styles.notch, styles[`hud-${orient()}`], props.class]}
       style={props.style}
       onClick={e => e.stopPropagation()}
     >
