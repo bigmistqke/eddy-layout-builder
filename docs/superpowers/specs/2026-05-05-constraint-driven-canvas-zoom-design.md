@@ -51,6 +51,17 @@ Three notch slots:
 
 The contextual toolbar notch only renders when at least one contextual button has something to show. When there are no contextual tools active (e.g., no selection → no back button, no other tools applicable), the entire notch is hidden — not just its contents. The notch is a consequence of having context, not a permanent fixture.
 
+### Handle collisions with HUD notches
+
+The frame's add-handles (the four directional notch handles) already detect collisions with the bottom mode bar and extend to remain reachable when a frame overlaps it (`--extend` CSS variable, driven by `checkOverlap` in `frame.tsx`). This same mechanism applies to the breadcrumb and contextual toolbar notches:
+
+- A frame's **top** add-handle checks for overlap with the breadcrumb notch (when present); extends to bridge it.
+- A frame's **right** add-handle checks for overlap with the contextual toolbar notch (when present); extends to bridge it.
+- A frame's **bottom** add-handle keeps its existing collision check with the bottom mode bar.
+- A frame's **left** add-handle has no HUD on its side (currently) and doesn't need a collision check.
+
+Because the HUD elements are already registered through the shared `ResizeObserver` plumbing in `App` (extending the `bottomBarEl` pattern), each handle just observes the relevant HUD element's bounds and recomputes overlap on resize. When the breadcrumb or toolbar notch is hidden (no breadcrumb segments / no contextual tools), there is nothing to collide with and the corresponding handle reverts to its un-extended size.
+
 ### Back button
 
 The back button is the first occupant of the top-right contextual toolbar notch. It is the supplied left-arrow SVG. It is visible whenever there is an active selection (i.e., the viewport is fit to a specific node, not the unselected root view). Tapping it clears the selection and animates the viewport to a "fit-all root" view, returning the editor to a neutral state from which the user can tap any frame to engage again.
