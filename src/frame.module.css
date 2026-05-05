@@ -148,18 +148,29 @@
   }
 }
 
-/* HUD-orientation modifiers for the Notch component. */
+/*
+ * HUD-orientation modifiers for the Notch component.
+ *
+ * .root  = the inner-corner piece that sits flush against the canvas edge;
+ *          it carries the SCOOP that creates the notch silhouette.
+ * .edge  = the outer cap; its inward corner is square (meets the canvas),
+ *          its outward corner stays default (normal rounded).
+ */
 
-.hud-bottom > .notch-backdrop > .root,
-.hud-bottom > .notch-backdrop > .edge {
+.hud-bottom > .notch-backdrop > .root {
   corner-top-shape: scoop;
   corner-bottom-shape: square;
 }
+.hud-bottom > .notch-backdrop > .edge {
+  corner-bottom-shape: square;
+}
 
-.hud-top > .notch-backdrop > .root,
-.hud-top > .notch-backdrop > .edge {
+.hud-top > .notch-backdrop > .root {
   corner-top-shape: square;
   corner-bottom-shape: scoop;
+}
+.hud-top > .notch-backdrop > .edge {
+  corner-top-shape: square;
 }
 
 .hud-right > .notch-backdrop {
@@ -178,8 +189,8 @@
   corner-bottom-right-shape: square;
 }
 .hud-right > .notch-backdrop > .edge {
-  corner-top-left-shape: scoop;
-  corner-bottom-left-shape: scoop;
+  corner-top-left-shape: square;
+  corner-bottom-left-shape: square;
 }
 
 .hud-left > .notch-backdrop {
@@ -196,4 +207,8 @@
   corner-bottom-right-shape: scoop;
   corner-top-left-shape: square;
   corner-bottom-left-shape: square;
+}
+.hud-left > .notch-backdrop > .edge {
+  corner-top-right-shape: square;
+  corner-bottom-right-shape: square;
 }
