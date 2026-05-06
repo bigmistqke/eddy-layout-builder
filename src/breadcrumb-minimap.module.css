@@ -1,0 +1,31 @@
+.miniContainer {
+  display: flex;
+  flex: 1;
+  gap: 1px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.miniContainer.row {
+  flex-direction: row;
+}
+
+.miniContainer.col {
+  flex-direction: column;
+}
+
+.miniCell {
+  flex: 1;
+  background: #444;
+  border-radius: 1px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.miniHighlight {
+  outline: 2px solid var(--color-active);
+  outline-offset: -1px;
+  background: color-mix(in srgb, var(--color-active) 30%, transparent);
+}
