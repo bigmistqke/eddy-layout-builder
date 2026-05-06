@@ -171,8 +171,22 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // canvas resizes underneath and frames may now have new handle/HUD
   // overlaps. Request a synchronous collision recheck so each frame re-runs
   // checkAllHandles against the current rendered geometry.
+  //
+  // Also flag isAnimating for the duration of the CSS transition so frames
+  // hide their handles while the canvas is mid-flight. Otherwise the
+  // ResizeObserver fires several times during the animation and toggles
+  // handle visibility, which the user perceives as the animation getting
+  // stuck partway through.
+  let animationTimer: ReturnType<typeof setTimeout> | undefined
   createEffect(viewport, () => {
-    context.requestCollisionUpdate()
+    context.setIsAnimating(true)
+    if (animationTimer) clearTimeout(animationTimer)
+    animationTimer = setTimeout(() => {
+      context.setIsAnimating(false)
+      // Final settle: now that the canvas has reached its target size,
+      // re-check collisions so handles render in their correct end state.
+      context.requestCollisionUpdate()
+    }, 240) // 220ms transition + 20ms buffer
   })
 
   // Always set explicit pixel width/height so CSS transitions can animate

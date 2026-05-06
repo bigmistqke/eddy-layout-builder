@@ -40,4 +40,9 @@ export type AppContext = {
   requestCollisionUpdate: () => void
   isCanvasZoomed: Accessor<boolean>
   setIsCanvasZoomed: (zoomed: boolean) => void
+  /** True while the canvas viewport is mid-transition. Frames hide their
+   *  handles during this window so ResizeObserver-driven collision rechecks
+   *  don't toggle handle visibility under the animation. */
+  isAnimating: Accessor<boolean>
+  setIsAnimating: (animating: boolean) => void
 }

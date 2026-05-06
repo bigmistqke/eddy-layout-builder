@@ -208,7 +208,7 @@ export function Frame(
       class={[props.class, styles.frame]}
       data-path={props["data-path"]}
     >
-      <Show when={!handlesHidden()}>
+      <Show when={!handlesHidden() && !context.isAnimating()}>
         <Show when={dirs().includes("top")}>
           <Show
             when={buttonDirs().includes("top")}

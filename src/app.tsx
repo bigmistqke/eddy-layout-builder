@@ -46,6 +46,7 @@ export function App() {
   const [breadcrumbEl, setBreadcrumbEl] = createSignal<HTMLElement | undefined>()
   const [contextualToolbarEl, setContextualToolbarEl] = createSignal<HTMLElement | undefined>()
   const [isCanvasZoomed, setIsCanvasZoomed] = createSignal(false)
+  const [isAnimating, setIsAnimating] = createSignal(false, { ownedWrite: true })
 
   const frameCallbacks = new Set<() => void>()
   const controller = new AbortController()
@@ -224,6 +225,8 @@ export function App() {
         requestCollisionUpdate,
         isCanvasZoomed,
         setIsCanvasZoomed,
+        isAnimating,
+        setIsAnimating,
       }}
     >
       <div style={{ display: "flex", width: "100vw", height: "100%", position: "relative" }}>
