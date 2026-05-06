@@ -3,6 +3,7 @@ import { Context } from "./context"
 import styles from "./frame.module.css"
 import { ArrowIcon } from "./icons"
 import type { Direction, HandleSpec } from "./types"
+import { capitalize } from "./utils"
 
 export function Notch(props: {
   ref?: (el: HTMLDivElement) => void
@@ -14,10 +15,7 @@ export function Notch(props: {
   "data-direction"?: Direction
 }) {
   const orient = () => props.orientation ?? "bottom"
-  const orientClass = () => {
-    const o = orient()
-    return styles[`hud${o[0].toUpperCase()}${o.slice(1)}`]
-  }
+  const orientClass = () => styles[`hud${capitalize(orient())}`]
   return (
     <div
       ref={props.ref}

@@ -22,3 +22,8 @@ export function resolveNode(layout: Container, path: number[]): Entity | Contain
 export function logAction(type: string, payload?: Record<string, unknown>): void {
   console.log("[action]", JSON.stringify({ type, ...payload }))
 }
+
+/** Uppercase the first character of a string. */
+export function capitalize<S extends string>(s: S): Capitalize<S> {
+  return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>
+}
