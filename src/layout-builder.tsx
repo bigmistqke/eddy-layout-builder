@@ -134,6 +134,13 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   createEffect(
     () => [resizeTick(), selectedPathKey(context.selection)] as const,
     ([, key]) => {
+      // Lockdown during animation: ResizeObserver fires multiple times as
+      // canvasInner's width/height transition, which would otherwise
+      // re-trigger setViewport with a moving target and stutter the CSS
+      // transition. Drop these intermediate updates entirely; after the
+      // animation timer fires we explicitly nudge resizeTick to force one
+      // clean recomputation against the settled geometry.
+      if (untrack(() => context.isAnimating())) return
       if (!innerEl || !canvasEl) return
       const rect = canvasEl.getBoundingClientRect()
       const baseW = rect.width
@@ -183,8 +190,11 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     if (animationTimer) clearTimeout(animationTimer)
     animationTimer = setTimeout(() => {
       context.setIsAnimating(false)
-      // Final settle: now that the canvas has reached its target size,
-      // re-check collisions so handles render in their correct end state.
+      // Animation settled. Nudge resizeTick so the viewport effect re-runs
+      // against the now-stable geometry (any selection changes that
+      // happened during animation were dropped — the user can re-click).
+      setResizeTick(t => t + 1)
+      // And ask each frame to recompute its handle/HUD overlaps.
       context.requestCollisionUpdate()
     }, 240) // 220ms transition + 20ms buffer
   })

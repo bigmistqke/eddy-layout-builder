@@ -151,6 +151,12 @@ export function Frame(
   }
 
   function checkAllHandles() {
+    // Skip while the canvas viewport is animating — geometry is mid-flight
+    // and any state updates we make would cause re-renders that fight the
+    // CSS transition. The layout-builder fires requestCollisionUpdate()
+    // when the animation completes, so this is the only re-check we miss.
+    if (untrack(() => context.isAnimating())) return
+
     const directions: Direction[] = ["top", "bottom", "left", "right"]
     let anyStillCollides = false
     const newExtends: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
