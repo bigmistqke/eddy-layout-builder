@@ -27,7 +27,9 @@ import {
  *  path/depth changes. */
 function layoutSignature(layout: Container, selection: Selection): string {
   function nodeSignature(node: Node): string {
-    if (node.type === "entity") return "e"
+    if (node.type === "entity") {
+      return "e"
+    }
     return `${node.direction[0]}(${node.children.map(nodeSignature).join(",")})`
   }
   return `${nodeSignature(layout)}|${selection.path.join(".")}/${selection.depth}`
@@ -76,8 +78,12 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // canvasInner's width/height interpolate, and any setViewport call here
   // would retarget the CSS transition mid-flight).
   function layoutPass() {
-    if (untrack(context.isAnimating)) return
-    if (!canvasElement) return
+    if (untrack(context.isAnimating)) {
+      return
+    }
+    if (!canvasElement) {
+      return
+    }
     const canvasRect = canvasElement.getBoundingClientRect()
     const canvas = { width: canvasRect.width, height: canvasRect.height }
 
@@ -125,7 +131,9 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   }
 
   onSettled(() => {
-    if (!canvasElement) return
+    if (!canvasElement) {
+      return
+    }
     // Seed baseWidth/baseHeight so the first render has explicit pixel
     // dimensions on canvasInner — required for width/height transitions to
     // animate (browsers won't interpolate between auto and a pixel value).
@@ -138,7 +146,9 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     setCanvasAspect(initialRect.height > 0 ? initialRect.width / initialRect.height : 1)
     const resizeObserver = new ResizeObserver(() => {
       const rect = canvasElement.getBoundingClientRect()
-      if (rect.height > 0) setCanvasAspect(rect.width / rect.height)
+      if (rect.height > 0) {
+        setCanvasAspect(rect.width / rect.height)
+      }
       layoutPass()
     })
     resizeObserver.observe(canvasElement)
@@ -178,8 +188,12 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   const SETTLE_MS = ANIMATION_MS + 20
 
   createEffect(viewport, viewport => {
-    if (!innerElement) return
-    if (viewport.baseWidth === 0 || viewport.baseHeight === 0) return
+    if (!innerElement) {
+      return
+    }
+    if (viewport.baseWidth === 0 || viewport.baseHeight === 0) {
+      return
+    }
 
     const toTransform = transformToCss(viewport)
     const toWidth = `${viewport.baseWidth * viewport.scale}px`
@@ -215,7 +229,9 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     )
 
     context.setIsAnimating(true)
-    if (animationTimer) clearTimeout(animationTimer)
+    if (animationTimer) {
+      clearTimeout(animationTimer)
+    }
     animationTimer = setTimeout(() => {
       context.setIsAnimating(false)
       // Recompute against settled geometry — picks up any window resize

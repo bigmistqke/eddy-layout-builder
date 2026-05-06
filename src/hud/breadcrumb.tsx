@@ -91,7 +91,9 @@ function Minimap(props: { layout: Container; highlightPath: number[]; aspect: nu
   // toggles (no resize-loop).
   const [size, setSize] = createSignal({ width: 0, height: 0 })
   onSettled(() => {
-    if (!canvasElement) return
+    if (!canvasElement) {
+      return
+    }
     const resizeObserver = new ResizeObserver(() => {
       const rect = canvasElement.getBoundingClientRect()
       setSize({ width: rect.width, height: rect.height })
@@ -102,7 +104,9 @@ function Minimap(props: { layout: Container; highlightPath: number[]; aspect: nu
   createEffect(
     () => [props.layout, props.highlightPath, props.aspect, size()] as const,
     ([layout, highlightPath, aspect, currentSize]) => {
-      if (!canvasElement || currentSize.width < 1 || currentSize.height < 1) return
+      if (!canvasElement || currentSize.width < 1 || currentSize.height < 1) {
+        return
+      }
       const devicePixelRatio = window.devicePixelRatio || 1
       canvasElement.width = currentSize.width * devicePixelRatio
       canvasElement.height = currentSize.height * devicePixelRatio
@@ -146,7 +150,9 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
 
     let current: Node = context.app.layout
     for (let index = 0; index < path.length; index++) {
-      if (current.type !== "container") break
+      if (current.type !== "container") {
+        break
+      }
       current = current.children[path[index]]
       const depth = path.length - 1 - index
       result.push({ highlightPath: path.slice(0, index + 1), depth })

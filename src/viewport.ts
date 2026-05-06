@@ -26,7 +26,9 @@ export const IDENTITY_VIEWPORT: ViewportTransform = { scale: 1, x: 0, y: 0 }
 /** Path key for the selected node — entity path minus `depth` levels. */
 export function selectedPathKey(selection: Selection): string {
   const len = selection.path.length - selection.depth
-  if (len <= 0) return ""
+  if (len <= 0) {
+    return ""
+  }
   return selection.path.slice(0, len).join(".")
 }
 
@@ -67,12 +69,20 @@ function findHandleFitScale(
     const maxDim = Math.max(rect.width, rect.height)
     const sameAxisOk = minDim >= SAME_AXIS_MIN
     const crossPairOk = maxDim >= CROSS_PAIR_MIN
-    if (sameAxisOk && crossPairOk) return scale
+    if (sameAxisOk && crossPairOk) {
+      return scale
+    }
     let needed = 1
-    if (!sameAxisOk) needed = Math.max(needed, minDim > 0 ? SAME_AXIS_MIN / minDim : 4)
-    if (!crossPairOk) needed = Math.max(needed, maxDim > 0 ? CROSS_PAIR_MIN / maxDim : 4)
+    if (!sameAxisOk) {
+      needed = Math.max(needed, minDim > 0 ? SAME_AXIS_MIN / minDim : 4)
+    }
+    if (!crossPairOk) {
+      needed = Math.max(needed, maxDim > 0 ? CROSS_PAIR_MIN / maxDim : 4)
+    }
     scale *= needed
-    if (scale >= MAX_SCALE) return MAX_SCALE
+    if (scale >= MAX_SCALE) {
+      return MAX_SCALE
+    }
   }
   return Math.min(scale, MAX_SCALE)
 }
@@ -89,7 +99,9 @@ export function computeViewportTransform(
   // is NOT baseRect × s; we recompute via flex math at the scaled
   // canvasInner size for both handle-fit decisions and centering.
   const baseRect = frameRect(layout, path, canvas)
-  if (baseRect.width === 0 || baseRect.height === 0) return IDENTITY_VIEWPORT
+  if (baseRect.width === 0 || baseRect.height === 0) {
+    return IDENTITY_VIEWPORT
+  }
 
   const handleScale = findHandleFitScale(layout, path, canvas)
   const scale = Math.max(handleScale, minScale)
@@ -102,7 +114,9 @@ export function computeViewportTransform(
     const naturalExt = computeExtends(baseRect, hudRects)
     const verticalFits = baseRect.height >= SAME_AXIS_MIN + naturalExt.top + naturalExt.bottom
     const horizontalFits = baseRect.width >= SAME_AXIS_MIN + naturalExt.left + naturalExt.right
-    if (verticalFits && horizontalFits) return IDENTITY_VIEWPORT
+    if (verticalFits && horizontalFits) {
+      return IDENTITY_VIEWPORT
+    }
   }
 
   // Pan to canvas center using REAL flex-math at the scaled canvasInner.
@@ -148,7 +162,9 @@ export function frameRect(
   }
   let current: Node = layout
   for (const childIndex of path) {
-    if (current.type !== "container") break
+    if (current.type !== "container") {
+      break
+    }
     const childCount = current.children.length
     const totalGap = SIBLING_GAP * (childCount - 1)
     if (current.direction === "horizontal") {
@@ -232,7 +248,9 @@ export function computeExtends(frame: Rect, hudRects: Rect[]): Record<Direction,
   for (const hud of hudRects) {
     for (const direction of ["top", "bottom", "left", "right"] as Direction[]) {
       const handle = handles[direction]
-      if (!rectsOverlap(handle, hud)) continue
+      if (!rectsOverlap(handle, hud)) {
+        continue
+      }
       let amount = 0
       switch (direction) {
         case "top":
@@ -248,7 +266,9 @@ export function computeExtends(frame: Rect, hudRects: Rect[]): Record<Direction,
           amount = handle.x + handle.width - hud.x
           break
       }
-      if (amount > extend[direction]) extend[direction] = amount
+      if (amount > extend[direction]) {
+        extend[direction] = amount
+      }
     }
   }
   return extend

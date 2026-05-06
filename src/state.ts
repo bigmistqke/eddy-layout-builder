@@ -76,7 +76,9 @@ export function createAppState(): AppContext {
     ]
     const rects: Rect[] = []
     for (const element of elements) {
-      if (!element?.isConnected) continue
+      if (!element?.isConnected) {
+        continue
+      }
       const elementRect = element.getBoundingClientRect()
       rects.push({
         x: elementRect.left - canvasRect.left,

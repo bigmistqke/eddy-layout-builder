@@ -34,14 +34,22 @@ function Frame(
   const isSelected = createMemo(() => props.handles.length > 0)
 
   function handleStyle(direction: Direction): JSX.CSSProperties | undefined {
-    if (!isSelected()) return undefined
+    if (!isSelected()) {
+      return undefined
+    }
     const state = context.selectedHandlesState()
     const extend = state.extend[direction]
     const stick = state.stick[direction]
-    if (extend === 0 && stick === 0) return undefined
+    if (extend === 0 && stick === 0) {
+      return undefined
+    }
     const style: Record<string, string> = {}
-    if (extend > 0) style["--extend"] = `${extend}px`
-    if (stick > 0) style["--stick"] = `${stick}px`
+    if (extend > 0) {
+      style["--extend"] = `${extend}px`
+    }
+    if (stick > 0) {
+      style["--stick"] = `${stick}px`
+    }
     return style as JSX.CSSProperties
   }
 
@@ -144,7 +152,9 @@ export function NodeComponent(props: {
               props.onAddFrame(props.path, direction, op)
             }}
             onClick={() => {
-              if (!inLayoutView()) return
+              if (!inLayoutView()) {
+                return
+              }
               logAction("tap-frame", { path: props.path })
               context.setSelection(() => ({ path: props.path, depth: 0 }))
             }}
