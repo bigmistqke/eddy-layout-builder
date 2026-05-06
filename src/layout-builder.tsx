@@ -119,6 +119,11 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
 
   onSettled(() => {
     if (!canvasEl) return
+    // Seed baseW/baseH immediately so the very first render has explicit
+    // pixel dimensions on canvasInner — required for width/height transitions
+    // to animate (browsers won't interpolate between auto and a pixel value).
+    const rect = canvasEl.getBoundingClientRect()
+    setViewport(v => ({ ...v, baseW: rect.width, baseH: rect.height }))
     return context.observeFrame(canvasEl, () => setResizeTick(t => t + 1))
   })
 
@@ -142,23 +147,13 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
       const node = innerEl.querySelector<HTMLElement>(`[data-path="${key}"]`)
       if (!node) return
 
-      // Read prev via untrack (effect callback is untracked scope).
+      // Always fit the new selection. The viewport signal's `equals` short-
+      // circuits identity→identity (so tapping a normal frame at scale 1 is
+      // a no-op), but tapping a normal/large frame while zoomed correctly
+      // animates back out to fit it.
       const prev = untrack(() => viewport())
-
-      // When already zoomed, taps should pan/zoom *toward* the new selection
-      // without ever zooming out — pass minScale = prev.scale so the math
-      // keeps at least the current zoom. Only the back button (which clears
-      // selection) returns to identity. When at scale 1, selecting a frame
-      // that doesn't need zoom returns identity → no movement.
-      const minScale = prev.scale > 1 ? prev.scale : 1
-      const t = computeViewportTransform(node, innerEl, baseW, baseH, prev.scale, minScale)
-
-      if (t.scale <= 1) {
-        // No zoom needed and we weren't zoomed — preserve prev (identity).
-        setViewport({ ...prev, baseW, baseH })
-      } else {
-        setViewport({ ...t, baseW, baseH })
-      }
+      const t = computeViewportTransform(node, innerEl, baseW, baseH, prev.scale)
+      setViewport({ ...t, baseW, baseH })
     },
   )
 
@@ -180,13 +175,13 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     context.requestCollisionUpdate()
   })
 
-  // Only set explicit width/height when zoomed. At scale = 1, leave it
-  // unset so the .canvasInner CSS `inset: 0` fills the parent naturally —
-  // initial render (scale = 1, baseW/H = 0) wouldn't otherwise have
-  // measured the canvas yet.
+  // Always set explicit pixel width/height so CSS transitions can animate
+  // them (browsers don't interpolate between auto and a pixel value). At
+  // scale = 1 this evaluates to `${baseW}px` / `${baseH}px`, which matches
+  // the parent — no visual difference vs. inset: 0.
   const sizing = () => {
     const v = viewport()
-    if (v.scale <= 1) return { width: undefined, height: undefined }
+    if (v.baseW === 0 || v.baseH === 0) return { width: undefined, height: undefined }
     return {
       width: `${v.baseW * v.scale}px`,
       height: `${v.baseH * v.scale}px`,
