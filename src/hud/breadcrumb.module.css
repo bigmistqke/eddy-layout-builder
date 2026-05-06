@@ -27,7 +27,6 @@
     align-items: stretch;
     justify-content: stretch;
     border-radius: var(--padding);
-    height: calc(100% - 2 * var(--padding));
     margin: var(--padding);
     transition: background 120ms ease;
 

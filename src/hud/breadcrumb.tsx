@@ -60,15 +60,15 @@ function Minimap(props: {
   let canvasEl!: HTMLCanvasElement
   createEffect(
     () => [props.layout, props.highlightPath, props.width, props.height] as const,
-    () => {
+    ([layout, highlightPath, width, height]) => {
       if (!canvasEl) return
       const dpr = window.devicePixelRatio || 1
-      canvasEl.width = props.width * dpr
-      canvasEl.height = props.height * dpr
+      canvasEl.width = width * dpr
+      canvasEl.height = height * dpr
       const ctx = canvasEl.getContext("2d")!
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      ctx.clearRect(0, 0, props.width, props.height)
-      drawNode(ctx, props.layout, props.highlightPath, 0, 0, props.width, props.height)
+      ctx.clearRect(0, 0, width, height)
+      drawNode(ctx, layout, highlightPath, 0, 0, width, height)
     },
   )
   return (
@@ -104,10 +104,10 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
     return segs
   })
 
-  // Canvas drawing dimensions. Buttons get aspect-ratio sizing via CSS;
-  // we pick a fixed pixel size for the canvas itself (the canvas's
-  // intrinsic resolution; CSS scales it via width/height styles).
-  const CANVAS_HEIGHT = 36
+  // Canvas dictates the size; the button wraps it with its own padding
+  // and margin (4 + 4 = 8 each side, see breadcrumb.module.css). Pick the
+  // canvas height so the button outer = hud height: 60 − (margin 4 + padding 4) × 2 = 44.
+  const CANVAS_HEIGHT = 44
   const canvasWidth = () => Math.max(8, Math.round(CANVAS_HEIGHT * props.canvasAspect()))
 
   return (
@@ -120,7 +120,6 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
                 styles.button,
                 seg().depth === context.selection.depth ? styles.active : "",
               ].join(" ")}
-              style={{ "aspect-ratio": props.canvasAspect() }}
               onClick={() => {
                 logAction("tap-breadcrumb", { depth: seg().depth, segmentIndex: i() })
                 context.setSelection(s => ({ ...s, depth: seg().depth }))
