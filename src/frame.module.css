@@ -44,7 +44,7 @@
   position: absolute;
   flex-direction: column;
   z-index: var(--z-notch-backdrop);
-  width: var(--backdrop-width, 100px);
+  width: var(--backdrop-width, 75px);
   height: 100%;
 
   & > .root,
@@ -76,7 +76,7 @@
 .arrow {
   position: absolute;
   translate: -50% 0;
-  top: calc(var(--hud-radius) / 2);
+  top: var(--hud-radius);
   transform-origin: center bottom;
   z-index: var(--z-notch-handle);
   pointer-events: none;
@@ -84,8 +84,8 @@
 
 .edge-button {
   position: absolute;
-  width: calc(var(--hud-radius) * 3);
-  height: calc(var(--hud-radius) * 3);
+  width: calc(var(--hud-radius) * 4);
+  height: calc(var(--hud-radius) * 4);
   border-radius: 50%;
   background: var(--color-back, black);
   border: none;

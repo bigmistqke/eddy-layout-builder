@@ -61,8 +61,7 @@
 }
 
 .breadcrumbContent .minimapButton.active {
-  background: color-mix(in srgb, var(--color-active) 25%, transparent);
-  outline: 1.5px solid var(--color-active);
+  background: var(--color-active);
 }
 
 .breadcrumbContent .separator {

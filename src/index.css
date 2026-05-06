@@ -1,10 +1,10 @@
 #root {
   --color-back: #1b1b1b;
   --color-front: rgb(180 180 180);
-  --color-active: white;
+  --color-active: #4af;
   --color-selection: white;
 
-  --hud-radius: 20px;
+  --hud-radius: 12px;
   --hud-height-notch: 60px;
 
   --z-selection-overlay: 100;
@@ -13,7 +13,7 @@
   --z-notch-handle: 2;
   --z-notch-backdrop: -1;
 
-  --padding: 8px;
+  --padding: 4px;
 
   background: var(--color-back);
 }
