@@ -1,58 +1,81 @@
-import { Accessor, createMemo, For, Show, useContext } from "solid-js"
+import { Accessor, createEffect, createMemo, For, useContext } from "solid-js"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
 import type { Container, Node } from "../types"
 import { logAction } from "../utils"
 import styles from "./breadcrumb.module.css"
 
-/**
- * Recursive minimap renderer.
- *
- * `highlightPath` is the path *from this node* to the highlighted descendant.
- * - `highlightPath.length === 0` → this node is the highlighted one.
- * - `highlightPath = [-1]` (any non-matching head) → no descendant is highlighted.
- *
- * Mirrors the real layout's flex behavior at thumbnail scale: containers are
- * flex row/col matching their `direction`, entities are unit-flex cells.
- * Gaps and padding are not faithfully reproduced.
- */
-function MiniNode(props: { node: Node; highlightPath: number[] }) {
-  const isHighlighted = () => props.highlightPath.length === 0
-  return (
-    <Show
-      when={props.node.type === "container"}
-      fallback={
-        <div
-          class={[styles.miniCell, isHighlighted() && styles.miniHighlight]
-            .filter(Boolean)
-            .join(" ")}
-        />
+const COLOR_CONTAINER = "#1a1a1a"
+const COLOR_CELL = "#444"
+const COLOR_HIGHLIGHT = "rgb(216, 216, 216)"
+const HIGHLIGHT_WIDTH = 2
+const GAP = 1
+
+/** Draw the layout tree onto a canvas, outlining the highlighted node. */
+function drawNode(
+  ctx: CanvasRenderingContext2D,
+  node: Node,
+  hl: number[],
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  const isHl = hl.length === 0
+  if (node.type === "entity") {
+    ctx.fillStyle = COLOR_CELL
+    ctx.fillRect(x, y, w, h)
+  } else {
+    ctx.fillStyle = COLOR_CONTAINER
+    ctx.fillRect(x, y, w, h)
+    const n = node.children.length
+    if (node.direction === "horizontal") {
+      const childW = (w - GAP * (n - 1)) / n
+      for (let i = 0; i < n; i++) {
+        const childHl = i === hl[0] ? hl.slice(1) : [-1]
+        drawNode(ctx, node.children[i], childHl, x + i * (childW + GAP), y, childW, h)
       }
-    >
-      <MiniContainer container={props.node as Container} highlightPath={props.highlightPath} />
-    </Show>
-  )
+    } else {
+      const childH = (h - GAP * (n - 1)) / n
+      for (let i = 0; i < n; i++) {
+        const childHl = i === hl[0] ? hl.slice(1) : [-1]
+        drawNode(ctx, node.children[i], childHl, x, y + i * (childH + GAP), w, childH)
+      }
+    }
+  }
+  if (isHl) {
+    ctx.strokeStyle = COLOR_HIGHLIGHT
+    ctx.lineWidth = HIGHLIGHT_WIDTH
+    const inset = HIGHLIGHT_WIDTH / 2
+    ctx.strokeRect(x + inset, y + inset, w - HIGHLIGHT_WIDTH, h - HIGHLIGHT_WIDTH)
+  }
 }
 
-function MiniContainer(props: { container: Container; highlightPath: number[] }) {
-  const isHighlighted = () => props.highlightPath.length === 0
-  const head = () => (props.highlightPath.length > 0 ? props.highlightPath[0] : -1)
-  const rest = () => props.highlightPath.slice(1)
-
+function Minimap(props: {
+  layout: Container
+  highlightPath: number[]
+  width: number
+  height: number
+}) {
+  let canvasEl!: HTMLCanvasElement
+  createEffect(
+    () => [props.layout, props.highlightPath, props.width, props.height] as const,
+    () => {
+      if (!canvasEl) return
+      const dpr = window.devicePixelRatio || 1
+      canvasEl.width = props.width * dpr
+      canvasEl.height = props.height * dpr
+      const ctx = canvasEl.getContext("2d")!
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.clearRect(0, 0, props.width, props.height)
+      drawNode(ctx, props.layout, props.highlightPath, 0, 0, props.width, props.height)
+    },
+  )
   return (
-    <div
-      class={[
-        styles.miniContainer,
-        props.container.direction === "vertical" ? styles.col : styles.row,
-        isHighlighted() && styles.miniHighlight,
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      <For each={props.container.children}>
-        {(child, i) => <MiniNode node={child()} highlightPath={i() === head() ? rest() : [-1]} />}
-      </For>
-    </div>
+    <canvas
+      ref={canvasEl}
+      style={{ width: `${props.width}px`, height: `${props.height}px`, display: "block" }}
+    />
   )
 }
 
@@ -81,6 +104,12 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
     return segs
   })
 
+  // Canvas drawing dimensions. Buttons get aspect-ratio sizing via CSS;
+  // we pick a fixed pixel size for the canvas itself (the canvas's
+  // intrinsic resolution; CSS scales it via width/height styles).
+  const CANVAS_HEIGHT = 36
+  const canvasWidth = () => Math.max(8, Math.round(CANVAS_HEIGHT * props.canvasAspect()))
+
   return (
     <Notch ref={context.setBreadcrumbEl} class={styles.notch} orientation="top">
       <div class={styles.content}>
@@ -97,7 +126,12 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
                 context.setSelection(s => ({ ...s, depth: seg().depth }))
               }}
             >
-              <MiniNode node={context.app.layout} highlightPath={seg().highlightPath} />
+              <Minimap
+                layout={context.app.layout}
+                highlightPath={seg().highlightPath}
+                width={canvasWidth()}
+                height={CANVAS_HEIGHT}
+              />
             </button>
           )}
         </For>
