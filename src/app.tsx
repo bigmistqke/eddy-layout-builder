@@ -1,4 +1,5 @@
 import { createSignal, createStore, Match, Show, Switch } from "solid-js"
+import { logAction } from "./actions-log"
 import styles from "./app.module.css"
 import { Context } from "./context"
 import { Notch } from "./frame"
@@ -191,7 +192,13 @@ export function App() {
           <div class={styles.bottomBarContent}>
             <Switch>
               <Match when={app.view.type === "recording"}>
-                <button class={styles.barButton} onClick={() => enterAppendMode()}>
+                <button
+                  class={styles.barButton}
+                  onClick={() => {
+                    logAction("enter-layout")
+                    enterAppendMode()
+                  }}
+                >
                   <PlusIcon />
                 </button>
                 <button class={styles.barButton}>
@@ -204,13 +211,17 @@ export function App() {
               <Match when={app.view.type === "layout"}>
                 <button
                   class={[styles.modeButton, layoutView()?.mode === "append" ? styles.active : ""]}
-                  onClick={() => enterAppendMode()}
+                  onClick={() => {
+                    logAction("set-mode", { mode: "append" })
+                    enterAppendMode()
+                  }}
                 >
                   <PlusIcon />
                 </button>
                 <button
                   class={[styles.modeButton, layoutView()?.mode === "split" ? styles.active : ""]}
                   onClick={() => {
+                    logAction("set-mode", { mode: "split" })
                     setApp(app => {
                       app.view = { type: "layout", mode: "split" }
                     })
@@ -221,6 +232,7 @@ export function App() {
                 <button
                   class={styles.closeButton}
                   onClick={() => {
+                    logAction("exit-layout")
                     setApp(app => {
                       app.view = { type: "recording" }
                     })

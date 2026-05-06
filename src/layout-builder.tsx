@@ -9,6 +9,7 @@ import {
   untrack,
   useContext,
 } from "solid-js"
+import { logAction } from "./actions-log"
 import { MiniNode } from "./breadcrumb-minimap"
 import { Context } from "./context"
 import { ContextualToolbar } from "./contextual-toolbar"
@@ -86,7 +87,10 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
               style={{
                 "aspect-ratio": props.canvasAspect(),
               }}
-              onClick={() => context.setSelection(s => ({ ...s, depth: seg().depth }))}
+              onClick={() => {
+                logAction("tap-breadcrumb", { depth: seg().depth, segmentIndex: i() })
+                context.setSelection(s => ({ ...s, depth: seg().depth }))
+              }}
             >
               <MiniNode node={context.app.layout} highlightPath={seg().highlightPath} />
             </button>

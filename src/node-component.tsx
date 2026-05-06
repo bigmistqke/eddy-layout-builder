@@ -1,6 +1,7 @@
 import { omit } from "@solidjs/signals"
 import type { ComponentProps, JSX } from "solid-js"
 import { createMemo, For, Match, Switch, useContext } from "solid-js"
+import { logAction } from "./actions-log"
 import styles from "./app.module.css"
 import { Context } from "./context"
 import { Frame } from "./frame"
@@ -57,7 +58,10 @@ export function NodeComponent(props: {
           <Frame
             handles={handles()}
             style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
-            onAddFrame={(direction, op) => props.onAddFrame(props.path, direction, op)}
+            onAddFrame={(direction, op) => {
+              logAction("add-frame", { path: props.path, direction, op })
+              props.onAddFrame(props.path, direction, op)
+            }}
             class={[
               styles.container,
               inLayoutView()
@@ -87,9 +91,13 @@ export function NodeComponent(props: {
             data-path={pathKey()}
             handles={handles()}
             class={inLayoutView() ? styles.layoutEntity : undefined}
-            onAddFrame={(direction, op) => props.onAddFrame(props.path, direction, op)}
+            onAddFrame={(direction, op) => {
+              logAction("add-frame", { path: props.path, direction, op })
+              props.onAddFrame(props.path, direction, op)
+            }}
             onClick={() => {
               if (!inLayoutView()) return
+              logAction("tap-frame", { path: props.path })
               context.setSelection(() => ({ path: props.path, depth: 0 }))
             }}
           />

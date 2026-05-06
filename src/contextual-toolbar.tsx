@@ -1,4 +1,5 @@
 import { Show, useContext } from "solid-js"
+import { logAction } from "./actions-log"
 import { Context } from "./context"
 import { Notch } from "./frame"
 import { BackIcon } from "./icons"
@@ -21,7 +22,10 @@ export function ContextualToolbar() {
           <Show when={context.isCanvasZoomed()}>
             <button
               class={styles.toolbarButton}
-              onClick={() => context.setSelection(() => ({ path: [], depth: 0 }))}
+              onClick={() => {
+                logAction("back")
+                context.setSelection(() => ({ path: [], depth: 0 }))
+              }}
             >
               <BackIcon />
             </button>
