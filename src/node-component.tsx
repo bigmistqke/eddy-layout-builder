@@ -1,12 +1,11 @@
 import { omit } from "@solidjs/signals"
 import type { ComponentProps, JSX } from "solid-js"
 import { createMemo, For, Match, Switch, useContext } from "solid-js"
-import { logAction } from "./actions-log"
-import styles from "./app.module.css"
+import styles from "./node-component.module.css"
 import { Context } from "./context"
 import { Frame } from "./frame"
 import type { Container, Direction, Entity, HandleOp, HandleSpec } from "./types"
-import { resolveNode } from "./utils"
+import { logAction, resolveNode } from "./utils"
 
 function pathEquals(a: number[], b: number[]) {
   return a.length === b.length && a.every((v, i) => v === b[i])

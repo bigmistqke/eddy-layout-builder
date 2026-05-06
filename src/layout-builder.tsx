@@ -1,19 +1,14 @@
 import {
-  Accessor,
   ComponentProps,
   createEffect,
-  createMemo,
   createSignal,
-  For,
   onSettled,
   untrack,
   useContext,
 } from "solid-js"
-import { logAction } from "./actions-log"
-import { MiniNode } from "./breadcrumb-minimap"
 import { Context } from "./context"
-import { ContextualToolbar } from "./contextual-toolbar"
-import { Notch } from "./frame"
+import { Breadcrumb } from "./hud/breadcrumb"
+import { Contextual } from "./hud/contextual"
 import styles from "./layout-builder.module.css"
 import type { Container, Node, Selection } from "./types"
 import {
@@ -37,69 +32,6 @@ function layoutSignature(layout: Container, selection: Selection): string {
     return `${node.direction[0]}(${node.children.map(nodeSignature).join(",")})`
   }
   return `${nodeSignature(layout)}|${selection.path.join(".")}/${selection.depth}`
-}
-
-export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
-  const context = useContext(Context)!
-
-  // Each segment carries the highlight path from the layout root to the
-  // node-in-scope at that segment's depth. `depth` is the value
-  // `selection.depth` should take when this segment is tapped.
-  const segments = createMemo(() => {
-    const { path } = context.selection
-    const segs: Array<{ highlightPath: number[]; depth: number }> = []
-
-    // Segment 0: root scope — empty highlight path means "this node (root)
-    // is highlighted." Visually the entire minimap is outlined.
-    segs.push({ highlightPath: [], depth: path.length })
-
-    let current: Node = context.app.layout
-    for (let i = 0; i < path.length; i++) {
-      if (current.type !== "container") break
-      current = current.children[path[i]]
-      const depth = path.length - 1 - i
-      segs.push({ highlightPath: path.slice(0, i + 1), depth })
-    }
-
-    return segs
-  })
-
-  // Segment dimensions: fixed height, width = height * canvas aspect, capped.
-  const SEGMENT_HEIGHT = 36
-  const MAX_SEGMENT_WIDTH = 80
-  const segmentSize = () => {
-    const w = SEGMENT_HEIGHT * props.canvasAspect()
-    return {
-      height: `${SEGMENT_HEIGHT}`,
-      width: `${MAX_SEGMENT_WIDTH}`,
-    }
-  }
-
-  return (
-    <Notch ref={context.setBreadcrumbEl} class={styles.breadcrumbNotch} orientation="top">
-      <div class={styles.breadcrumbContent}>
-        <For each={segments()}>
-          {(seg, i) => (
-            <button
-              class={[
-                styles.minimapButton,
-                seg().depth === context.selection.depth ? styles.active : "",
-              ].join(" ")}
-              style={{
-                "aspect-ratio": props.canvasAspect(),
-              }}
-              onClick={() => {
-                logAction("tap-breadcrumb", { depth: seg().depth, segmentIndex: i() })
-                context.setSelection(s => ({ ...s, depth: seg().depth }))
-              }}
-            >
-              <MiniNode node={context.app.layout} highlightPath={seg().highlightPath} />
-            </button>
-          )}
-        </For>
-      </div>
-    </Notch>
-  )
 }
 
 type ViewportState = ReturnType<typeof computeViewportTransform> & {
@@ -306,7 +238,7 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
           {props.children}
         </div>
         <Breadcrumb canvasAspect={canvasAspect} />
-        <ContextualToolbar />
+        <Contextual />
       </div>
     </div>
   )

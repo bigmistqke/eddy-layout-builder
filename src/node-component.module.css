@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  flex: 1;
+}
+
+.layoutContainerRoot {
+  --frame-padding: var(--padding);
+  padding: var(--padding);
+  gap: var(--padding);
+  border-radius: var(--padding);
+}
+
+.layoutContainer {
+  --frame-padding: 0px;
+  gap: var(--padding);
+  border-radius: var(--padding);
+}
+
+.layoutEntity {
+  --frame-padding: 0px;
+  border-radius: var(--padding);
+}
+

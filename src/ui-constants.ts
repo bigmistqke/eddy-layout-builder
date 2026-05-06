@@ -21,7 +21,7 @@ export const SAME_AXIS_MIN = 2 * HANDLE_H + HANDLE_BUFFER
 export const CROSS_PAIR_MIN = HANDLE_W + 2 * HANDLE_H + HANDLE_BUFFER
 
 // Layout — must stay in sync with --padding in index.css and the
-// .layoutContainerRoot/.layoutContainer rules in app.module.css.
+// .layoutContainerRoot/.layoutContainer rules in node-component.module.css.
 // Root container has padding on all sides plus gap between children.
 // Non-root containers have only gap.
 export const ROOT_PADDING = 4
