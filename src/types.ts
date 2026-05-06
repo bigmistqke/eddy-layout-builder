@@ -34,6 +34,10 @@ export type AppContext = {
    *  checkAllHandles callback here so they re-evaluate whenever any
    *  collidable mounts or unmounts. Returns a cleanup. */
   registerUpdateCollision: (cb: () => void) => () => void
+  /** Manually trigger all collision-update subscribers. Use after a viewport
+   *  change so frames recompute their handle/HUD overlaps once the canvas
+   *  has settled at its new scale. */
+  requestCollisionUpdate: () => void
   isCanvasZoomed: Accessor<boolean>
   setIsCanvasZoomed: (zoomed: boolean) => void
 }

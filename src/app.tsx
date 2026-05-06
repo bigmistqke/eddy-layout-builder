@@ -83,6 +83,11 @@ export function App() {
   function notifyCollisionUpdate() {
     for (const cb of updateSubscribers) cb()
   }
+  // Public form — exposed via context so layout-builder can request a
+  // recompute after the viewport changes (e.g. on back-button press, the
+  // canvas snaps from zoomed back to fit-parent and frames need to re-check
+  // their handle/HUD overlaps).
+  const requestCollisionUpdate = notifyCollisionUpdate
 
   function registerCollidable(el: HTMLElement, kind: CollisionKind) {
     const entry: Collidable = { el, kind }
@@ -216,6 +221,7 @@ export function App() {
         registerCollidable,
         findCollisions,
         registerUpdateCollision,
+        requestCollisionUpdate,
         isCanvasZoomed,
         setIsCanvasZoomed,
       }}

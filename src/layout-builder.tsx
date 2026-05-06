@@ -172,6 +172,14 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     },
   )
 
+  // Whenever the viewport changes (zoom in, zoom out via back, pan), the
+  // canvas resizes underneath and frames may now have new handle/HUD
+  // overlaps. Request a synchronous collision recheck so each frame re-runs
+  // checkAllHandles against the current rendered geometry.
+  createEffect(viewport, () => {
+    context.requestCollisionUpdate()
+  })
+
   // Only set explicit width/height when zoomed. At scale = 1, leave it
   // unset so the .canvasInner CSS `inset: 0` fills the parent naturally —
   // initial render (scale = 1, baseW/H = 0) wouldn't otherwise have
