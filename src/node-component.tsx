@@ -4,19 +4,11 @@ import { createMemo, For, Match, Switch, useContext } from "solid-js"
 import styles from "./app.module.css"
 import { Context } from "./context"
 import { Frame } from "./frame"
-import type { Container, Direction, Entity, Selection } from "./types"
+import type { Container, Direction, Entity } from "./types"
 import { resolveNode } from "./utils"
 
 function pathEquals(a: number[], b: number[]) {
   return a.length === b.length && a.every((v, i) => v === b[i])
-}
-
-function isNodeActive(path: number[], selection: Selection) {
-  const pathLength = selection.path.length - selection.depth
-  return (
-    pathLength === path.length &&
-    path.slice(0, pathLength).findIndex((value, index) => value !== selection.path[index]) === -1
-  )
 }
 
 function EntityFrame(
@@ -143,27 +135,8 @@ export function NodeComponent(props: {
                 : props.onSplit(props.path, direction)
             }
             onClick={() => {
-              const lv = layoutView()
-              if (!lv) return
-              if (lv.mode === "append") {
-                if (isNodeActive(props.path, { ...context.selection, depth: 0 })) {
-                  context.setSelection(s => ({
-                    ...s,
-                    depth: (s.depth % s.path.length) + 1,
-                  }))
-                } else {
-                  context.setSelection(() => ({ path: props.path, depth: 1 }))
-                }
-              } else {
-                if (isNodeActive(props.path, { ...context.selection, depth: 0 })) {
-                  context.setSelection(s => ({
-                    ...s,
-                    depth: (s.depth + 1) % (s.path.length + 1),
-                  }))
-                } else {
-                  context.setSelection(() => ({ path: props.path, depth: 0 }))
-                }
-              }
+              if (!layoutView()) return
+              context.setSelection(() => ({ path: props.path, depth: 0 }))
             }}
           />
         )}
