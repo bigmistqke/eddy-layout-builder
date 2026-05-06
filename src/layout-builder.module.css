@@ -16,11 +16,13 @@
   inset: 0;
   display: flex;
   transform-origin: 0 0;
-  will-change: transform;
-  transition:
-    transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
-    width 220ms cubic-bezier(0.4, 0, 0.2, 1),
-    height 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, width, height;
+  /* No CSS transition — animation is driven by WAAPI in layout-builder.tsx
+     with all three properties in a single Animation. CSS transitions
+     interpolate properties independently, which lets layout-bound width
+     fall behind the compositor-driven transform during big zooms; one
+     WAAPI animation applies a single time-fraction to all keyframe
+     properties. */
 }
 
 .breadcrumbNotch {

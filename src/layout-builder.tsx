@@ -241,56 +241,68 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     },
   )
 
-  // Whenever the viewport changes (zoom in, zoom out via back, pan), the
-  // canvas resizes underneath and frames may now have new handle/HUD
-  // overlaps. Request a synchronous collision recheck so each frame re-runs
-  // checkAllHandles against the current rendered geometry.
-  //
-  // Also flag isAnimating for the duration of the CSS transition so frames
-  // hide their handles while the canvas is mid-flight. Otherwise the
-  // ResizeObserver fires several times during the animation and toggles
-  // handle visibility, which the user perceives as the animation getting
-  // stuck partway through.
+  // WAAPI-driven animation. Each viewport change captures the rendered
+  // "from" state (so an animation interrupted mid-flight starts from where
+  // it currently is, not from the prior settled state) and animates to the
+  // new state. All three properties (transform, width, height) are
+  // keyframes in a single Animation, so the easing curve's time fraction is
+  // applied to all of them together — width can't fall behind transform
+  // the way it can with separate CSS transitions.
+  let currentAnim: Animation | undefined
   let animationTimer: ReturnType<typeof setTimeout> | undefined
-  createEffect(viewport, () => {
+  const ANIMATION_MS = 220
+  const SETTLE_MS = ANIMATION_MS + 20
+
+  createEffect(viewport, v => {
+    if (!innerEl) return
+    if (v.baseW === 0 || v.baseH === 0) return
+
+    const toTransform = transformToCss(v)
+    const toW = `${v.baseW * v.scale}px`
+    const toH = `${v.baseH * v.scale}px`
+
+    // Read the rendered "from" state. If a previous animation was running,
+    // computedStyle reflects its current value (mid-interpolation), so the
+    // new animation seamlessly continues from there.
+    const cs = getComputedStyle(innerEl)
+    const fromTransform = cs.transform === "none" ? "translate(0px, 0px)" : cs.transform
+    const fromW = cs.width
+    const fromH = cs.height
+
+    // Cancel any in-flight animation; we're replacing it with a new one
+    // that starts from where the canvas actually IS right now.
+    currentAnim?.cancel()
+
+    // Set the underlying inline style so post-animation the element rests
+    // at the new state (fill: 'forwards' on the animation alone would also
+    // work, but we want the underlying style to match for any consumer
+    // reading style directly).
+    innerEl.style.transform = toTransform
+    innerEl.style.width = toW
+    innerEl.style.height = toH
+
+    currentAnim = innerEl.animate(
+      [
+        { transform: fromTransform, width: fromW, height: fromH },
+        { transform: toTransform, width: toW, height: toH },
+      ],
+      { duration: ANIMATION_MS, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "none" },
+    )
+
     context.setIsAnimating(true)
     if (animationTimer) clearTimeout(animationTimer)
     animationTimer = setTimeout(() => {
       context.setIsAnimating(false)
       // Recompute against settled geometry — picks up any window resize
-      // that happened during the animation. Epsilon equals on the viewport
-      // signal short-circuits the no-drift case so a stable result doesn't
-      // kick a new animation.
+      // that happened during the animation.
       layoutPass()
-    }, 240) // 220ms transition + 20ms buffer
+    }, SETTLE_MS)
   })
-
-  // Always set explicit pixel width/height so CSS transitions can animate
-  // them (browsers don't interpolate between auto and a pixel value). At
-  // scale = 1 this evaluates to `${baseW}px` / `${baseH}px`, which matches
-  // the parent — no visual difference vs. inset: 0.
-  const sizing = () => {
-    const v = viewport()
-    if (v.baseW === 0 || v.baseH === 0) return { width: undefined, height: undefined }
-    return {
-      width: `${v.baseW * v.scale}px`,
-      height: `${v.baseH * v.scale}px`,
-    }
-  }
 
   return (
     <div class={styles.layoutBuilder}>
       <div class={styles.canvas} ref={canvasEl} data-canvas="true">
-        <div
-          class={styles.canvasInner}
-          data-canvas-inner="true"
-          ref={innerEl}
-          style={{
-            transform: transformToCss(viewport()),
-            width: sizing().width,
-            height: sizing().height,
-          }}
-        >
+        <div class={styles.canvasInner} data-canvas-inner="true" ref={innerEl}>
           {props.children}
         </div>
         <Breadcrumb canvasAspect={canvasAspect} />
