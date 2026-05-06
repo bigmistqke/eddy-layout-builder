@@ -152,16 +152,20 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     bottom: number
     left: number
   } {
+    // `isConnected` guards against stale refs: when an HUD unmounts via
+    // <Show>, its ref signal stays pointing at the (now detached) element.
+    // getBoundingClientRect on a detached element returns 0s, which would
+    // be misinterpreted as "the HUD spans the whole canvas edge."
     const breadcrumb = untrack(() => context.breadcrumbEl())
     const bottomBar = untrack(() => context.bottomBarEl())
     const contextualToolbar = untrack(() => context.contextualToolbarEl())
-    const top = breadcrumb
+    const top = breadcrumb?.isConnected
       ? Math.max(0, breadcrumb.getBoundingClientRect().bottom - canvasRect.top)
       : 0
-    const bottom = bottomBar
+    const bottom = bottomBar?.isConnected
       ? Math.max(0, canvasRect.bottom - bottomBar.getBoundingClientRect().top)
       : 0
-    const right = contextualToolbar
+    const right = contextualToolbar?.isConnected
       ? Math.max(0, canvasRect.right - contextualToolbar.getBoundingClientRect().left)
       : 0
     return { top, right, bottom, left: 0 }

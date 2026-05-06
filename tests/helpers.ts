@@ -1,24 +1,45 @@
 import type { Page } from "@playwright/test"
 
-/** Click a frame by its layout path (e.g., [0, 1] → `[data-path="0.1"]`). */
+/** Click a frame by its layout path (e.g., [0, 1] → `[data-path="0.1"]`).
+ *  Picks the leaf-most matching node (data-path is also set on container
+ *  Frames; we want the rendered leaf for click hit-testing). */
 export async function clickFrame(page: Page, path: number[]) {
   const key = path.join(".")
-  await page.locator(`[data-path="${key}"]`).first().click()
+  await page.locator(`[data-path="${key}"]`).last().click()
 }
 
 /** Click a breadcrumb segment by its depth. Segments are buttons inside the
- *  top-left breadcrumb notch, ordered root → leaf left-to-right. */
-export async function clickBreadcrumb(page: Page, depth: number) {
-  // Buttons rendered in order via <For each={segments()}>; segment[i].depth
-  // counts down from path.length to 0. Index by segment position, not depth,
-  // since the test author can read the button index directly.
-  const buttons = page.locator(".breadcrumbContent button")
-  await buttons.nth(depth).click()
+ *  top-left breadcrumb notch, ordered root → leaf left-to-right (segment
+ *  index i corresponds to depth path.length - i). Index by segment
+ *  position, not depth, since the test author can read the button index
+ *  directly from the DOM. */
+export async function clickBreadcrumb(page: Page, segmentIndex: number) {
+  await page
+    .locator('[class*="breadcrumbContent"] button')
+    .nth(segmentIndex)
+    .click()
 }
 
-/** Click a directional handle on the currently selected frame. */
-export async function clickHandle(page: Page, dir: "top" | "bottom" | "left" | "right") {
-  await page.locator(`[data-path] .${dir}`).first().click()
+/** Click a directional handle on a specific frame. The notch wrapper has
+ *  zero in-flow size (children are absolutely positioned), so we click the
+ *  visible inner `.notch-backdrop` via a child selector. */
+export async function clickHandle(
+  page: Page,
+  framePath: number[],
+  dir: "top" | "bottom" | "left" | "right",
+) {
+  const key = framePath.join(".")
+  const notch = page
+    .locator(`[data-path="${key}"] [data-direction="${dir}"]`)
+    .last()
+  // The first child of the notch wrapper is .notch-backdrop, which has an
+  // explicit width/height and is the actual click target.
+  await notch.locator("> div").first().click()
+}
+
+/** Click a UI action button by its data-action attribute. */
+export async function clickAction(page: Page, action: string) {
+  await page.locator(`[data-action="${action}"]`).first().click()
 }
 
 /** Read the bounding box of a frame at a given path. Returns canvas-relative

@@ -194,6 +194,7 @@ export function App() {
               <Match when={app.view.type === "recording"}>
                 <button
                   class={styles.barButton}
+                  data-action="enter-layout"
                   onClick={() => {
                     logAction("enter-layout")
                     enterAppendMode()
@@ -211,6 +212,7 @@ export function App() {
               <Match when={app.view.type === "layout"}>
                 <button
                   class={[styles.modeButton, layoutView()?.mode === "append" ? styles.active : ""]}
+                  data-action="set-mode-append"
                   onClick={() => {
                     logAction("set-mode", { mode: "append" })
                     enterAppendMode()
@@ -220,6 +222,7 @@ export function App() {
                 </button>
                 <button
                   class={[styles.modeButton, layoutView()?.mode === "split" ? styles.active : ""]}
+                  data-action="set-mode-split"
                   onClick={() => {
                     logAction("set-mode", { mode: "split" })
                     setApp(app => {
@@ -231,6 +234,7 @@ export function App() {
                 </button>
                 <button
                   class={styles.closeButton}
+                  data-action="exit-layout"
                   onClick={() => {
                     logAction("exit-layout")
                     setApp(app => {

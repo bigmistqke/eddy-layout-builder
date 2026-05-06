@@ -11,6 +11,7 @@ export function Notch(props: {
   class: string
   onClick?(): void
   orientation?: "top" | "bottom" | "left" | "right"
+  "data-direction"?: Direction
 }) {
   const orient = () => props.orientation ?? "bottom"
   return (
@@ -18,6 +19,7 @@ export function Notch(props: {
       ref={props.ref}
       class={[styles.notch, styles[`hud-${orient()}`], props.class]}
       style={props.style}
+      data-direction={props["data-direction"]}
       onClick={e => e.stopPropagation()}
     >
       <div class={styles["notch-backdrop"]}>
@@ -34,10 +36,16 @@ function ArrowNotch(props: {
   style?: JSX.CSSProperties
   class: string
   icon: JSX.Element
+  direction: Direction
   onClick?(): void
 }) {
   return (
-    <Notch style={props.style} class={props.class} onClick={props.onClick}>
+    <Notch
+      style={props.style}
+      class={props.class}
+      onClick={props.onClick}
+      data-direction={props.direction}
+    >
       {props.icon}
     </Notch>
   )
@@ -85,6 +93,7 @@ export function Frame(
           {h => (
             <ArrowNotch
               class={styles[h().dir]}
+              direction={h().dir}
               icon={<ArrowIcon class={styles.arrow} />}
               style={handleStyle(h().dir)}
               onClick={() => props.onAddFrame(h().dir, h().op)}

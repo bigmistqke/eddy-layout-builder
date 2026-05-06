@@ -22,6 +22,7 @@ export function ContextualToolbar() {
           <Show when={context.isCanvasZoomed()}>
             <button
               class={styles.toolbarButton}
+              data-action="back"
               onClick={() => {
                 logAction("back")
                 context.setSelection(() => ({ path: [], depth: 0 }))
