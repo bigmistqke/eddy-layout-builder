@@ -14,14 +14,28 @@ import { Context } from "./context"
 import { ContextualToolbar } from "./contextual-toolbar"
 import { Notch } from "./frame"
 import styles from "./layout-builder.module.css"
-import type { Node } from "./types"
+import type { Container, Node, Selection } from "./types"
 import {
+  applyTransform,
+  computeExtends,
+  computeSticks,
   computeViewportTransform,
   frameRect,
   IDENTITY_VIEWPORT,
-  selectedPathKey,
   transformToCss,
 } from "./viewport"
+
+/** Produce a string signature of the layout tree + selection. Reading this
+ *  in a createEffect compute makes the effect re-fire whenever any
+ *  container's children list, any container's direction, or the selection
+ *  path/depth changes. */
+function layoutSignature(layout: Container, selection: Selection): string {
+  function nodeSignature(node: Node): string {
+    if (node.type === "entity") return "e"
+    return `${node.direction[0]}(${node.children.map(nodeSignature).join(",")})`
+  }
+  return `${nodeSignature(layout)}|${selection.path.join(".")}/${selection.depth}`
+}
 
 export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   const context = useContext(Context)!
@@ -156,34 +170,40 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     return { top, right, bottom, left: 0 }
   }
 
-  function recomputeViewport() {
+  function layoutPass() {
     if (untrack(() => context.isAnimating())) return
-    if (!innerEl || !canvasEl) return
-    const rect = canvasEl.getBoundingClientRect()
-    const baseW = rect.width
-    const baseH = rect.height
+    if (!canvasEl) return
+    const canvasRect = canvasEl.getBoundingClientRect()
+    const canvas = { w: canvasRect.width, h: canvasRect.height }
 
-    const key = untrack(() => selectedPathKey(context.selection))
-    // Empty key = no selection (back button cleared it). Reset to identity.
-    if (key === "") {
-      setViewport({ ...IDENTITY_VIEWPORT, baseW, baseH })
+    const sel = context.selection
+    // Cleared selection (back button) — reset everything.
+    if (sel.path.length === 0) {
+      setViewport({ ...IDENTITY_VIEWPORT, baseW: canvas.w, baseH: canvas.h })
+      context.setSelectedHandlesState({
+        extend: { top: 0, bottom: 0, left: 0, right: 0 },
+        stick: { top: 0, bottom: 0, left: 0, right: 0 },
+      })
       return
     }
-    // Reconstruct the selected path from selection (back-engineering of
-    // selectedPathKey: path.slice(0, len) where len = path.length - depth).
-    const sel = untrack(() => context.selection)
+
     const len = sel.path.length - sel.depth
     const selectedPath = sel.path.slice(0, Math.max(0, len))
-    const baseRect = frameRect(context.app.layout, selectedPath, { w: baseW, h: baseH })
+    const baseRect = frameRect(context.app.layout, selectedPath, canvas)
 
-    // Always fit the new selection. The viewport signal's `equals` is
-    // epsilon-based — identity→identity is a no-op, sub-pixel drift from
-    // recomputing against settled geometry is also a no-op, but a real
-    // change (different selection, real resize) does propagate.
+    const hudInsets = computeHudInsets(canvasRect)
     const prev = untrack(() => viewport())
-    const hudInsets = computeHudInsets(rect)
-    const t = computeViewportTransform(baseRect, { w: baseW, h: baseH }, prev.scale, hudInsets)
-    setViewport({ ...t, baseW, baseH })
+    const transform = computeViewportTransform(baseRect, canvas, prev.scale, hudInsets)
+
+    const postRect = applyTransform(baseRect, transform.scale, {
+      x: transform.x,
+      y: transform.y,
+    })
+    const extend = computeExtends(postRect, canvas, hudInsets)
+    const stick = computeSticks(postRect, canvas)
+
+    setViewport({ ...transform, baseW: canvas.w, baseH: canvas.h })
+    context.setSelectedHandlesState({ extend, stick })
   }
 
   onSettled(() => {
@@ -198,14 +218,14 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     return context.observeFrame(canvasEl, () => {
       const r = canvasEl.getBoundingClientRect()
       if (r.height > 0) setCanvasAspect(r.width / r.height)
-      recomputeViewport()
+      layoutPass()
     })
   })
 
-  // Selection changes drive viewport recomputes via this effect.
+  // Selection or layout-topology change drives viewport recomputes.
   createEffect(
-    () => selectedPathKey(context.selection),
-    () => recomputeViewport(),
+    () => layoutSignature(context.app.layout, context.selection),
+    () => layoutPass(),
   )
 
   // Expose "is the canvas currently zoomed" so the contextual back button
@@ -242,9 +262,9 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
       // that happened during the animation. Epsilon equals on the viewport
       // signal short-circuits the no-drift case so a stable result doesn't
       // kick a new animation.
-      recomputeViewport()
+      layoutPass()
       // Ask each frame to refresh its handle/HUD collision state now that
-      // the canvas has settled.
+      // the canvas has settled. (Removed in T7 once the registry is gone.)
       context.requestCollisionUpdate()
     }, 240) // 220ms transition + 20ms buffer
   })
