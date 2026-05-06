@@ -199,3 +199,22 @@
   corner-bottom-left-shape: square; /* meets .center */
   /* top-right and bottom-right stay default = round (canvas-meeting outer cap) */
 }
+
+.swap-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 100px;
+  height: 60px;
+  border-radius: 30px;
+  background: var(--color-back);
+  border: none;
+  color: var(--color-front);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: var(--z-notch-handle);
+  padding: 0;
+}

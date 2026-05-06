@@ -1,6 +1,7 @@
 import {
   createEffect,
   createSignal,
+  For,
   onSettled,
   Show,
   untrack,
@@ -10,7 +11,8 @@ import {
 } from "solid-js"
 import { Context } from "./context"
 import styles from "./frame.module.css"
-import { ArrowIcon } from "./icons"
+import { PlusIcon, SplitIcon, SwapIcon } from "./icons"
+import type { Direction, HandleSpec } from "./types"
 
 export function Notch(props: {
   ref?: (el: HTMLDivElement) => void
@@ -38,56 +40,33 @@ export function Notch(props: {
   )
 }
 
-function ArrowNotch(props: { ref?: (el: HTMLDivElement) => void; style?: JSX.CSSProperties; class: string; onClick?(): void }) {
+function ArrowNotch(props: {
+  ref?: (el: HTMLDivElement) => void
+  style?: JSX.CSSProperties
+  class: string
+  icon: JSX.Element
+  onClick?(): void
+}) {
   return (
     <Notch ref={props.ref} style={props.style} class={props.class} onClick={props.onClick}>
-      <ArrowIcon class={styles.arrow} />
+      {props.icon}
     </Notch>
-  )
-}
-
-function EdgeButton(props: { ref?: (el: HTMLButtonElement) => void; class: string; style?: JSX.CSSProperties; onClick?(): void }) {
-  return (
-    <button
-      ref={props.ref}
-      class={[styles["edge-button"], props.class]}
-      style={props.style}
-      onClick={e => {
-        e.stopPropagation()
-        props.onClick?.()
-      }}
-    >
-      <svg
-        width="35"
-        height="35"
-        viewBox="0 0 35 35"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M33 19L19.5 19L19.5 33C19.5 34.1046 18.6046 35 17.5 35C16.3954 35 15.5 34.1046 15.5 33L15.5 19L2 19C0.895431 19 -8.69891e-07 18.1046 -8.16818e-07 17C-7.63746e-07 15.8954 0.895431 15 2 15L15.5 15L15.5 2C15.5 0.89543 16.3954 -7.39833e-07 17.5 -6.95908e-07C18.6046 -6.51984e-07 19.5 0.89543 19.5 2L19.5 15L33 15C34.1046 15 35 15.8954 35 17C35 18.1046 34.1046 19 33 19Z"
-          fill="var(--color-front)"
-        />
-      </svg>
-    </button>
   )
 }
 
 export function Frame(
   props: ParentProps<{
     onClick?: JSX.EventHandlersElement<HTMLDivElement>["onClick"]
-    handleDirections?: ("top" | "bottom" | "left" | "right")[]
-    buttonDirections?: ("top" | "bottom" | "left" | "right")[]
+    handles?: HandleSpec[]
     style?: JSX.CSSProperties
     class?: string
     "data-path"?: string
-    onAddFrame(direction: "top" | "bottom" | "left" | "right"): void
+    onAddFrame(direction: Direction, op: "append" | "split"): void
+    onSwapDirection?: () => void
   }>,
 ) {
-  const dirs = () => props.handleDirections ?? []
-  const buttonDirs = () => props.buttonDirections ?? []
+  const handles = () => props.handles ?? []
   const context = useContext(Context)
-  type Direction = "top" | "bottom" | "left" | "right"
 
   // ownedWrite: true allows writing these from inside owned scopes —
   // checkAllHandles is invoked synchronously from registerCollidable's
@@ -272,85 +251,39 @@ export function Frame(
       data-path={props["data-path"]}
     >
       <Show when={!handlesHidden() && !context.isAnimating()}>
-        <Show when={dirs().includes("top")}>
-          <Show
-            when={buttonDirs().includes("top")}
-            fallback={
-              <ArrowNotch
-                ref={setTopEl}
-                class={styles.top}
-                style={handleStyle("top")}
-                onClick={() => props.onAddFrame("top")}
-              />
-            }
-          >
-            <EdgeButton
-              ref={setTopEl}
-              class={styles.top}
-              style={handleStyle("top")}
-              onClick={() => props.onAddFrame("top")}
+        <For each={handles()}>
+          {h => (
+            <ArrowNotch
+              ref={el => {
+                const d = h().dir
+                if (d === "top") setTopEl(el)
+                else if (d === "bottom") setBottomEl(el)
+                else if (d === "left") setLeftEl(el)
+                else setRightEl(el)
+              }}
+              class={styles[h().dir]}
+              icon={
+                h().op === "append" ? (
+                  <PlusIcon class={styles.arrow} />
+                ) : (
+                  <SplitIcon class={styles.arrow} />
+                )
+              }
+              style={handleStyle(h().dir)}
+              onClick={() => props.onAddFrame(h().dir, h().op)}
             />
-          </Show>
-        </Show>
-        <Show when={dirs().includes("bottom")}>
-          <Show
-            when={buttonDirs().includes("bottom")}
-            fallback={
-              <ArrowNotch
-                ref={setBottomEl}
-                class={styles.bottom}
-                style={handleStyle("bottom")}
-                onClick={() => props.onAddFrame("bottom")}
-              />
-            }
+          )}
+        </For>
+        <Show when={props.onSwapDirection}>
+          <button
+            class={styles["swap-button"]}
+            onClick={e => {
+              e.stopPropagation()
+              props.onSwapDirection?.()
+            }}
           >
-            <EdgeButton
-              ref={setBottomEl}
-              class={styles.bottom}
-              style={handleStyle("bottom")}
-              onClick={() => props.onAddFrame("bottom")}
-            />
-          </Show>
-        </Show>
-        <Show when={dirs().includes("left")}>
-          <Show
-            when={buttonDirs().includes("left")}
-            fallback={
-              <ArrowNotch
-                ref={setLeftEl}
-                class={styles.left}
-                style={handleStyle("left")}
-                onClick={() => props.onAddFrame("left")}
-              />
-            }
-          >
-            <EdgeButton
-              ref={setLeftEl}
-              class={styles.left}
-              style={handleStyle("left")}
-              onClick={() => props.onAddFrame("left")}
-            />
-          </Show>
-        </Show>
-        <Show when={dirs().includes("right")}>
-          <Show
-            when={buttonDirs().includes("right")}
-            fallback={
-              <ArrowNotch
-                ref={setRightEl}
-                class={styles.right}
-                style={handleStyle("right")}
-                onClick={() => props.onAddFrame("right")}
-              />
-            }
-          >
-            <EdgeButton
-              ref={setRightEl}
-              class={styles.right}
-              style={handleStyle("right")}
-              onClick={() => props.onAddFrame("right")}
-            />
-          </Show>
+            <SwapIcon />
+          </button>
         </Show>
       </Show>
       {props.children}

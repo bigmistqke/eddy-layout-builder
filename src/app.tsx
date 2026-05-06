@@ -12,10 +12,10 @@ import type { Collidable, CollisionHit, CollisionKind } from "./collision"
 import { rectsOverlap } from "./collision"
 import { Context } from "./context"
 import { Notch } from "./frame"
-import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "./icons"
+import { CloseIcon, PlayIcon, PlusIcon, RecordIcon } from "./icons"
 import { LayoutBuilder } from "./layout-builder"
 import { NodeComponent } from "./node-component"
-import type { AppState, Container, Direction, Entity, Node } from "./types"
+import type { AppState, Container, Direction, Entity, HandleOp, Node } from "./types"
 import { resolveNode } from "./utils"
 
 function cloneNode(node: Node): Node {
@@ -180,15 +180,29 @@ export function App() {
     appendToContainer(containerPath, insertAfter ? childIndex + 1 : childIndex)
   }
 
-  function enterAppendMode() {
+  function enterLayoutMode() {
     setApp(store => {
-      store.view = { type: "layout", mode: "append" }
+      store.view = { type: "layout" }
     })
-    if (selection.depth === 0) setSelection(s => ({ ...s, depth: 1 }))
   }
 
-  const layoutView = () =>
-    app.view.type === "layout" ? (app.view as { type: "layout"; mode: "append" | "split" }) : null
+  function swapDirection(path: number[]) {
+    setApp(proxy => {
+      // Swap the parent's direction (for non-root selections) or root's own
+      // direction (for root selections — root acts as its own parent).
+      const containerToFlip =
+        path.length === 0
+          ? proxy.layout
+          : (resolveNode(proxy.layout, path.slice(0, -1)) as Container)
+      containerToFlip.direction =
+        containerToFlip.direction === "horizontal" ? "vertical" : "horizontal"
+    })
+  }
+
+  function handleAddFrame(path: number[], direction: Direction, op: HandleOp) {
+    if (op === "append") handleAppend(path, direction)
+    else splitNode(path, direction)
+  }
 
   createEffect(bottomBarEl, bar => {
     if (!bar) return
@@ -238,8 +252,8 @@ export function App() {
             <NodeComponent
               layout={app.layout}
               path={[]}
-              onAppend={handleAppend}
-              onSplit={splitNode}
+              onAddFrame={handleAddFrame}
+              onSwapDirection={swapDirection}
             />
           </div>
         </Show>
@@ -248,8 +262,8 @@ export function App() {
             <NodeComponent
               layout={app.layout}
               path={[]}
-              onAppend={handleAppend}
-              onSplit={splitNode}
+              onAddFrame={handleAddFrame}
+              onSwapDirection={swapDirection}
             />
           </LayoutBuilder>
         </Show>
@@ -257,7 +271,7 @@ export function App() {
           <div class={styles.bottomBarContent}>
             <Switch>
               <Match when={app.view.type === "recording"}>
-                <button class={styles.barButton} onClick={() => enterAppendMode()}>
+                <button class={styles.barButton} onClick={() => enterLayoutMode()}>
                   <PlusIcon />
                 </button>
                 <button class={styles.barButton}>
@@ -268,22 +282,6 @@ export function App() {
                 </button>
               </Match>
               <Match when={app.view.type === "layout"}>
-                <button
-                  class={[styles.modeButton, layoutView()?.mode === "append" ? styles.active : ""]}
-                  onClick={() => enterAppendMode()}
-                >
-                  <PlusIcon />
-                </button>
-                <button
-                  class={[styles.modeButton, layoutView()?.mode === "split" ? styles.active : ""]}
-                  onClick={() => {
-                    setApp(app => {
-                      app.view = { type: "layout", mode: "split" }
-                    })
-                  }}
-                >
-                  <SplitIcon />
-                </button>
                 <button
                   class={styles.closeButton}
                   onClick={() => {

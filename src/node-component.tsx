@@ -4,11 +4,19 @@ import { createMemo, For, Match, Switch, useContext } from "solid-js"
 import styles from "./app.module.css"
 import { Context } from "./context"
 import { Frame } from "./frame"
-import type { Container, Direction, Entity } from "./types"
+import type { Container, Direction, Entity, HandleOp, HandleSpec } from "./types"
 import { resolveNode } from "./utils"
 
 function pathEquals(a: number[], b: number[]) {
   return a.length === b.length && a.every((v, i) => v === b[i])
+}
+
+function opForDirection(
+  dir: Direction,
+  parentDirection: "horizontal" | "vertical",
+): HandleOp {
+  const dirAxis = dir === "left" || dir === "right" ? "horizontal" : "vertical"
+  return dirAxis === parentDirection ? "append" : "split"
 }
 
 function EntityFrame(
@@ -27,62 +35,32 @@ function EntityFrame(
 
 export function NodeComponent(props: {
   layout: Container | Entity
-  onAppend(path: number[], direction: Direction): void
-  onSplit(path: number[], direction: Direction): void
+  onAddFrame(path: number[], direction: Direction, op: HandleOp): void
+  onSwapDirection(path: number[]): void
   path: Array<number>
 }) {
   const context = useContext(Context)!
 
   const pathKey = createMemo(() => props.path.join("."))
 
-  const handles = createMemo(() => {
-    const empty = { directions: [] as Direction[], buttons: [] as Direction[] }
-    if (context.app.view.type !== "layout") return empty
+  const handles = createMemo<HandleSpec[]>(() => {
+    if (context.app.view.type !== "layout") return []
     const s = context.selection
-    const { mode } = context.app.view as { type: "layout"; mode: "append" | "split" }
     const targetedPath = s.path.slice(0, s.path.length - s.depth)
+    if (!pathEquals(props.path, targetedPath)) return []
 
-    if (mode === "split") {
-      if (!pathEquals(props.path, targetedPath)) return empty
-      return {
-        directions: ["top", "bottom", "left", "right"] as Direction[],
-        buttons: [] as Direction[],
-      }
-    }
+    // Parent direction: for non-root, the container that holds this frame.
+    // For root selection, root's own direction (root acts as its own parent).
+    const parentDirection: "horizontal" | "vertical" =
+      props.path.length === 0
+        ? context.app.layout.direction
+        : (resolveNode(context.app.layout, props.path.slice(0, -1)) as Container).direction
 
-    try {
-      const targeted = resolveNode(context.app.layout, targetedPath)
-      const containerPath = targeted.type === "container" ? targetedPath : targetedPath.slice(0, -1)
-      const isDirectChild =
-        props.path.length === containerPath.length + 1 &&
-        pathEquals(props.path.slice(0, -1), containerPath)
-      if (!isDirectChild) return empty
-      const container = resolveNode(context.app.layout, containerPath) as Container
-      const childIdx = props.path[props.path.length - 1]
-      const isFirst = childIdx === 0
-      const isLast = childIdx === container.children.length - 1
-
-      if (container.direction === "horizontal") {
-        const directions = isFirst ? (["left", "right"] as Direction[]) : (["right"] as Direction[])
-        const buttons = (!isLast ? ["right"] : []) as Direction[]
-        return { directions, buttons }
-      } else {
-        const directions = isFirst
-          ? (["top", "bottom"] as Direction[])
-          : (["bottom"] as Direction[])
-        const buttons = (!isLast ? ["bottom"] : []) as Direction[]
-        return { directions, buttons }
-      }
-    } catch {
-      return empty
-    }
+    const directions: Direction[] = ["top", "bottom", "left", "right"]
+    return directions.map(dir => ({ dir, op: opForDirection(dir, parentDirection) }))
   })
 
-  const layoutView = () =>
-    context.app.view.type === "layout"
-      ? (context.app.view as { type: "layout"; mode: "append" | "split" })
-      : null
-
+  const isSelected = () => handles().length > 0
   const inLayoutView = () => context.app.view.type === "layout"
 
   return (
@@ -90,14 +68,10 @@ export function NodeComponent(props: {
       <Match when={props.layout?.type === "container" && props.layout}>
         {layout => (
           <Frame
-            handleDirections={handles().directions}
-            buttonDirections={handles().buttons}
+            handles={handles()}
             style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
-            onAddFrame={direction =>
-              layoutView()?.mode === "append"
-                ? props.onAppend(props.path, direction)
-                : props.onSplit(props.path, direction)
-            }
+            onAddFrame={(direction, op) => props.onAddFrame(props.path, direction, op)}
+            onSwapDirection={isSelected() ? () => props.onSwapDirection(props.path) : undefined}
             class={[
               styles.container,
               inLayoutView()
@@ -113,8 +87,8 @@ export function NodeComponent(props: {
                 <NodeComponent
                   layout={child()}
                   path={[...props.path, index()]}
-                  onAppend={props.onAppend}
-                  onSplit={props.onSplit}
+                  onAddFrame={props.onAddFrame}
+                  onSwapDirection={props.onSwapDirection}
                 />
               )}
             </For>
@@ -126,16 +100,12 @@ export function NodeComponent(props: {
           <EntityFrame
             entity={entity()}
             data-path={pathKey()}
-            handleDirections={handles().directions}
-            buttonDirections={handles().buttons}
+            handles={handles()}
             class={inLayoutView() ? styles.layoutEntity : undefined}
-            onAddFrame={direction =>
-              layoutView()?.mode === "append"
-                ? props.onAppend(props.path, direction)
-                : props.onSplit(props.path, direction)
-            }
+            onAddFrame={(direction, op) => props.onAddFrame(props.path, direction, op)}
+            onSwapDirection={isSelected() ? () => props.onSwapDirection(props.path) : undefined}
             onClick={() => {
-              if (!layoutView()) return
+              if (!inLayoutView()) return
               context.setSelection(() => ({ path: props.path, depth: 0 }))
             }}
           />

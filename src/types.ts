@@ -10,11 +10,15 @@ export type Container = {
 export type Entity = { type: "entity"; color: string }
 export type Node = Container | Entity
 
-export type AppView = { type: "recording" } | { type: "layout"; mode: "append" | "split" }
+export type AppView = { type: "recording" } | { type: "layout" }
 export type AppState = { view: AppView; layout: Container }
 
 export type Direction = "top" | "bottom" | "left" | "right"
 export type Selection = { path: Array<number>; depth: number }
+
+/** Operation a directional handle performs when tapped. */
+export type HandleOp = "append" | "split"
+export type HandleSpec = { dir: Direction; op: HandleOp }
 
 export type AppContext = {
   selection: Selection
