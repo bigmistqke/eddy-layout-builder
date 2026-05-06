@@ -62,6 +62,16 @@ function offsetRelativeToRoot(el: HTMLElement, root: HTMLElement) {
 }
 
 /**
+ * Insets (in canvas-viewport pixels) of HUDs along each canvas edge. Used to
+ * detect when a frame's natural position would put a directional handle
+ * underneath a HUD by enough that the existing extend-into-HUD mechanism
+ * can't compensate without making the same-axis handle pair overlap.
+ */
+export type HudInsets = { top: number; right: number; bottom: number; left: number }
+
+export const NO_HUD_INSETS: HudInsets = { top: 0, right: 0, bottom: 0, left: 0 }
+
+/**
  * Compute the constraint-correct viewport transform for a selected DOM element.
  *
  * `currentScale`: the canvas's current size multiplier — used to recover the
@@ -73,6 +83,14 @@ function offsetRelativeToRoot(el: HTMLElement, root: HTMLElement) {
  * zooms *out* on tap — only the back button does that. At minScale > 1 we
  * always return a non-identity transform that pans the new selection to
  * the canvas center at the chosen scale.
+ *
+ * `hudInsets`: how far each HUD intrudes into the canvas viewport from its
+ * edge. Used to decide whether a frame's natural (un-translated) position
+ * leaves enough room for handles + extends. If natural is fine, we return
+ * identity — preserving the "no pan when not needed" UX. If natural would
+ * cause the bottom (or top, etc.) handle's HUD-extend to push it through
+ * the opposite-axis handle, we pan the frame to canvas center where extends
+ * shrink to manageable.
  */
 export function computeViewportTransform(
   node: HTMLElement,
@@ -81,6 +99,7 @@ export function computeViewportTransform(
   canvasH: number,
   currentScale = 1,
   minScale = 1,
+  hudInsets: HudInsets = NO_HUD_INSETS,
 ): ViewportTransform {
   const { x: rawX, y: rawY, width: rawW, height: rawH } = offsetRelativeToRoot(node, layoutRoot)
   if (rawW === 0 || rawH === 0) return IDENTITY_VIEWPORT
@@ -102,8 +121,25 @@ export function computeViewportTransform(
 
   const scale = Math.max(handleScale, minScale)
 
-  // Identity: handles fit at native and caller didn't enforce a minimum.
-  if (scale <= 1) return IDENTITY_VIEWPORT
+  // Identity-eligible (no zoom needed) — but check whether the frame's
+  // *natural* position would leave room for handle extends against HUDs. If
+  // a HUD-induced extend on one edge would push the same-axis handle pair
+  // into overlap (e.g. bottom-row frame: bottom-handle extends up by HUD
+  // height, eating into top-handle's territory), pan the frame to canvas
+  // center where extends are symmetric and manageable.
+  if (scale <= 1) {
+    const top = ny
+    const bottom = ny + nh
+    const left = nx
+    const right = nx + nw
+    const extTop = Math.max(0, hudInsets.top - top)
+    const extBottom = Math.max(0, bottom - (canvasH - hudInsets.bottom))
+    const extLeft = Math.max(0, hudInsets.left - left)
+    const extRight = Math.max(0, right - (canvasW - hudInsets.right))
+    const verticalFits = nh >= SAME_AXIS_MIN + extTop + extBottom
+    const horizontalFits = nw >= SAME_AXIS_MIN + extLeft + extRight
+    if (verticalFits && horizontalFits) return IDENTITY_VIEWPORT
+  }
 
   const nodeCenterX = (nx + nw / 2) * scale
   const nodeCenterY = (ny + nh / 2) * scale

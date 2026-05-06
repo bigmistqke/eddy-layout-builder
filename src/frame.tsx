@@ -85,7 +85,6 @@ export function Frame(
     { top: 0, bottom: 0, left: 0, right: 0 },
     { ownedWrite: true },
   )
-  const [handlesHidden, setHandlesHidden] = createSignal(false, { ownedWrite: true })
   let frameRef!: HTMLDivElement
 
   // Per-direction signal-driven handle registration. Each ref just calls a
@@ -146,7 +145,6 @@ export function Frame(
     if (untrack(() => context.isAnimating())) return
 
     const directions: Direction[] = ["top", "bottom", "left", "right"]
-    let anyStillCollides = false
     const newExtends: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
 
     for (const dir of directions) {
@@ -168,25 +166,8 @@ export function Frame(
         }
       }
       newExtends[dir] = extend
-
-      // Only count handle-vs-handle as "this frame's UI doesn't fit" when
-      // the other handle is on the *same* frame. Cross-frame handle overlaps
-      // (adjacent frames whose 100px-wide handles meet across an 8px gap)
-      // shouldn't hide either frame's handles.
-      const stillCollidesWithHandle = hits.some(
-        h => h.kind === "handle" && h.el.closest("[data-path]") === frameRef,
-      )
-      if (stillCollidesWithHandle) anyStillCollides = true
     }
 
-    if (anyStillCollides) {
-      setHandlesHidden(true)
-      setExtendByDir(() => ({ top: 0, bottom: 0, left: 0, right: 0 }))
-      setStickByDir(() => ({ top: 0, bottom: 0, left: 0, right: 0 }))
-      return
-    }
-
-    setHandlesHidden(false)
     setExtendByDir(() => newExtends)
 
     // Compute per-direction sticking against the canvas viewport. Uses the
@@ -249,7 +230,7 @@ export function Frame(
       class={[props.class, styles.frame]}
       data-path={props["data-path"]}
     >
-      <Show when={!handlesHidden() && !context.isAnimating()}>
+      <Show when={!context.isAnimating()}>
         <For each={handles()}>
           {h => (
             <ArrowNotch

@@ -130,6 +130,31 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // while the canvas is mid-transition (ResizeObserver fires repeatedly as
   // canvasInner's width/height interpolate, and any setViewport call here
   // would retarget the CSS transition mid-flight).
+  // HUD insets relative to the canvas viewport. Each value is how far that
+  // HUD intrudes from its respective canvas edge. Used by computeViewportTransform
+  // to detect whether a frame's natural position leaves room for HUD-induced
+  // handle extends without same-axis-pair overlap.
+  function computeHudInsets(canvasRect: DOMRect): {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  } {
+    const breadcrumb = untrack(() => context.breadcrumbEl())
+    const bottomBar = untrack(() => context.bottomBarEl())
+    const contextualToolbar = untrack(() => context.contextualToolbarEl())
+    const top = breadcrumb
+      ? Math.max(0, breadcrumb.getBoundingClientRect().bottom - canvasRect.top)
+      : 0
+    const bottom = bottomBar
+      ? Math.max(0, canvasRect.bottom - bottomBar.getBoundingClientRect().top)
+      : 0
+    const right = contextualToolbar
+      ? Math.max(0, canvasRect.right - contextualToolbar.getBoundingClientRect().left)
+      : 0
+    return { top, right, bottom, left: 0 }
+  }
+
   function recomputeViewport() {
     if (untrack(() => context.isAnimating())) return
     if (!innerEl || !canvasEl) return
@@ -151,7 +176,8 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     // recomputing against settled geometry is also a no-op, but a real
     // change (different selection, real resize) does propagate.
     const prev = untrack(() => viewport())
-    const t = computeViewportTransform(node, innerEl, baseW, baseH, prev.scale)
+    const hudInsets = computeHudInsets(rect)
+    const t = computeViewportTransform(node, innerEl, baseW, baseH, prev.scale, 1, hudInsets)
     setViewport({ ...t, baseW, baseH })
   }
 
@@ -181,7 +207,11 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // can hide itself when there is nothing to zoom out of. Wrapped in a block
   // so the setter's return value isn't treated as a cleanup function.
   createEffect(
-    () => viewport().scale > 1,
+    () => {
+      const v = viewport()
+      // Any non-identity transform — including pan-only (scale=1, x or y != 0).
+      return v.scale > 1 || Math.abs(v.x) > 0.5 || Math.abs(v.y) > 0.5
+    },
     zoomed => {
       context.setIsCanvasZoomed(zoomed)
     },
