@@ -2,93 +2,62 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make the canvas in layout mode automatically pan and zoom (via CSS transform) so the currently selected node always renders at a size where its UI fits, and unify all HUD chrome on the existing notch component.
+**Goal:** Make the canvas in layout mode automatically pan and zoom (via CSS transform) so the currently selected node always renders at a size where its UI fits, unify all HUD chrome on the existing notch component, and replace the old per-direction handle/HUD overlap code with a single generic collision system.
 
-**Architecture:** The viewport transform is *derived* from the existing `selection` state — there is no new viewport state to manage. A pure function computes the right `scale` + `translate` for the selected node and the result is applied as a CSS transform on the layout root, with a CSS transition for animation. Three HUD slots (bottom mode bar, top-left breadcrumb, top-right contextual toolbar) are rendered using the existing `Notch` component. Frame add-handles register HUD elements with the shared `ResizeObserver` plumbing already in place.
+**Architecture:**
+- The viewport transform is *derived* from the existing `selection` state. A pure function computes the right `scale + translate` for the selected node's bounding box; the result is applied as a CSS `transform` on the layout root, with a CSS transition for animation. The same layout root publishes its current scale as a `--canvas-scale` CSS variable.
+- All in-frame UI (the four notch handles) inverse-scales itself via `transform: scale(calc(1 / var(--canvas-scale)))` so it stays at constant viewport size regardless of the canvas zoom. This makes "zoom in to make the frame big enough for its handles" actually work — the frame grows but handles don't.
+- A single generic collision registry sits in `AppContext`. Handles register on mount; HUD notches register on mount. Each handle queries the registry against itself (rendered viewport rect) and decides whether to extend (if it collides with a HUD), hide (if collisions remain after one extend), or render normally.
+- Three HUD slots (bottom mode bar, top-left breadcrumb, top-right contextual toolbar) are rendered using the existing `Notch` component, with a new `orientation` prop giving each notch its corner-shape variant.
 
 **Tech Stack:** Solid 2.x (`solid-js`, `@solidjs/signals`), TypeScript, Vite, CSS Modules. No test framework currently configured — verification is via `npx tsc --noEmit` plus `npm run dev` browser checks.
 
 ---
 
+## Status
+
+Tasks 1 and 2 are already committed on this branch (`feature/constraint-zoom`). The plan resumes at Task 3.
+
+| # | Task | Status | Commit |
+|---|---|---|---|
+| 1 | Add BackIcon to icons.tsx | ✅ done | `16b44d8` |
+| 2 | Initial ui-constants.ts | ✅ done | `8f11e61` (Task 3 below replaces the obsolete `MIN_NODE_WIDTH/HEIGHT` exports it introduced) |
+
+---
+
 ## File Structure
 
-**New files:**
-- `src/icons.tsx` — append `BackIcon` (the supplied SVG)
-- `src/ui-constants.ts` — single source of truth for `MIN_NODE_WIDTH`, `MIN_NODE_HEIGHT`, `VIEWPORT_PADDING`
-- `src/viewport.ts` — pure functions that compute selected-node path and viewport transform
-- `src/contextual-toolbar.tsx` — top-right notch containing context-sensitive buttons (back button is the first occupant)
-- `src/contextual-toolbar.module.css` — positioning styles for the right-edge vertical notch
+**New files (status: existing or to-be-created):**
+- `src/icons.tsx` — already contains `BackIcon` ✅
+- `src/ui-constants.ts` — exists ✅; will be trimmed to just `VIEWPORT_PADDING` in Task 3
+- `src/collision.ts` — pure helper module (rect-overlap math)
+- `src/viewport.ts` — pure functions that compute selected-node path key and viewport transform
+- `src/contextual-toolbar.tsx` — top-right notch containing context-sensitive buttons
+- `src/contextual-toolbar.module.css` — positioning for the right-edge vertical notch
 
 **Modified files:**
-- `src/types.ts` — extend `AppContext` with `breadcrumbEl` and `contextualToolbarEl` accessors + setters
-- `src/app.tsx` — provide the new HUD element accessors in the context value
-- `src/frame.tsx` — extend `Notch` with an `orientation` prop; extend `Frame` to accept a `data-path` HTML attribute; extend `checkOverlap` to compare against breadcrumb and contextual toolbar elements per direction
-- `src/frame.module.css` — add `.hud-top`, `.hud-right`, `.hud-left`, `.hud-bottom` orientation rules for the Notch backdrop
-- `src/node-component.tsx` — pass the current path as `data-path` to each rendered frame
-- `src/layout-builder.tsx` — wrap `Breadcrumb` in a top-orientation `Notch`; render `ContextualToolbar`; apply the viewport transform to the canvas
-- `src/layout-builder.module.css` — replace the existing `.breadcrumb` standalone style with positioning for the new top notch; add `.canvasInner` (the transformed layer) and viewport transition
+- `src/types.ts` — extend `AppContext` with collision-registry API + `breadcrumbEl` / `contextualToolbarEl` accessors
+- `src/app.tsx` — implement the collision registry; provide new accessors; wire up window resize for the registry
+- `src/frame.tsx` — extend `Notch` with `orientation` prop; extend `Frame` to accept `data-path`; replace `checkOverlap` with generic collision detection that registers each visible handle and reads the registry
+- `src/frame.module.css` — add `.hud-top` / `.hud-right` / `.hud-left` / `.hud-bottom` orientation rules for the Notch backdrop; add `.notch.scaled-inverse` (inverse-scale via `--canvas-scale`)
+- `src/node-component.tsx` — pass `data-path` to each rendered Frame
+- `src/layout-builder.tsx` — wrap `Breadcrumb` in a top-orientation `Notch`; render `ContextualToolbar`; apply the viewport transform + write `--canvas-scale` on the canvas
+- `src/layout-builder.module.css` — replace existing `.breadcrumb` rules with positioning for the new top notch; add `.canvasInner` (the transformed layer) with viewport transition
 
 ---
 
-## Task 1: Add BackIcon
+## Task 3: Trim ui-constants.ts
+
+The previous Task 2 (`8f11e61`) added `MIN_NODE_WIDTH`, `MIN_NODE_HEIGHT`, and `VIEWPORT_PADDING`. The new design eliminates the magic-number minimums (Task 8 derives them from actual handle geometry instead). Keep only `VIEWPORT_PADDING`.
 
 **Files:**
-- Modify: `src/icons.tsx`
+- Modify: `src/ui-constants.ts`
 
-- [ ] **Step 1: Append the BackIcon component**
+- [ ] **Step 1: Replace the file contents**
 
-Add at the end of `src/icons.tsx`:
-
-```tsx
-export function BackIcon(props: { class?: string }) {
-  return (
-    <svg
-      class={props.class}
-      width="41"
-      height="23"
-      viewBox="0 0 41 23"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M32.8281 22.4998L16.3281 22.4998C15.2236 22.4998 14.3281 21.6043 14.3281 20.4998C14.3281 19.3952 15.2236 18.4998 16.3281 18.4998L32.8281 18.4998C35.0373 18.4998 36.8281 16.7089 36.8281 14.4998C36.8281 12.2907 35.0373 10.4998 32.8281 10.4998L7.65625 10.4998L10.7422 13.5857C11.5232 14.3667 11.5232 15.6328 10.7422 16.4138C9.96114 17.1949 8.69511 17.1949 7.91406 16.4138L-6.11959e-07 8.49976L7.91406 0.585693C8.6951 -0.195309 9.96115 -0.195308 10.7422 0.585693C11.5232 1.36673 11.5232 2.63277 10.7422 3.41382L7.65625 6.49976L32.8281 6.49975C37.2464 6.49975 40.8281 10.0814 40.8281 14.4998C40.8281 18.918 37.2464 22.4998 32.8281 22.4998Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-```
-
-- [ ] **Step 2: Verify the project still type-checks**
-
-Run: `npx tsc --noEmit`
-Expected: no errors.
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add src/icons.tsx
-git commit -m "feat(icons): add BackIcon for contextual toolbar"
-```
-
----
-
-## Task 2: UI Constants Module
-
-**Files:**
-- Create: `src/ui-constants.ts`
-
-- [ ] **Step 1: Write the constants file**
-
-Create `src/ui-constants.ts`:
+Replace `src/ui-constants.ts` with:
 
 ```ts
-// Minimum rendered dimensions a frame's UI requires to be usable.
-// Derived from the worst-case in-frame UI footprint (handles + edge buttons + interior).
-// Tune empirically; the implementation should adjust if the visible UI changes.
-export const MIN_NODE_WIDTH = 200
-export const MIN_NODE_HEIGHT = 200
-
 // Padding around the selected node when fitting it inside the canvas viewport.
 export const VIEWPORT_PADDING = 24
 ```
@@ -96,86 +65,186 @@ export const VIEWPORT_PADDING = 24
 - [ ] **Step 2: Type-check**
 
 Run: `npx tsc --noEmit`
-Expected: no errors.
+Expected: no errors. (Nothing references the removed exports yet.)
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add src/ui-constants.ts
-git commit -m "feat: define UI size constants for constraint-driven zoom"
+git commit -m "refactor: remove obsolete MIN_NODE constants from ui-constants"
 ```
 
 ---
 
-## Task 3: Add `data-path` Attribute to Frame
+## Task 4: Collision Registry in AppContext
 
-This lets the viewport math locate any node's DOM element by its path key (e.g. `"0.1.2"`). Without it, the algorithm cannot look up the rendered selected node.
+Add a generic collision registry: a Set of `{ el, kind }` entries that callers can `register(el, kind)` into (returning an unregister function), and query with `findCollisions(el)`.
+
+The registry lives in `App` (alongside `observeFrame`) and is exposed through the context.
 
 **Files:**
-- Modify: `src/frame.tsx` (Frame component, add prop and pass to root div)
+- Create: `src/collision.ts` (rect-overlap helper)
+- Modify: `src/types.ts`
+- Modify: `src/app.tsx`
 
-- [ ] **Step 1: Extend the Frame props type**
+- [ ] **Step 1: Write the rect-overlap helper**
 
-In `src/frame.tsx`, change the `Frame` component's props from:
+Create `src/collision.ts`:
 
-```tsx
-export function Frame(
-  props: ParentProps<{
-    onClick?: JSX.EventHandlersElement<HTMLDivElement>["onClick"]
-    handleDirections?: ("top" | "bottom" | "left" | "right")[]
-    buttonDirections?: ("top" | "bottom" | "left" | "right")[]
-    style?: JSX.CSSProperties
-    class?: string
-    onAddFrame(direction: "top" | "bottom" | "left" | "right"): void
-  }>,
-) {
+```ts
+export type CollisionKind = "hud" | "handle"
+
+export type Collidable = { el: HTMLElement; kind: CollisionKind }
+
+export type CollisionHit = { el: HTMLElement; kind: CollisionKind; rect: DOMRect }
+
+export function rectsOverlap(a: DOMRect, b: DOMRect): boolean {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+}
 ```
 
-to:
+- [ ] **Step 2: Extend `AppContext`**
 
-```tsx
-export function Frame(
-  props: ParentProps<{
-    onClick?: JSX.EventHandlersElement<HTMLDivElement>["onClick"]
-    handleDirections?: ("top" | "bottom" | "left" | "right")[]
-    buttonDirections?: ("top" | "bottom" | "left" | "right")[]
-    style?: JSX.CSSProperties
-    class?: string
-    onAddFrame(direction: "top" | "bottom" | "left" | "right"): void
-    "data-path"?: string
-  }>,
-) {
+In `src/types.ts`, add the import and extend `AppContext`. The current `AppContext` shape (preserve whatever member names are there now — `app/setApp`, `selection`, etc.) gets these additions:
+
+```ts
+import type { CollisionHit, CollisionKind } from "./collision"
+
+// inside AppContext (additions only):
+registerCollidable: (el: HTMLElement, kind: CollisionKind) => () => void
+findCollisions: (el: HTMLElement) => CollisionHit[]
 ```
 
-- [ ] **Step 2: Pass the attribute through to the root `<div>`**
+- [ ] **Step 3: Implement in `App`**
 
-In the same file, change the JSX root div from:
-
-```tsx
-<div
-  ref={frameRef}
-  onClick={props.onClick}
-  style={props.style}
-  class={[props.class, styles.frame]}
->
-```
-
-to:
+In `src/app.tsx`, add the imports:
 
 ```tsx
-<div
-  ref={frameRef}
-  onClick={props.onClick}
-  style={props.style}
-  class={[props.class, styles.frame]}
-  data-path={props["data-path"]}
->
+import type { Collidable, CollisionHit, CollisionKind } from "./collision"
+import { rectsOverlap } from "./collision"
 ```
+
+Inside `App`, near the `observeFrame` plumbing, add:
+
+```tsx
+const collidables = new Set<Collidable>()
+
+function registerCollidable(el: HTMLElement, kind: CollisionKind) {
+  const entry: Collidable = { el, kind }
+  collidables.add(entry)
+  return () => {
+    collidables.delete(entry)
+  }
+}
+
+function findCollisions(el: HTMLElement): CollisionHit[] {
+  const target = el.getBoundingClientRect()
+  const hits: CollisionHit[] = []
+  for (const c of collidables) {
+    if (c.el === el) continue
+    const rect = c.el.getBoundingClientRect()
+    if (rectsOverlap(target, rect)) hits.push({ el: c.el, kind: c.kind, rect })
+  }
+  return hits
+}
+```
+
+Add `registerCollidable` and `findCollisions` to the Context provider's `value` object.
+
+- [ ] **Step 4: Type-check**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/collision.ts src/types.ts src/app.tsx
+git commit -m "feat: generic collision registry in AppContext"
+```
+
+---
+
+## Task 5: Handle Inverse-scale CSS
+
+Make the four notch handles inverse-scale themselves so they stay at constant viewport size. The layout root will write `--canvas-scale` later (Task 9); this task adds the consuming side.
+
+**Files:**
+- Modify: `src/frame.module.css`
+
+- [ ] **Step 1: Inverse-scale rules**
+
+Append to `src/frame.module.css`:
+
+```css
+/*
+ * Handles inverse-scale themselves to stay at constant viewport size
+ * regardless of the canvas's CSS transform. `--canvas-scale` is written
+ * on the layout root by LayoutBuilder; defaults to 1 when absent.
+ *
+ * The transform-origin pins each handle to its anchor edge so the inverse
+ * scaling shrinks toward the edge it sits on rather than away from it.
+ */
+
+.notch.bottom {
+  transform-origin: bottom center;
+  transform: translateX(-50%) scale(calc(1 / var(--canvas-scale, 1)));
+}
+
+.notch.top {
+  transform-origin: top center;
+  transform: translateX(-50%) rotate(180deg) scale(calc(1 / var(--canvas-scale, 1)));
+}
+
+.notch.left {
+  transform-origin: left center;
+  transform: translateY(-50%) rotate(90deg) scale(calc(1 / var(--canvas-scale, 1)));
+}
+
+.notch.right {
+  transform-origin: right center;
+  transform: translateY(-50%) rotate(-90deg) scale(calc(1 / var(--canvas-scale, 1)));
+}
+```
+
+> The `translateX(-50%)` / `translateY(-50%)` and the `rotate(...)` were previously contributed by separate `&.bottom { left: 50%; ... }` rules. Read the existing rules in this file before editing — if rotation/translation is already declared on the orientation classes, **merge** by adding the `scale(...)` to the same `transform` chain instead of duplicating. The end state is a single `transform` per orientation that combines all needed parts. Verify visually that the bottom mode bar and frame add-handles still render in the same place after this edit.
+
+- [ ] **Step 2: Manually verify the existing app still looks identical**
+
+Run: `npm run dev`. The default `--canvas-scale` (none → falls back to 1) means the inverse-scale is identity. Layout mode handles should look unchanged. Stop dev server.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/frame.module.css
+git commit -m "feat(frame): handle inverse-scale via --canvas-scale variable"
+```
+
+---
+
+## Task 6: data-path Attribute on Frame
+
+Same as previous Task 3 — extend `Frame` to accept and forward `data-path` so the viewport math can locate any node by path.
+
+**Files:**
+- Modify: `src/frame.tsx`
+
+- [ ] **Step 1: Extend Frame's prop type**
+
+In `src/frame.tsx`, change Frame's props to include `"data-path"?: string` alongside the existing props. The added line:
+
+```tsx
+"data-path"?: string
+```
+
+- [ ] **Step 2: Pass through to the root div**
+
+Add `data-path={props["data-path"]}` to the existing root `<div>` inside `Frame`.
 
 - [ ] **Step 3: Type-check**
 
 Run: `npx tsc --noEmit`
-Expected: no errors. (`EntityFrame` receives `data-path` via the spread of `rest` and forwards it automatically.)
+Expected: no errors.
 
 - [ ] **Step 4: Commit**
 
@@ -186,75 +255,35 @@ git commit -m "feat(frame): accept data-path attribute for path-based DOM querie
 
 ---
 
-## Task 4: Set `data-path` from NodeComponent
+## Task 7: Set data-path from NodeComponent
 
 **Files:**
 - Modify: `src/node-component.tsx`
 
-- [ ] **Step 1: Add a `pathKey` memo and pass it on both Frame variants**
+- [ ] **Step 1: Add a path-key memo**
 
-In `src/node-component.tsx`, inside `NodeComponent`, add a memo near the top (after `const context = ...`):
+Inside `NodeComponent`, after `const context = useContext(Context)!`, add:
 
 ```tsx
 const pathKey = createMemo(() => props.path.join("."))
 ```
 
-(Already imports `createMemo`.)
-
 - [ ] **Step 2: Pass `data-path` to the container Frame**
 
-In the container `<Match>` block, find the existing `<Frame ...>` and add `data-path={pathKey()}` alongside its other props:
-
-```tsx
-<Frame
-  handleDirections={handles().directions}
-  buttonDirections={handles().buttons}
-  style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
-  onAddFrame={direction =>
-    layoutView()?.mode === "append"
-      ? props.onAppend(props.path, direction)
-      : props.onSplit(props.path, direction)
-  }
-  class={[
-    styles.container,
-    inLayoutView()
-      ? props.path.length === 0
-        ? styles.layoutContainerRoot
-        : styles.layoutContainer
-      : "",
-  ].join(" ")}
-  data-path={pathKey()}
->
-```
+Add `data-path={pathKey()}` alongside the existing props on the `<Frame ...>` inside the container `<Match>`.
 
 - [ ] **Step 3: Pass `data-path` to the entity Frame**
 
-In the entity `<Match>` block, find the `<EntityFrame ...>` and add `data-path={pathKey()}` alongside its other props:
-
-```tsx
-<EntityFrame
-  entity={entity()}
-  handleDirections={handles().directions}
-  buttonDirections={handles().buttons}
-  class={inLayoutView() ? styles.layoutEntity : undefined}
-  onAddFrame={direction =>
-    layoutView()?.mode === "append"
-      ? props.onAppend(props.path, direction)
-      : props.onSplit(props.path, direction)
-  }
-  data-path={pathKey()}
-  onClick={...existing onClick handler unchanged...}
-/>
-```
+Add `data-path={pathKey()}` alongside the existing props on the `<EntityFrame ...>` inside the entity `<Match>`.
 
 - [ ] **Step 4: Type-check**
 
 Run: `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 5: Manually verify in the browser**
+- [ ] **Step 5: Manually verify**
 
-Run: `npm run dev` (in another terminal if not already running). Open the app, switch to layout mode, open dev tools, and confirm each rendered frame `<div>` has a `data-path` attribute matching its position in the tree (root = `""`, first child = `"0"`, etc.). Stop the dev server.
+Run: `npm run dev`. In layout mode, every rendered frame `<div>` should have a `data-path` attribute. Stop dev server.
 
 - [ ] **Step 6: Commit**
 
@@ -265,9 +294,9 @@ git commit -m "feat(node-component): emit data-path on every frame"
 
 ---
 
-## Task 5: Viewport Math Module
+## Task 8: Viewport Math Module
 
-A pure module that, given the selection state and the relevant DOM elements, returns the CSS transform string. No reactivity, no rendering — easily reasoned about and reusable.
+Pure module: given the selection state, layout root, and canvas size, returns `{ scale, x, y }`. Replaces magic minimum-size constants with handle-derived dimensions.
 
 **Files:**
 - Create: `src/viewport.ts`
@@ -278,7 +307,14 @@ Create `src/viewport.ts`:
 
 ```ts
 import type { Selection } from "./types"
-import { MIN_NODE_HEIGHT, MIN_NODE_WIDTH, VIEWPORT_PADDING } from "./ui-constants"
+import { VIEWPORT_PADDING } from "./ui-constants"
+
+// Handle dimensions in CSS pixels — derived from frame.module.css and index.css.
+// `--hud-height-notch` is 60px; the notch backdrop default width is 100px.
+// These give the worst-case footprint of one handle in viewport units.
+// If frame.module.css changes, update these to match.
+const HANDLE_VIEWPORT_W = 100
+const HANDLE_VIEWPORT_H = 60
 
 export type ViewportTransform = { scale: number; x: number; y: number }
 
@@ -307,15 +343,16 @@ function offsetRelativeToRoot(el: HTMLElement, root: HTMLElement) {
 /**
  * Compute the constraint-correct viewport transform for a selected DOM element.
  *
- * - `scale` is the larger of:
- *   - the minimum that satisfies the UI-fit constraint (MIN_NODE_W/H), and
- *   - the scale that fits the node within the canvas with VIEWPORT_PADDING on all sides.
+ * scale = max(handleScale, fitScale) where:
+ * - handleScale = smallest scale at which two handles (left+right or top+bottom)
+ *   no longer overlap on the selected node — derived from HANDLE_VIEWPORT_*.
+ * - fitScale = scale that exactly fills the canvas with VIEWPORT_PADDING margin.
  *
- * - `x`, `y` translate the layout root so the selected node's center lands at the canvas center.
+ * If handleScale > fitScale (frame is too small to fit handles AND fit canvas),
+ * we use handleScale and let the frame overflow the canvas — handle visibility wins.
  *
- * Caller must pass un-transformed measurements: `node` should be queried *while* the layout root
- * is at the previous transform — `offsetWidth/Height` and `offsetLeft/Top` ignore CSS transforms,
- * so this is safe.
+ * `node` should be queried *while* the layout root is at the previous transform —
+ * `offsetWidth/Height` and `offsetLeft/Top` ignore CSS transforms, so this is safe.
  */
 export function computeViewportTransform(
   node: HTMLElement,
@@ -326,12 +363,12 @@ export function computeViewportTransform(
   const { x: nx, y: ny, width: nw, height: nh } = offsetRelativeToRoot(node, layoutRoot)
   if (nw === 0 || nh === 0) return IDENTITY_VIEWPORT
 
-  const scaleMin = Math.max(MIN_NODE_WIDTH / nw, MIN_NODE_HEIGHT / nh)
-  const scaleFit = Math.min(
+  const handleScale = Math.max((2 * HANDLE_VIEWPORT_W) / nw, (2 * HANDLE_VIEWPORT_H) / nh)
+  const fitScale = Math.min(
     (canvasW - 2 * VIEWPORT_PADDING) / nw,
     (canvasH - 2 * VIEWPORT_PADDING) / nh,
   )
-  const scale = Math.max(scaleMin, scaleFit)
+  const scale = Math.max(handleScale, fitScale)
 
   const nodeCenterX = nx + nw / 2
   const nodeCenterY = ny + nh / 2
@@ -355,22 +392,22 @@ Expected: no errors.
 
 ```bash
 git add src/viewport.ts
-git commit -m "feat: viewport math for constraint-driven canvas zoom"
+git commit -m "feat: viewport math with handle-derived constraint dimensions"
 ```
 
 ---
 
-## Task 6: Apply Viewport Transform to LayoutBuilder Canvas
+## Task 9: Apply Viewport Transform to LayoutBuilder
 
-This is the first user-visible change: in layout mode, selecting a small frame zooms in.
+Wire the canvas inner to a transform derived from the selection. Also write `--canvas-scale` so handles can inverse-scale.
 
 **Files:**
 - Modify: `src/layout-builder.tsx`
 - Modify: `src/layout-builder.module.css`
 
-- [ ] **Step 1: Update `layout-builder.module.css` to introduce a transformed inner layer**
+- [ ] **Step 1: Update CSS**
 
-Replace the file contents with:
+Replace `src/layout-builder.module.css` with:
 
 ```css
 .layoutBuilder {
@@ -394,8 +431,7 @@ Replace the file contents with:
   will-change: transform;
 }
 
-/* legacy plain-text breadcrumb styles will be replaced in a later task — */
-/* keep them here for now so the breadcrumb still renders */
+/* legacy plain-text breadcrumb styles — replaced in Task 11 */
 .breadcrumb {
   position: absolute;
   top: 12px;
@@ -430,9 +466,9 @@ Replace the file contents with:
 }
 ```
 
-- [ ] **Step 2: Wrap the layout content in a transformed inner div in `LayoutBuilder`**
+- [ ] **Step 2: Update LayoutBuilder**
 
-In `src/layout-builder.tsx`, replace the `LayoutBuilder` component with:
+Replace `src/layout-builder.tsx`'s `LayoutBuilder` component (keep the existing `Breadcrumb` component above it untouched). Add the imports at the top:
 
 ```tsx
 import { ComponentProps, createEffect, createMemo, createSignal, For, Show, useContext } from "solid-js"
@@ -446,35 +482,40 @@ import {
   transformToCss,
   type ViewportTransform,
 } from "./viewport"
+```
 
-// ... existing Breadcrumb component unchanged ...
+Replace the `LayoutBuilder` component with:
 
+```tsx
 export function LayoutBuilder(props: { children: ComponentProps<"div">["children"] }) {
   const context = useContext(Context)!
   let canvasEl!: HTMLDivElement
   let innerEl!: HTMLDivElement
   const [transform, setTransform] = createSignal<ViewportTransform>(IDENTITY_VIEWPORT)
 
-  // Recompute viewport whenever selection changes. `selectedPathKey` reads
-  // `selection.path` and `selection.depth`, which subscribes the effect.
-  createEffect(() => {
-    const key = selectedPathKey(context.selection)
-    if (!innerEl || !canvasEl) return
+  // Recompute viewport whenever selection changes.
+  // Solid 2.x requires the two-arg createEffect form; the compute function
+  // tracks reactivity, the effect function performs side effects.
+  createEffect(
+    () => selectedPathKey(context.selection),
+    key => {
+      if (!innerEl || !canvasEl) return
 
-    if (key === "") {
-      setTransform(IDENTITY_VIEWPORT)
-      return
-    }
+      if (key === "") {
+        setTransform(IDENTITY_VIEWPORT)
+        return
+      }
 
-    const node = innerEl.querySelector<HTMLElement>(`[data-path="${key}"]`)
-    if (!node) {
-      setTransform(IDENTITY_VIEWPORT)
-      return
-    }
+      const node = innerEl.querySelector<HTMLElement>(`[data-path="${key}"]`)
+      if (!node) {
+        setTransform(IDENTITY_VIEWPORT)
+        return
+      }
 
-    const rect = canvasEl.getBoundingClientRect()
-    setTransform(computeViewportTransform(node, innerEl, rect.width, rect.height))
-  })
+      const rect = canvasEl.getBoundingClientRect()
+      setTransform(computeViewportTransform(node, innerEl, rect.width, rect.height))
+    },
+  )
 
   return (
     <div class={styles.layoutBuilder}>
@@ -482,7 +523,10 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
         <div
           class={styles.canvasInner}
           ref={innerEl}
-          style={{ transform: transformToCss(transform()) }}
+          style={{
+            transform: transformToCss(transform()),
+            "--canvas-scale": String(transform().scale),
+          }}
         >
           {props.children}
         </div>
@@ -493,8 +537,6 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
 }
 ```
 
-(Keep the `Breadcrumb` component and the `Node` import as-is. Only the imports list at the top and the `LayoutBuilder` component change in this task.)
-
 - [ ] **Step 3: Type-check**
 
 Run: `npx tsc --noEmit`
@@ -502,25 +544,23 @@ Expected: no errors.
 
 - [ ] **Step 4: Manually verify**
 
-Run: `npm run dev`. Build a small layout (split a few times until you have a frame that's small enough to make handles overlap). Switch to layout mode. Tap one of the small frames — the canvas should *snap* (no animation yet — that's the next task) so the selected frame fills most of the viewport with padding. Tapping the same frame again should zoom out one tree level via the existing depth-cycle. Tapping the back button doesn't exist yet — to reset, tap the root frame or refresh.
-
-Stop dev server.
+Run: `npm run dev`. Build a small layout (split a few times). Switch to layout mode. Tap a small frame — the canvas should snap (no animation yet — that's the next task) so the selected frame fills most of the viewport with padding, and **the handles should remain at their visual size, not scale up with the frame**. Tap the same frame again — depth-cycle takes you up one tree level and the viewport zooms out. Stop dev server.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/layout-builder.tsx src/layout-builder.module.css
-git commit -m "feat(layout-builder): apply constraint-driven canvas zoom on selection"
+git commit -m "feat(layout-builder): apply constraint-driven viewport transform"
 ```
 
 ---
 
-## Task 7: Animate the Viewport Transform
+## Task 10: Animate the Viewport
 
 **Files:**
 - Modify: `src/layout-builder.module.css`
 
-- [ ] **Step 1: Add the transition rule**
+- [ ] **Step 1: Add the transition**
 
 In `src/layout-builder.module.css`, change the `.canvasInner` rule from:
 
@@ -549,9 +589,7 @@ to:
 
 - [ ] **Step 2: Manually verify**
 
-Run: `npm run dev`. Tap small frames in layout mode — the viewport should now slide and scale smoothly between selections instead of snapping.
-
-Stop dev server.
+Run: `npm run dev`. Tapping frames in layout mode should now smoothly pan + zoom. Stop dev server.
 
 - [ ] **Step 3: Commit**
 
@@ -562,17 +600,17 @@ git commit -m "feat(layout-builder): animate viewport transitions"
 
 ---
 
-## Task 8: Extend Notch Component with `orientation` Prop
+## Task 11: Notch Orientation Prop + HUD Variants
 
-The bottom mode bar's notch backdrop has `corner-top-shape: scoop` / `corner-bottom-shape: square` (bottom-attached look). The breadcrumb (top-attached) needs the inverse, and the contextual toolbar (right-attached) needs the rounded corners on the *left*. Adding an `orientation` prop to the `Notch` component is the cleanest way to express this without leaking hashed class names across module boundaries.
+The bottom mode bar's notch backdrop has `corner-top-shape: scoop` / `corner-bottom-shape: square` (bottom-attached look). Other orientations need mirrored corner shapes. Add an `orientation` prop to `Notch` and corresponding CSS rules.
 
 **Files:**
-- Modify: `src/frame.tsx` (extend Notch props)
-- Modify: `src/frame.module.css` (add orientation rules)
+- Modify: `src/frame.tsx`
+- Modify: `src/frame.module.css`
 
-- [ ] **Step 1: Add the `orientation` prop to `Notch`**
+- [ ] **Step 1: Extend Notch**
 
-In `src/frame.tsx`, replace the `Notch` component definition with:
+In `src/frame.tsx`, replace the existing `Notch` component with:
 
 ```tsx
 export function Notch(props: {
@@ -602,20 +640,12 @@ export function Notch(props: {
 }
 ```
 
-The new line is the second class added to the wrapper: `styles[\`hud-${orient()}\`]`. This is the hook the orientation CSS uses.
-
-- [ ] **Step 2: Add orientation CSS to `frame.module.css`**
+- [ ] **Step 2: Add orientation CSS**
 
 Append to `src/frame.module.css`:
 
 ```css
-/*
- * HUD-orientation modifiers for the Notch component (used by bottomBar,
- * breadcrumb notch, contextual-toolbar notch).
- *
- * "hud-bottom" matches the existing bottomBar visual; explicit so other
- * orientations have a peer to mirror.
- */
+/* HUD-orientation modifiers for the Notch component. */
 
 .hud-bottom > .notch-backdrop > .root,
 .hud-bottom > .notch-backdrop > .edge {
@@ -666,8 +696,6 @@ Append to `src/frame.module.css`:
 }
 ```
 
-> The existing `.notch-backdrop > .root` rule (with `corner-top-shape: scoop`) inside `.notch-backdrop {}` block stays in place — it is what `.hud-bottom` re-declares for symmetry. If a CSS conflict arises during implementation, prefer the new orientation rules (more specific selector chain) over the original.
-
 - [ ] **Step 3: Type-check**
 
 Run: `npx tsc --noEmit`
@@ -675,26 +703,70 @@ Expected: no errors.
 
 - [ ] **Step 4: Manually verify the bottom bar still looks identical**
 
-Run: `npm run dev`. Switch to layout mode. The bottom mode bar's notch shape should be unchanged (it now goes through the explicit `hud-bottom` path). Stop dev server.
+Run: `npm run dev`. Bottom mode bar should be visually unchanged. Stop dev server.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/frame.tsx src/frame.module.css
-git commit -m "feat(notch): add orientation prop for top/right/left HUD usage"
+git commit -m "feat(notch): orientation prop with corner-shape variants"
 ```
 
 ---
 
-## Task 9: Move Breadcrumb into a Top Notch
+## Task 12: HUD Element Refs in AppContext
+
+Add `breadcrumbEl` / `contextualToolbarEl` accessors. These are read by frame collision detection (Task 15) and by the legacy `bottomBar` overlap path that still exists for the bottom bar in `frame.tsx`.
+
+**Files:**
+- Modify: `src/types.ts`
+- Modify: `src/app.tsx`
+
+- [ ] **Step 1: Extend AppContext**
+
+In `src/types.ts`, add to `AppContext` (alongside the existing `bottomBarEl` / `setBottomBarEl`):
+
+```ts
+breadcrumbEl: Accessor<HTMLElement | undefined>
+setBreadcrumbEl: (el: HTMLElement | undefined) => void
+contextualToolbarEl: Accessor<HTMLElement | undefined>
+setContextualToolbarEl: (el: HTMLElement | undefined) => void
+```
+
+- [ ] **Step 2: Provide them in `App`**
+
+In `src/app.tsx`, after the existing `bottomBarEl` signal, add:
+
+```tsx
+const [breadcrumbEl, setBreadcrumbEl] = createSignal<HTMLElement | undefined>()
+const [contextualToolbarEl, setContextualToolbarEl] = createSignal<HTMLElement | undefined>()
+```
+
+Add the four entries to the Context provider's `value` object.
+
+- [ ] **Step 3: Type-check**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/types.ts src/app.tsx
+git commit -m "feat: HUD element refs in AppContext"
+```
+
+---
+
+## Task 13: Move Breadcrumb into Top Notch
 
 **Files:**
 - Modify: `src/layout-builder.tsx`
 - Modify: `src/layout-builder.module.css`
 
-- [ ] **Step 1: Replace the breadcrumb block in `layout-builder.module.css`**
+- [ ] **Step 1: Replace breadcrumb CSS**
 
-In `src/layout-builder.module.css`, remove the legacy `.breadcrumb`, `.breadcrumb button`, `.breadcrumb button.active`, and `.breadcrumb .separator` rules and replace them with:
+In `src/layout-builder.module.css`, remove the legacy `.breadcrumb`, `.breadcrumb button`, `.breadcrumb button.active`, and `.breadcrumb .separator` rules. Replace with:
 
 ```css
 .breadcrumbNotch {
@@ -738,43 +810,24 @@ In `src/layout-builder.module.css`, remove the legacy `.breadcrumb`, `.breadcrum
 }
 ```
 
-- [ ] **Step 2: Wrap Breadcrumb in a top-orientation Notch**
+- [ ] **Step 2: Wrap Breadcrumb in a Notch + register it**
 
-In `src/layout-builder.tsx`, update the imports to include `Notch`:
+In `src/layout-builder.tsx`, add `Notch` to the imports:
 
 ```tsx
-import { ComponentProps, createEffect, createMemo, createSignal, For, Show, useContext } from "solid-js"
-import { Context } from "./context"
 import { Notch } from "./frame"
-import styles from "./layout-builder.module.css"
-import type { Node } from "./types"
-import {
-  computeViewportTransform,
-  IDENTITY_VIEWPORT,
-  selectedPathKey,
-  transformToCss,
-  type ViewportTransform,
-} from "./viewport"
 ```
 
-Then change the `Breadcrumb` component's `return (...)` from:
-
-```tsx
-return (
-  <div class={styles.breadcrumb}>
-    <For each={segments()}>
-      ...
-    </For>
-  </div>
-)
-```
-
-to:
+Replace the `Breadcrumb` component's `return (...)` with:
 
 ```tsx
 return (
   <Notch
-    ref={el => context.setBreadcrumbEl(el)}
+    ref={el => {
+      context.setBreadcrumbEl(el)
+      const cleanup = context.registerCollidable(el, "hud")
+      onCleanup(cleanup)
+    }}
     class={styles.breadcrumbNotch}
     orientation="top"
   >
@@ -799,29 +852,34 @@ return (
 )
 ```
 
-> The `setBreadcrumbEl` setter referenced above is added to the context in **Task 11**. Until then this code will not type-check; complete Task 11 before running the type-check step of this task. (The two tasks are intertwined; do them as a pair.)
+Also add `onCleanup` to the imports from `solid-js`.
 
-- [ ] **Step 3: Defer verification until after Task 11**
+- [ ] **Step 3: Type-check**
 
-This task changes the Breadcrumb's container; the `setBreadcrumbEl` reference is finalized in Task 11. Skip type-check + browser verification here and run them once Task 11 is complete.
+Run: `npx tsc --noEmit`
+Expected: no errors.
 
-- [ ] **Step 4: Stage but don't commit yet**
+- [ ] **Step 4: Manually verify**
+
+Run: `npm run dev`. Switch to layout mode. The breadcrumb should now appear as a top-left notch attached to the top edge. Stop dev server.
+
+- [ ] **Step 5: Commit**
 
 ```bash
 git add src/layout-builder.tsx src/layout-builder.module.css
+git commit -m "feat(breadcrumb): render in top notch and register with collision system"
 ```
-
-(The combined commit happens in Task 11.)
 
 ---
 
-## Task 10: ContextualToolbar Component
+## Task 14: ContextualToolbar Component
 
 **Files:**
 - Create: `src/contextual-toolbar.tsx`
 - Create: `src/contextual-toolbar.module.css`
+- Modify: `src/layout-builder.tsx` (render it)
 
-- [ ] **Step 1: Write the styles**
+- [ ] **Step 1: Styles**
 
 Create `src/contextual-toolbar.module.css`:
 
@@ -830,7 +888,6 @@ Create `src/contextual-toolbar.module.css`:
   --notch-bg: #111;
   --backdrop-x: 0%;
   --backdrop-width: 100%;
-  --backdrop-height: 100%;
   position: absolute;
   top: 12px;
   right: 0;
@@ -861,31 +918,30 @@ Create `src/contextual-toolbar.module.css`:
 }
 ```
 
-- [ ] **Step 2: Write the component**
+- [ ] **Step 2: Component**
 
 Create `src/contextual-toolbar.tsx`:
 
 ```tsx
-import { Show, useContext } from "solid-js"
+import { onCleanup, Show, useContext } from "solid-js"
 import { Context } from "./context"
 import { Notch } from "./frame"
 import { BackIcon } from "./icons"
 import styles from "./contextual-toolbar.module.css"
 
-/**
- * Top-right floating toolbar. Hosts canvas-context buttons.
- * The notch only renders when at least one button is active —
- * an empty toolbar disappears entirely.
- */
 export function ContextualToolbar() {
   const context = useContext(Context)!
   const hasSelection = () => context.selection.path.length > 0
-  const hasAnyButton = () => hasSelection() // expand here as more buttons join
+  const hasAnyButton = () => hasSelection()
 
   return (
     <Show when={hasAnyButton()}>
       <Notch
-        ref={el => context.setContextualToolbarEl(el)}
+        ref={el => {
+          context.setContextualToolbarEl(el)
+          const cleanup = context.registerCollidable(el, "hud")
+          onCleanup(cleanup)
+        }}
         class={styles.toolbarNotch}
         orientation="right"
       >
@@ -893,9 +949,7 @@ export function ContextualToolbar() {
           <Show when={hasSelection()}>
             <button
               class={styles.toolbarButton}
-              onClick={() =>
-                context.setSelection(() => ({ path: [], depth: 0 }))
-              }
+              onClick={() => context.setSelection(() => ({ path: [], depth: 0 }))}
             >
               <BackIcon />
             </button>
@@ -907,132 +961,21 @@ export function ContextualToolbar() {
 }
 ```
 
-> The `setContextualToolbarEl` setter referenced above is added in **Task 11**.
+- [ ] **Step 3: Render it in LayoutBuilder**
 
-- [ ] **Step 3: Stage but don't commit yet**
-
-```bash
-git add src/contextual-toolbar.tsx src/contextual-toolbar.module.css
-```
-
-(The combined commit happens in Task 11.)
-
----
-
-## Task 11: Add HUD Element Refs to Context
-
-This is the keystone task that makes Tasks 9 and 10 type-check. After this, Tasks 9–11 are committed together as one functional unit.
-
-**Files:**
-- Modify: `src/types.ts`
-- Modify: `src/app.tsx`
-- Modify: `src/layout-builder.tsx` (render `ContextualToolbar`)
-
-- [ ] **Step 1: Extend `AppContext`**
-
-In `src/types.ts`, change the `AppContext` definition from:
-
-```ts
-export type AppContext = {
-  layout: Container
-  selection: Selection
-  setSelection: StoreSetter<Selection>
-  appState: AppState
-  setAppState: StoreSetter<AppState>
-  bottomBarEl: Accessor<HTMLElement | undefined>
-  setBottomBarEl: (el: HTMLElement | undefined) => void
-  observeFrame: (el: HTMLElement, onResize: () => void) => () => void
-}
-```
-
-to (note: in this codebase the type already uses `app/setApp`, not `appState/setAppState`; preserve whatever names currently exist there and just add the four new lines):
-
-```ts
-export type AppContext = {
-  selection: Selection
-  setSelection: StoreSetter<Selection>
-  app: AppState
-  setApp: StoreSetter<AppState>
-  bottomBarEl: Accessor<HTMLElement | undefined>
-  setBottomBarEl: (el: HTMLElement | undefined) => void
-  breadcrumbEl: Accessor<HTMLElement | undefined>
-  setBreadcrumbEl: (el: HTMLElement | undefined) => void
-  contextualToolbarEl: Accessor<HTMLElement | undefined>
-  setContextualToolbarEl: (el: HTMLElement | undefined) => void
-  observeFrame: (el: HTMLElement, onResize: () => void) => () => void
-}
-```
-
-- [ ] **Step 2: Provide the new accessors in `App`**
-
-In `src/app.tsx`, find the existing `bottomBarEl` declaration:
-
-```tsx
-const [bottomBarEl, setBottomBarEl] = createSignal<HTMLElement | undefined>()
-```
-
-Add two more lines immediately below:
-
-```tsx
-const [breadcrumbEl, setBreadcrumbEl] = createSignal<HTMLElement | undefined>()
-const [contextualToolbarEl, setContextualToolbarEl] = createSignal<HTMLElement | undefined>()
-```
-
-Then update the Context provider's `value` object so it includes them. Find:
-
-```tsx
-<Context
-  value={{
-    selection,
-    setSelection,
-    app,
-    setApp: setApp,
-    bottomBarEl,
-    setBottomBarEl,
-    observeFrame,
-  }}
->
-```
-
-and change it to:
-
-```tsx
-<Context
-  value={{
-    selection,
-    setSelection,
-    app,
-    setApp: setApp,
-    bottomBarEl,
-    setBottomBarEl,
-    breadcrumbEl,
-    setBreadcrumbEl,
-    contextualToolbarEl,
-    setContextualToolbarEl,
-    observeFrame,
-  }}
->
-```
-
-- [ ] **Step 3: Render ContextualToolbar inside LayoutBuilder**
-
-In `src/layout-builder.tsx`, add the import:
+In `src/layout-builder.tsx`, add:
 
 ```tsx
 import { ContextualToolbar } from "./contextual-toolbar"
 ```
 
-Then, inside `LayoutBuilder`'s JSX, add `<ContextualToolbar />` as a sibling of `<Breadcrumb />`:
+And add `<ContextualToolbar />` as a sibling of `<Breadcrumb />` inside `LayoutBuilder`'s JSX:
 
 ```tsx
 return (
   <div class={styles.layoutBuilder}>
     <div class={styles.canvas} ref={canvasEl}>
-      <div
-        class={styles.canvasInner}
-        ref={innerEl}
-        style={{ transform: transformToCss(transform()) }}
-      >
+      <div class={styles.canvasInner} ref={innerEl} style={{ ... }}>
         {props.children}
       </div>
       <Breadcrumb />
@@ -1045,36 +988,31 @@ return (
 - [ ] **Step 4: Type-check**
 
 Run: `npx tsc --noEmit`
-Expected: no errors. Tasks 9, 10, 11 now compile together.
+Expected: no errors.
 
 - [ ] **Step 5: Manually verify**
 
-Run: `npm run dev`. In layout mode:
-- Breadcrumb appears as a top-left notch attached to the top edge.
-- After tapping a frame, a top-right notch appears with the back arrow inside.
-- Tapping the back arrow clears selection (path → []) and the top-right notch disappears.
+Run: `npm run dev`. Layout mode — tap a frame; the top-right contextual toolbar appears with the back arrow. Tapping the back arrow clears selection (path → []) and the toolbar disappears. Stop dev server.
 
-Stop dev server.
-
-- [ ] **Step 6: Commit Tasks 9, 10, 11 together**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add src/types.ts src/app.tsx src/contextual-toolbar.tsx src/contextual-toolbar.module.css src/layout-builder.tsx src/layout-builder.module.css
-git commit -m "feat(hud): unify breadcrumb + contextual toolbar on notched language"
+git add src/contextual-toolbar.tsx src/contextual-toolbar.module.css src/layout-builder.tsx
+git commit -m "feat(contextual-toolbar): right notch with back button + collision register"
 ```
 
 ---
 
-## Task 12: Extend Frame Collision Detection to Breadcrumb and Contextual Toolbar
+## Task 15: Generic Frame Collision Detection
 
-The frame's bottom-pointing add-handle already extends to bridge the bottom mode bar. Top-pointing handles need the same against the breadcrumb; right-pointing against the contextual toolbar.
+Replace the existing per-direction `checkOverlap` in `frame.tsx` with a generic implementation that registers each visible handle with the collision system, queries collisions, applies extension if any HUD overlaps, and hides all handles if anything still collides after the extend.
 
 **Files:**
 - Modify: `src/frame.tsx`
 
-- [ ] **Step 1: Replace the single-element overlap state with a per-direction state**
+- [ ] **Step 1: Replace the overlap state and function**
 
-In `src/frame.tsx`, find:
+Find the existing block in `frame.tsx`:
 
 ```tsx
 const [bottomExtend, setBottomExtend] = createSignal(0)
@@ -1093,193 +1031,190 @@ function checkOverlap() {
   const horizontalOverlap = notchCenterX + 50 > barRect.left && notchCenterX - 50 < barRect.right
   setBottomExtend(verticalOverlap && horizontalOverlap ? barRect.height : 0)
 }
-```
 
-and replace it with:
-
-```tsx
-const [bottomExtend, setBottomExtend] = createSignal(0)
-const [topExtend, setTopExtend] = createSignal(0)
-const [rightExtend, setRightExtend] = createSignal(0)
-let frameRef!: HTMLDivElement
-
-function overlapWithBottom(bar: HTMLElement | undefined) {
-  if (!bar || !frameRef) return 0
-  const frameRect = frameRef.getBoundingClientRect()
-  const barRect = bar.getBoundingClientRect()
-  const verticalOverlap = frameRect.bottom > barRect.top + 1
-  const notchCenterX = (frameRect.left + frameRect.right) / 2
-  const horizontalOverlap = notchCenterX + 50 > barRect.left && notchCenterX - 50 < barRect.right
-  return verticalOverlap && horizontalOverlap ? barRect.height : 0
-}
-
-function overlapWithTop(bar: HTMLElement | undefined) {
-  if (!bar || !frameRef) return 0
-  const frameRect = frameRef.getBoundingClientRect()
-  const barRect = bar.getBoundingClientRect()
-  const verticalOverlap = frameRect.top < barRect.bottom - 1
-  const notchCenterX = (frameRect.left + frameRect.right) / 2
-  const horizontalOverlap = notchCenterX + 50 > barRect.left && notchCenterX - 50 < barRect.right
-  return verticalOverlap && horizontalOverlap ? barRect.height : 0
-}
-
-function overlapWithRight(bar: HTMLElement | undefined) {
-  if (!bar || !frameRef) return 0
-  const frameRect = frameRef.getBoundingClientRect()
-  const barRect = bar.getBoundingClientRect()
-  const horizontalOverlap = frameRect.right > barRect.left + 1
-  const notchCenterY = (frameRect.top + frameRect.bottom) / 2
-  const verticalOverlap = notchCenterY + 50 > barRect.top && notchCenterY - 50 < barRect.bottom
-  return horizontalOverlap && verticalOverlap ? barRect.width : 0
-}
-
-function checkOverlap() {
-  setBottomExtend(overlapWithBottom(context.bottomBarEl()))
-  setTopExtend(overlapWithTop(context.breadcrumbEl()))
-  setRightExtend(overlapWithRight(context.contextualToolbarEl()))
-}
-```
-
-- [ ] **Step 2: Update `createEffect(context.bottomBarEl, checkOverlap)` to also re-run for the new HUD elements**
-
-Change:
-
-```tsx
 createEffect(context.bottomBarEl, checkOverlap)
 onSettled(() => context.observeFrame(frameRef, checkOverlap))
 ```
 
-to:
+Replace with:
 
 ```tsx
-createEffect(() => {
-  context.bottomBarEl()
-  context.breadcrumbEl()
-  context.contextualToolbarEl()
-  checkOverlap()
+type Direction = "top" | "bottom" | "left" | "right"
+
+const [extendByDir, setExtendByDir] = createStore<Record<Direction, number>>({
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
 })
-onSettled(() => context.observeFrame(frameRef, checkOverlap))
-```
+const [handlesHidden, setHandlesHidden] = createSignal(false)
+let frameRef!: HTMLDivElement
+const handleRefs: Partial<Record<Direction, HTMLElement>> = {}
 
-> Note: The two-arg `createEffect` form used elsewhere in this file is being swapped here for the single-arg form because we now have multiple reactive sources to track. If your Solid version's two-arg form supports an array source, prefer that — otherwise the single-arg form is correct.
+function overlapAmount(handle: DOMRect, hud: DOMRect, dir: Direction): number {
+  // How much does the hud's bounds extend INTO the handle along the handle's axis?
+  // For top/bottom: vertical overlap. For left/right: horizontal overlap.
+  switch (dir) {
+    case "bottom":
+      return Math.max(0, handle.bottom - hud.top)
+    case "top":
+      return Math.max(0, hud.bottom - handle.top)
+    case "right":
+      return Math.max(0, handle.right - hud.left)
+    case "left":
+      return Math.max(0, hud.right - handle.left)
+  }
+}
 
-- [ ] **Step 3: Apply the new extend signals to the top and right ArrowNotches**
+function checkAllHandles() {
+  const directions: Direction[] = ["top", "bottom", "left", "right"]
+  let anyStillCollides = false
+  const newExtends: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
 
-Find the existing `<Show when={dirs().includes("top")}>` block:
+  for (const dir of directions) {
+    const handle = handleRefs[dir]
+    if (!handle) continue
 
-```tsx
-<Show when={dirs().includes("top")}>
-  <Show
-    when={buttonDirs().includes("top")}
-    fallback={<ArrowNotch class={styles.top} onClick={() => props.onAddFrame("top")} />}
-  >
-    <EdgeButton class={styles.top} onClick={() => props.onAddFrame("top")} />
-  </Show>
-</Show>
-```
+    const hits = context.findCollisions(handle)
+    if (hits.length === 0) continue
 
-and replace the `<ArrowNotch>` line so it conditionally sets `--extend`:
-
-```tsx
-<Show when={dirs().includes("top")}>
-  <Show
-    when={buttonDirs().includes("top")}
-    fallback={
-      <ArrowNotch
-        class={styles.top}
-        style={topExtend() > 0 ? { "--extend": `${topExtend()}px` } : undefined}
-        onClick={() => props.onAddFrame("top")}
-      />
+    // Try to extend over any HUD it collides with (largest overlap wins)
+    const handleRect = handle.getBoundingClientRect()
+    let extend = 0
+    for (const hit of hits) {
+      if (hit.kind === "hud") {
+        extend = Math.max(extend, overlapAmount(handleRect, hit.rect, dir))
+      }
     }
-  >
-    <EdgeButton class={styles.top} onClick={() => props.onAddFrame("top")} />
-  </Show>
-</Show>
+    newExtends[dir] = extend
+
+    // Re-check after extend (we can't physically apply yet — just simulate)
+    // Conservatively: if any handle-vs-handle collision OR a hud collision
+    // larger than what we'd extend by, we still collide.
+    const stillCollidesWithHandle = hits.some(h => h.kind === "handle")
+    if (stillCollidesWithHandle) anyStillCollides = true
+  }
+
+  if (anyStillCollides) {
+    setHandlesHidden(true)
+    setExtendByDir(reconcile({ top: 0, bottom: 0, left: 0, right: 0 }))
+  } else {
+    setHandlesHidden(false)
+    setExtendByDir(reconcile(newExtends))
+  }
+}
+
+// Re-run when any HUD ref changes. Compute tracks; effect runs the check.
+// Solid 2.x: two-arg createEffect form is mandatory.
+createEffect(
+  () => {
+    context.bottomBarEl()
+    context.breadcrumbEl()
+    context.contextualToolbarEl()
+  },
+  () => checkAllHandles(),
+)
+onSettled(() => context.observeFrame(frameRef, checkAllHandles))
 ```
 
-Find the `<Show when={dirs().includes("right")}>` block and apply the same pattern:
+> Add `createStore` and `reconcile` to the imports from `@solidjs/signals` (they already use `omit`). Add `createSignal` if not present. Add `Direction` import or define locally as above.
+
+- [ ] **Step 2: Register each handle on mount + render conditionally**
+
+Each `<ArrowNotch>` and `<EdgeButton>` inside `Frame` needs:
+1. A ref that captures the handle element into `handleRefs[dir]`
+2. A `style` that applies `--extend: <extendByDir[dir]>px`
+3. To not render at all when `handlesHidden()` is true
+
+Wrap the existing four `<Show when={dirs().includes("top")}>` blocks (etc.) inside one outer `<Show when={!handlesHidden()}>`. Inside each direction block, replace the `<ArrowNotch>` element with a version that:
+- captures the ref:
 
 ```tsx
-<Show when={dirs().includes("right")}>
-  <Show
-    when={buttonDirs().includes("right")}
-    fallback={
-      <ArrowNotch
-        class={styles.right}
-        style={rightExtend() > 0 ? { "--extend": `${rightExtend()}px` } : undefined}
-        onClick={() => props.onAddFrame("right")}
-      />
-    }
-  >
-    <EdgeButton class={styles.right} onClick={() => props.onAddFrame("right")} />
-  </Show>
-</Show>
+<ArrowNotch
+  ref={el => {
+    handleRefs.top = el
+    const cleanup = context.registerCollidable(el, "handle")
+    onCleanup(cleanup)
+  }}
+  class={styles.top}
+  style={extendByDir.top > 0 ? { "--extend": `${extendByDir.top}px` } : undefined}
+  onClick={() => props.onAddFrame("top")}
+/>
 ```
 
-(Bottom is already wired with `bottomExtend` in the existing code; left has no HUD on its side and stays unchanged.)
+> **`ArrowNotch` doesn't currently accept a `ref` prop.** Extend it (in the same file) to take an optional `ref?: (el: HTMLDivElement) => void` and forward it to its inner `<Notch>`'s `ref`. Same for `EdgeButton` — it should accept and apply a `ref?: (el: HTMLButtonElement) => void` to its `<button>`. Adjust handle ref types accordingly (`HTMLDivElement | HTMLButtonElement`).
 
-- [ ] **Step 4: Type-check**
+Apply the same pattern to bottom/left/right.
+
+- [ ] **Step 3: Type-check**
 
 Run: `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 5: Manually verify**
+- [ ] **Step 4: Manually verify**
 
-Run: `npm run dev`. Build a layout where a frame's edge sits behind the breadcrumb (top edge of canvas) or behind the contextual toolbar (right edge), then enter split mode and select that frame. The relevant arrow handle should extend visually to bridge the HUD element, the same way the bottom handle currently bridges the mode bar.
+Run: `npm run dev`. Various scenarios:
+- Frame whose bottom edge sits at the bottom mode bar → bottom handle extends
+- Frame whose top edge sits at the breadcrumb → top handle extends
+- Frame whose right edge sits at the contextual toolbar → right handle extends
+- Tiny frame (deeply split layout) → handles hide entirely; tap the frame → canvas zooms in → handles reappear
 
 Stop dev server.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add src/frame.tsx
-git commit -m "feat(frame): extend top/right add-handles to bridge breadcrumb and toolbar"
+git commit -m "feat(frame): generic collision-driven handle visibility and extension"
 ```
 
 ---
 
-## Task 13: Recompute Viewport on Window Resize
-
-If the user rotates the device or otherwise resizes the canvas, the viewport's transform stays correct only if the math reruns. We already have a shared resize plumbing — extend the recompute effect to depend on a resize tick.
+## Task 16: Recompute Viewport on Canvas Resize
 
 **Files:**
 - Modify: `src/layout-builder.tsx`
 
-- [ ] **Step 1: Add a resize tick to the LayoutBuilder effect**
+- [ ] **Step 1: Track resize via observeFrame**
 
-In `src/layout-builder.tsx`, change the `LayoutBuilder` component to track its canvas size via `observeFrame` (which already responds to window resize and the bottom bar resize). Replace the existing `createEffect(...)` block inside `LayoutBuilder` with:
+In `LayoutBuilder`, add a resize tick and tie it into the viewport effect. Use `onSettled` for the one-shot observer registration; use the two-arg `createEffect` for the viewport recomputation (Solid 2.x requires the two-arg form):
 
 ```tsx
 const [resizeTick, setResizeTick] = createSignal(0)
 
-createEffect(() => {
+onSettled(() => {
   if (!canvasEl) return
-  const cleanup = context.observeFrame(canvasEl, () => setResizeTick(t => t + 1))
-  return cleanup
+  return context.observeFrame(canvasEl, () => setResizeTick(t => t + 1))
 })
 
-createEffect(() => {
-  // Track sources that should trigger a recompute.
-  resizeTick()
-  const key = selectedPathKey(context.selection)
+createEffect(
+  () => {
+    resizeTick()
+    return selectedPathKey(context.selection)
+  },
+  key => {
+    if (!innerEl || !canvasEl) return
 
-  if (!innerEl || !canvasEl) return
+    if (key === "") {
+      setTransform(IDENTITY_VIEWPORT)
+      return
+    }
 
-  if (key === "") {
-    setTransform(IDENTITY_VIEWPORT)
-    return
-  }
+    const node = innerEl.querySelector<HTMLElement>(`[data-path="${key}"]`)
+    if (!node) {
+      setTransform(IDENTITY_VIEWPORT)
+      return
+    }
 
-  const node = innerEl.querySelector<HTMLElement>(`[data-path="${key}"]`)
-  if (!node) {
-    setTransform(IDENTITY_VIEWPORT)
-    return
-  }
-
-  const rect = canvasEl.getBoundingClientRect()
-  setTransform(computeViewportTransform(node, innerEl, rect.width, rect.height))
-})
+    const rect = canvasEl.getBoundingClientRect()
+    setTransform(computeViewportTransform(node, innerEl, rect.width, rect.height))
+  },
+)
 ```
+
+(This replaces the existing viewport `createEffect` from Task 9.)
+
+> Add `onSettled` to the imports from `solid-js`.
 
 - [ ] **Step 2: Type-check**
 
@@ -1288,7 +1223,7 @@ Expected: no errors.
 
 - [ ] **Step 3: Manually verify**
 
-Run: `npm run dev`. Tap a small frame so the canvas zooms in. Resize the browser window — the viewport should recompute and the selected frame should remain centered with appropriate zoom. Stop dev server.
+Run: `npm run dev`. Tap a frame to zoom in; resize the window; viewport should recompute and the frame stays centered. Stop dev server.
 
 - [ ] **Step 4: Commit**
 
@@ -1299,26 +1234,27 @@ git commit -m "feat(layout-builder): recompute viewport on canvas resize"
 
 ---
 
-## Self-Review Checklist (run before handing off)
+## Self-Review Checklist
 
 - **Spec coverage:**
-  - "Selection drives the viewport" → Tasks 5, 6, 13.
-  - "Tap behavior preserved" → Tasks 4 + 6 (no change to tap logic; viewport just follows existing selection).
-  - "Containers as selectable nodes" → Task 4 (every node has `data-path`); Task 5 math doesn't distinguish entity vs. container.
-  - "HUD: notched language everywhere" → Tasks 8, 9, 10, 11.
-  - "Contextual toolbar hidden when no tools" → Task 10 (`<Show when={hasAnyButton()}>`).
-  - "Back button" → Task 10 (renders inside the toolbar; clears selection on tap).
-  - "Constraint detection" → Task 2 (constants), Task 5 (math).
-  - "Animation" → Task 7.
-  - "Handle collisions with HUD notches" → Task 12.
-- **Placeholder scan:** No "TBD" / "TODO" / "implement later" present in code blocks. Verify by re-reading.
-- **Type consistency:** `setBreadcrumbEl` / `setContextualToolbarEl` defined in Task 11 are used in Tasks 9 & 10 (Tasks 9–11 commit together).
+  - "Selection drives viewport (pan + zoom)" → Tasks 8, 9, 16
+  - "Containers as selectable nodes" → Tasks 7, 8 (no node-type special-casing)
+  - "HUD: notched language everywhere" → Tasks 11, 13, 14
+  - "Contextual toolbar hidden when no tools" → Task 14
+  - "Back button" → Task 14
+  - "Generic collision system (handles + HUDs)" → Tasks 4, 13, 14, 15
+  - "Handles fixed viewport size via --canvas-scale" → Tasks 5, 9
+  - "Constraint detection without magic numbers (handle-derived)" → Task 8
+  - "Animation" → Task 10
+- **Placeholder scan:** No "TBD" / "TODO" / "implement later" in code blocks.
+- **Type consistency:** `registerCollidable` / `findCollisions` shape matches between Task 4, Task 13, Task 14, and Task 15.
 
 ---
 
 ## Notes for Implementer
 
-- This codebase uses Solid 2.x. There is no test framework configured; verification is `npx tsc --noEmit` plus browser smoke tests. Don't introduce a test framework as part of this plan.
-- The existing two-arg `createEffect(source, callback)` pattern is used in `frame.tsx` and a few other places; preserve it where it already works. Use the single-arg form when an effect needs to track multiple sources.
-- The `--extend` CSS variable convention is already in `frame.module.css` — extend uniformly across all four directions; no new CSS variables needed.
-- When tuning `MIN_NODE_WIDTH`/`HEIGHT`, measure the actual rendered footprint of handles + edge buttons in the worst case (split mode on a frame that gets all four handles) and add comfortable interior space.
+- Solid 2.x. No test framework — verification is `npx tsc --noEmit` plus browser smoke-checks.
+- **Solid 2.x `createEffect` is two-arg only.** The single-arg form `createEffect(fn)` is explicitly deprecated in `@solidjs/signals` and will be a type error. Always use `createEffect(compute, effect)`. To track multiple sources, read them all inside the `compute` function. For "run once after mount" patterns, use `onSettled(callback)` instead of a no-tracking `createEffect`.
+- The `--extend` CSS variable convention is already in `frame.module.css` — uniform across all four directions; no new CSS variables needed for it.
+- When tuning `HANDLE_VIEWPORT_W` / `HANDLE_VIEWPORT_H` in `viewport.ts`, measure the rendered notch dimensions at scale 1 and update the constants if the CSS changes.
+- When committing, never add `Co-Authored-By` lines.

@@ -7,39 +7,67 @@
 .canvas {
   width: 100%;
   height: 100%;
-  display: flex;
   position: relative;
+  overflow: hidden;
 }
 
-.breadcrumb {
+.canvasInner {
   position: absolute;
-  top: 12px;
+  inset: 0;
+  display: flex;
+  transform-origin: 0 0;
+  will-change: transform;
+  transition:
+    transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+    width 220ms cubic-bezier(0.4, 0, 0.2, 1),
+    height 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.breadcrumbNotch {
+  --notch-bg: #111;
+  --backdrop-x: 0%;
+  --backdrop-width: 100%;
+  position: absolute;
+  top: 0;
   left: 12px;
+  height: var(--hud-height);
   z-index: var(--z-hud);
+}
+
+.breadcrumbContent {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: black;
-  border-radius: 8px;
-  padding: 6px 10px;
+  gap: var(--padding);
+  padding-inline: calc(var(--radius) * 2);
+  height: 100%;
+  color: var(--color-front);
+  white-space: nowrap;
 }
 
-.breadcrumb button {
+.breadcrumbContent .minimapButton {
   background: none;
   border: none;
-  padding: 0;
-  color: var(--color-front);
-  font-size: 13px;
+  padding: var(--padding);
   cursor: pointer;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  border-radius: var(--padding);
+  height: calc(100% - 2 * var(--padding));
+  margin: var(--padding);
+  transition: background 120ms ease;
 }
 
-.breadcrumb button.active {
-  color: var(--color-selection);
-  text-decoration: underline;
+.breadcrumbContent .minimapButton:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.breadcrumb .separator {
-  color: var(--color-front);
-  font-size: 13px;
+.breadcrumbContent .minimapButton.active {
+  background: var(--color-active-back);
+}
+
+.breadcrumbContent .separator {
   user-select: none;
+  color: #666;
+  align-self: center;
 }

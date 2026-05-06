@@ -1,5 +1,15 @@
-import { createEffect, createSignal, createStore, Match, onCleanup, Show, Switch } from "solid-js"
+import {
+  createEffect,
+  createSignal,
+  createStore,
+  Match,
+  onCleanup,
+  Show,
+  Switch,
+} from "solid-js"
 import styles from "./app.module.css"
+import type { Collidable, CollisionHit, CollisionKind } from "./collision"
+import { rectsOverlap } from "./collision"
 import { Context } from "./context"
 import { Notch } from "./frame"
 import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "./icons"
@@ -33,6 +43,11 @@ export function App() {
     },
   })
   const [bottomBarEl, setBottomBarEl] = createSignal<HTMLElement | undefined>()
+  const [breadcrumbEl, setBreadcrumbEl] = createSignal<HTMLElement | undefined>()
+  const [contextualToolbarEl, setContextualToolbarEl] = createSignal<HTMLElement | undefined>()
+  const [canvasEl, setCanvasEl] = createSignal<HTMLElement | undefined>()
+  const [isCanvasZoomed, setIsCanvasZoomed] = createSignal(false)
+  const [isAnimating, setIsAnimating] = createSignal(false, { ownedWrite: true })
 
   const frameCallbacks = new Set<() => void>()
   const controller = new AbortController()
@@ -51,6 +66,50 @@ export function App() {
       frameCallbacks.delete(cb)
       resizeObserver.unobserve(el)
     }
+  }
+
+  const collidables = new Set<Collidable>()
+  // Subscribers re-run their collision checks whenever the registry changes.
+  // Plain Set + iteration — no Solid signal — so register/unregister can be
+  // called freely from owned scopes (cleanups, effect callbacks, etc.) with
+  // no SIGNAL_WRITE_IN_OWNED_SCOPE concerns.
+  const updateSubscribers = new Set<() => void>()
+
+  function registerUpdateCollision(cb: () => void) {
+    updateSubscribers.add(cb)
+    return () => {
+      updateSubscribers.delete(cb)
+    }
+  }
+
+  function notifyCollisionUpdate() {
+    for (const cb of updateSubscribers) cb()
+  }
+  // Public form — exposed via context so layout-builder can request a
+  // recompute after the viewport changes (e.g. on back-button press, the
+  // canvas snaps from zoomed back to fit-parent and frames need to re-check
+  // their handle/HUD overlaps).
+  const requestCollisionUpdate = notifyCollisionUpdate
+
+  function registerCollidable(el: HTMLElement, kind: CollisionKind) {
+    const entry: Collidable = { el, kind }
+    collidables.add(entry)
+    notifyCollisionUpdate()
+    return () => {
+      collidables.delete(entry)
+      notifyCollisionUpdate()
+    }
+  }
+
+  function findCollisions(el: HTMLElement): CollisionHit[] {
+    const target = el.getBoundingClientRect()
+    const hits: CollisionHit[] = []
+    for (const c of collidables) {
+      if (c.el === el) continue
+      const rect = c.el.getBoundingClientRect()
+      if (rectsOverlap(target, rect)) hits.push({ el: c.el, kind: c.kind, rect })
+    }
+    return hits
   }
 
   function appendToContainer(containerPath: number[], insertIndex: number) {
@@ -139,6 +198,14 @@ export function App() {
     }
   })
 
+  // Register the bottom bar as collidable. Signal-driven lifecycle: the ref
+  // just calls setBottomBarEl, this effect's cleanup auto-fires on owner
+  // disposal (no manual runWithOwner / onCleanup gymnastics).
+  createEffect(bottomBarEl, bar => {
+    if (!bar) return
+    return registerCollidable(bar, "hud")
+  })
+
   return (
     <Context
       value={{
@@ -148,7 +215,21 @@ export function App() {
         setApp: setApp,
         bottomBarEl,
         setBottomBarEl,
+        breadcrumbEl,
+        setBreadcrumbEl,
+        contextualToolbarEl,
+        setContextualToolbarEl,
+        canvasEl,
+        setCanvasEl,
         observeFrame,
+        registerCollidable,
+        findCollisions,
+        registerUpdateCollision,
+        requestCollisionUpdate,
+        isCanvasZoomed,
+        setIsCanvasZoomed,
+        isAnimating,
+        setIsAnimating,
       }}
     >
       <div style={{ display: "flex", width: "100vw", height: "100%", position: "relative" }}>

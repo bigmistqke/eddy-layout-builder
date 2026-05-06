@@ -27,18 +27,18 @@
   --frame-padding: var(--padding);
   padding: var(--padding);
   gap: var(--padding);
-  border-radius: 8px;
+  border-radius: var(--padding);
 }
 
 .layoutContainer {
   --frame-padding: 0px;
   gap: var(--padding);
-  border-radius: 8px;
+  border-radius: var(--padding);
 }
 
 .layoutEntity {
   --frame-padding: 0px;
-  border-radius: 8px;
+  border-radius: var(--padding);
 }
 
 .recordingView {
@@ -61,12 +61,9 @@
 }
 
 .bottomBarContent {
-  padding-inline: var(--hud-radius);
+  padding-inline: var(--radius);
   display: grid;
   grid-template-columns: repeat(3, 60px);
-  align-items: center;
-  justify-content: center;
-  justify-items: center;
   height: 100%;
 }
 
@@ -82,17 +79,22 @@
 }
 
 .modeButton {
+  --margin: 4px;
+
   background: none;
   border: none;
-  padding: 0;
+  padding: 4px 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-front);
+  border-radius: calc(var(--radius) - var(--margin));
 
   &.active {
-    color: var(--color-selection);
+    background: var(--color-active-back);
+    color: var(--color-active-front);
+    margin: var(--margin);
   }
 }
 
@@ -104,5 +106,5 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e94949;
+  color: var(--color-front);
 }

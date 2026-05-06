@@ -10,6 +10,8 @@ The constraint is general, not handle-specific: **every frame in layout mode mus
 
 The canvas (the layout root) is scaled and translated so the **selected node** is rendered at exactly the size it needs to fit its UI — with a configurable padding around it inside the viewport. The transformation is purely visual; the underlying layout tree is unchanged. Selecting a smaller node zooms in; selecting a larger one zooms out.
 
+A critical co-design: **the in-frame UI (handles, edge buttons) is rendered at constant viewport size and does not scale with the canvas.** Without this, zoom would scale handles and frames together and the relative geometry — and therefore any handle-handle overlap — would be invariant under zoom, defeating the purpose. Implementation: the layout root publishes its current scale as a `--canvas-scale` CSS variable; each handle applies `transform: scale(calc(1 / var(--canvas-scale)))` with a `transform-origin` that pins it to its anchor edge.
+
 This is the only mechanism. There is no manual pan, no manual pinch zoom, no scroll-wheel zoom, and no keyboard shortcuts. The viewport is fully determined by what's selected.
 
 ## Interaction model
@@ -51,16 +53,9 @@ Three notch slots:
 
 The contextual toolbar notch only renders when at least one contextual button has something to show. When there are no contextual tools active (e.g., no selection → no back button, no other tools applicable), the entire notch is hidden — not just its contents. The notch is a consequence of having context, not a permanent fixture.
 
-### Handle collisions with HUD notches
+### Handle collisions with HUD
 
-The frame's add-handles (the four directional notch handles) already detect collisions with the bottom mode bar and extend to remain reachable when a frame overlaps it (`--extend` CSS variable, driven by `checkOverlap` in `frame.tsx`). This same mechanism applies to the breadcrumb and contextual toolbar notches:
-
-- A frame's **top** add-handle checks for overlap with the breadcrumb notch (when present); extends to bridge it.
-- A frame's **right** add-handle checks for overlap with the contextual toolbar notch (when present); extends to bridge it.
-- A frame's **bottom** add-handle keeps its existing collision check with the bottom mode bar.
-- A frame's **left** add-handle has no HUD on its side (currently) and doesn't need a collision check.
-
-Because the HUD elements are already registered through the shared `ResizeObserver` plumbing in `App` (extending the `bottomBarEl` pattern), each handle just observes the relevant HUD element's bounds and recomputes overlap on resize. When the breadcrumb or toolbar notch is hidden (no breadcrumb segments / no contextual tools), there is nothing to collide with and the corresponding handle reverts to its un-extended size.
+Handles use the same generic collision system described above — there is no per-direction or per-HUD special-casing. Every visible handle queries the registry against every visible HUD; the result tells the handle whether to extend, hide, or render normally. Adding a new HUD or a new handle direction in the future requires only registering it; no new collision code.
 
 ### Back button
 
@@ -70,22 +65,32 @@ Note this is semantically distinct from depth-cycling to the root container. Dep
 
 Climbing the tree level-by-level is handled by depth-cycle (repeated tap on the same frame). The back button is the fast escape to the unselected root view, not a stepwise scope-up.
 
+## Generic collision system
+
+A single registry tracks all elements that participate in collision-based UI logic: every visible handle on every frame, plus every visible HUD notch (mode bar, breadcrumb, contextual toolbar). The registry exposes:
+
+- `register(el, kind)` — adds an element with a kind tag (`"hud"` or `"handle"`); returns an unregister function.
+- `findCollisions(el)` — returns the list of `{ el, kind, rect }` entries whose rendered viewport rect overlaps `el`'s rendered rect (excluding `el` itself).
+
+Per-frame handle behavior is then:
+
+1. Each handle queries `findCollisions(self)`.
+2. If any collision is with a `kind: "hud"`, compute the largest overlap dimension across all colliding HUDs and apply it as `--extend`.
+3. Re-query `findCollisions(self)` after the extend.
+4. If anything still collides — *handle or HUD* — set a `handlesHidden` flag on the frame.
+5. When `handlesHidden` is true, the frame renders no handles at all. The frame itself remains tappable; the existing tap behavior selects it, which triggers constraint-driven canvas zoom and brings handles back at a higher scale.
+
+Because handles are at constant viewport size (see Solution), zooming in shrinks them *relative to* the frame: as scale increases, the frame's rendered size grows while handles stay put, until handles no longer collide with each other.
+
 ## Constraint detection
 
-A node's UI "fits" at a given rendered size when:
+A node's UI "fits" at a given rendered size when, given the current handle and HUD geometry, none of its handles would have unresolvable collisions per the algorithm above. There are no magic minimum-size constants; the bound comes from the handles' actual measurements (read via `getBoundingClientRect` on a registered handle, or via documented CSS variables like `--hud-height-notch`).
 
-```
-nodeWidth  ≥ MIN_NODE_WIDTH
-nodeHeight ≥ MIN_NODE_HEIGHT
-```
-
-Where the minimums are derived from the worst-case UI footprint at that node: handle width on left + handle width on right + minimum interior, and the same vertically. Concrete values come from `frame.module.css` and the existing handle dimensions; they should be defined as a single source of truth (e.g., a constant exported from a shared module) so the constraint detection and the rendered UI can never drift apart.
-
-The **constraint-correct zoom** for a selected node is the scale factor `s` such that:
-1. The selected node's rendered size at scale `s` is at least the minimum (so its UI fits), and
+The **constraint-correct zoom** for a selected node is the smallest scale factor `s` such that:
+1. At scale `s`, the selected node's handles do not collide with each other or any HUD, **and**
 2. The selected node fits inside the canvas viewport with the configured padding on all sides.
 
-In practice these resolve to one zoom level per node: enough to satisfy the minimum, but no more than necessary to keep the node fully framed. Larger nodes settle at lower zoom levels; smaller nodes at higher.
+The viewport math computes (1) analytically from handle dimensions in viewport coords (handles are constant-size, so the minimum frame size to fit them is fixed) and (2) from the canvas viewport size minus padding. The chosen scale is the larger of the two minimums. The collision registry remains the runtime source of truth for *whether* handles are currently colliding; the analytical computation is for predicting the right scale to animate to.
 
 ## Animation
 
@@ -102,7 +107,8 @@ All viewport changes — pan, zoom-in, return-to-root — animate. The animation
 ## Architectural notes
 
 - The viewport transform belongs at the layout root (the existing `LayoutBuilder` container or its child), implemented as a CSS `transform: scale(s) translate(x, y)`. The layout tree underneath does not need to know it's being scaled.
-- The constraint detection runs on the *currently selected node's* rendered size — entity or container. It does not run on every frame; only the selected node matters. The shared `ResizeObserver` in `App` already provides the measurement plumbing for this.
+- The same layout root publishes the current scale as a `--canvas-scale` CSS custom property. Handles read this variable to inverse-scale themselves so they remain at constant viewport size regardless of canvas zoom.
+- The collision registry lives in `AppContext` alongside the existing `observeFrame` plumbing. Handles register on mount and unregister on unmount; HUD components register their root elements on mount.
 - The viewport state is derived (not stored): given the current selection and the layout dimensions, there is exactly one constraint-correct viewport. Driving the viewport from a derived value (e.g., a `createMemo` over `selection`) keeps the system stateless and removes any chance of viewport and selection drifting out of sync.
 - The breadcrumb and contextual toolbar are siblings of the layout root in the DOM, each rendered inside a `Notch` (top-orientation for breadcrumb, right-orientation for the toolbar). Their positioning is handled by the existing notch CSS.
 - The contextual toolbar notch contains a flex column of buttons. The notch itself renders only when at least one button is active; otherwise it is not in the DOM. The back button is the first child and renders when a selection exists. Future contextual actions append.
