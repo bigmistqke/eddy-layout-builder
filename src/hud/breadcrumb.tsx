@@ -1,4 +1,4 @@
-import { Accessor, createEffect, createMemo, For, useContext } from "solid-js"
+import { Accessor, createEffect, createMemo, For, untrack, useContext } from "solid-js"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
 import type { Container, Node } from "../types"
@@ -68,7 +68,10 @@ function Minimap(props: {
       const ctx = canvasEl.getContext("2d")!
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       ctx.clearRect(0, 0, width, height)
-      drawNode(ctx, layout, highlightPath, 0, 0, width, height)
+      // drawNode walks the layout tree (a Solid store proxy). Reads inside
+      // an effect callback warn STRICT_READ_UNTRACKED — wrap in untrack
+      // since the createEffect compute already tracks `layout` for us.
+      untrack(() => drawNode(ctx, layout, highlightPath, 0, 0, width, height))
     },
   )
   return (
