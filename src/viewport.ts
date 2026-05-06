@@ -18,8 +18,13 @@ const HANDLE_H = 60
 // [c − HANDLE_W/2, c + HANDLE_W/2]; the (rotated) left handle's horizontal
 // range is [0, HANDLE_H]. For non-overlap, c − HANDLE_W/2 ≥ HANDLE_H
 // → frameW ≥ HANDLE_W + 2·HANDLE_H.
-const SAME_AXIS_MIN = 2 * HANDLE_H
-const CROSS_PAIR_MIN = HANDLE_W + 2 * HANDLE_H
+// Buffer added to both bounds so frames are slightly bigger than the strict
+// minimum — avoids floating-point drift flipping the same-frame rectsOverlap
+// check from "touch" (no overlap) to "0.0001px overlap" (collision) at the
+// boundary, which made handles inconsistently hidden.
+const HANDLE_BUFFER = 20
+const SAME_AXIS_MIN = 2 * HANDLE_H + HANDLE_BUFFER
+const CROSS_PAIR_MIN = HANDLE_W + 2 * HANDLE_H + HANDLE_BUFFER
 
 /**
  * `scale` is the *size multiplier* applied to the canvas by setting

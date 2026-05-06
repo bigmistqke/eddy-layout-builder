@@ -1,6 +1,7 @@
 #root {
   --color-back: #1b1b1b;
-  --color-front: white;
+  --color-front: rgb(180 180 180);
+  --color-active: white;
   --color-selection: white;
 
   --hud-radius: 20px;

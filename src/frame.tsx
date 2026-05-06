@@ -200,10 +200,27 @@ export function Frame(
     }
   }
 
-  // Subscribe to "registry changed" notifications so checkAllHandles re-runs
-  // whenever any handle / HUD mounts or unmounts (including HUD el changes
-  // since those go through registerCollidable too).
-  onSettled(() => context.registerUpdateCollision(checkAllHandles))
+  // Drive checkAllHandles via a createEffect that tracks every signal it
+  // reads. Solid batches signal updates within a render pass, so this
+  // fires *once* per batch with all 4 handle signals + HUD signals settled
+  // — instead of 8 cascading calls (one per registerCollidable cleanup +
+  // register × 4 directions) we'd get from the registerUpdateCollision
+  // subscription path. isAnimating in the tuple makes the effect re-fire
+  // when the animation finishes, refreshing handle visibility against the
+  // settled geometry.
+  createEffect(
+    () => [
+      topEl(),
+      bottomEl(),
+      leftEl(),
+      rightEl(),
+      context.bottomBarEl(),
+      context.breadcrumbEl(),
+      context.contextualToolbarEl(),
+      context.isAnimating(),
+    ],
+    () => checkAllHandles(),
+  )
   onSettled(() => context.observeFrame(frameRef, checkAllHandles))
 
   return (

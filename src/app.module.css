@@ -104,5 +104,5 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e94949;
+  color: var(--color-front);
 }

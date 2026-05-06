@@ -55,7 +55,7 @@
 }
 
 .breadcrumbContent button.active {
-  color: var(--color-selection);
+  color: var(--color-active);
   text-decoration: underline;
 }
 
