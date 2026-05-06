@@ -1,11 +1,11 @@
 import { Show, useContext } from "solid-js"
-import { logAction } from "./actions-log"
-import { Context } from "./context"
-import { Notch } from "./frame"
-import { BackIcon } from "./icons"
-import styles from "./contextual-toolbar.module.css"
+import { Context } from "../context"
+import { Notch } from "../frame"
+import { BackIcon } from "../icons"
+import { logAction } from "../utils"
+import styles from "./contextual.module.css"
 
-export function ContextualToolbar() {
+export function Contextual() {
   const context = useContext(Context)!
   // Back button only makes sense when the canvas is actually zoomed in.
   // Future buttons would OR their own conditions in here.
@@ -15,13 +15,13 @@ export function ContextualToolbar() {
     <Show when={hasAnyButton()}>
       <Notch
         ref={context.setContextualToolbarEl}
-        class={styles.toolbarNotch}
+        class={styles.notch}
         orientation="right"
       >
-        <div class={styles.toolbarContent}>
+        <div class={styles.content}>
           <Show when={context.isCanvasZoomed()}>
             <button
-              class={styles.toolbarButton}
+              class={styles.button}
               data-action="back"
               onClick={() => {
                 logAction("back")

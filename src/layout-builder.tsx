@@ -9,11 +9,11 @@ import {
   untrack,
   useContext,
 } from "solid-js"
-import { logAction } from "./actions-log"
 import { MiniNode } from "./breadcrumb-minimap"
 import { Context } from "./context"
-import { ContextualToolbar } from "./contextual-toolbar"
+import { Contextual } from "./hud/contextual"
 import { Notch } from "./frame"
+import { logAction } from "./utils"
 import styles from "./layout-builder.module.css"
 import type { Container, Node, Selection } from "./types"
 import {
@@ -306,7 +306,7 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
           {props.children}
         </div>
         <Breadcrumb canvasAspect={canvasAspect} />
-        <ContextualToolbar />
+        <Contextual />
       </div>
     </div>
   )

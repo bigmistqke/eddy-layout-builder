@@ -1,5 +1,4 @@
 import { createSignal, createStore, Match, Show, Switch } from "solid-js"
-import { logAction } from "./actions-log"
 import styles from "./app.module.css"
 import { Context } from "./context"
 import { Notch } from "./frame"
@@ -7,7 +6,7 @@ import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "./icons"
 import { LayoutBuilder } from "./layout-builder"
 import { NodeComponent } from "./node-component"
 import type { AppState, Container, Direction, Entity, HandleOp, Node, SelectedHandlesState } from "./types"
-import { resolveNode } from "./utils"
+import { logAction, resolveNode } from "./utils"
 
 function cloneNode(node: Node): Node {
   if (node.type === "entity") return { ...node }
