@@ -1,5 +1,13 @@
-import { HANDLE_BUFFER, HANDLE_H, HANDLE_W, SAME_AXIS_MIN, CROSS_PAIR_MIN } from "./ui-constants"
-import type { Selection } from "./types"
+import {
+  HANDLE_BUFFER,
+  HANDLE_H,
+  HANDLE_W,
+  ROOT_PADDING,
+  SAME_AXIS_MIN,
+  SIBLING_GAP,
+  CROSS_PAIR_MIN,
+} from "./ui-constants"
+import type { Container, Direction, Node, Selection } from "./types"
 
 /**
  * `scale` is the *size multiplier* applied to the canvas by setting
@@ -128,4 +136,102 @@ export function computeViewportTransform(
  *  separately via `width`/`height`. */
 export function transformToCss(t: ViewportTransform) {
   return `translate(${t.x}px, ${t.y}px)`
+}
+
+/** Axis-aligned rect in canvas-local coordinates. Coordinates are in CSS
+ *  pixels of the un-zoomed canvas. */
+export type Rect = { x: number; y: number; w: number; h: number }
+
+/**
+ * Compute a frame's rect from the layout tree and canvas dimensions.
+ *
+ * Mirrors the CSS flex layout: every container has `display: flex` with
+ * children at `flex: 1`. The root container has padding on all sides plus
+ * gap between children; non-root containers have only gap.
+ *
+ * Pure function — no DOM reads. Caller passes canvas dims and the path of
+ * the target frame (empty path = root container).
+ */
+export function frameRect(
+  layout: Container,
+  path: number[],
+  canvas: { w: number; h: number },
+): Rect {
+  let rect: Rect = {
+    x: ROOT_PADDING,
+    y: ROOT_PADDING,
+    w: canvas.w - 2 * ROOT_PADDING,
+    h: canvas.h - 2 * ROOT_PADDING,
+  }
+  let current: Node = layout
+  for (const idx of path) {
+    if (current.type !== "container") break
+    const n = current.children.length
+    const totalGap = SIBLING_GAP * (n - 1)
+    if (current.direction === "horizontal") {
+      const childW = (rect.w - totalGap) / n
+      rect = {
+        x: rect.x + idx * (childW + SIBLING_GAP),
+        y: rect.y,
+        w: childW,
+        h: rect.h,
+      }
+    } else {
+      const childH = (rect.h - totalGap) / n
+      rect = {
+        x: rect.x,
+        y: rect.y + idx * (childH + SIBLING_GAP),
+        w: rect.w,
+        h: childH,
+      }
+    }
+    current = current.children[idx]
+  }
+  return rect
+}
+
+/** Apply scale + translation to a rect. The scale multiplies width/height
+ *  and offsets x/y; the translation is added on top in canvas coords. */
+export function applyTransform(
+  rect: Rect,
+  scale: number,
+  translation: { x: number; y: number },
+): Rect {
+  return {
+    x: rect.x * scale + translation.x,
+    y: rect.y * scale + translation.y,
+    w: rect.w * scale,
+    h: rect.h * scale,
+  }
+}
+
+/** Per-direction extend amount (px) for a frame's handle notches against
+ *  the HUDs on each canvas edge. Non-zero when the frame's edge is
+ *  underneath the corresponding HUD's interior face. */
+export function computeExtends(
+  rect: Rect,
+  canvas: { w: number; h: number },
+  hudInsets: HudInsets,
+): Record<Direction, number> {
+  return {
+    top: Math.max(0, hudInsets.top - rect.y),
+    bottom: Math.max(0, rect.y + rect.h - (canvas.h - hudInsets.bottom)),
+    left: Math.max(0, hudInsets.left - rect.x),
+    right: Math.max(0, rect.x + rect.w - (canvas.w - hudInsets.right)),
+  }
+}
+
+/** Per-direction stick amount (px) — how far to pull each handle inward
+ *  to keep it visible inside the canvas viewport. Non-zero when the frame
+ *  extends past the canvas edge entirely. */
+export function computeSticks(
+  rect: Rect,
+  canvas: { w: number; h: number },
+): Record<Direction, number> {
+  return {
+    top: Math.max(0, -rect.y),
+    bottom: Math.max(0, rect.y + rect.h - canvas.h),
+    left: Math.max(0, -rect.x),
+    right: Math.max(0, rect.x + rect.w - canvas.w),
+  }
 }
