@@ -6,14 +6,13 @@ import {
   createSignal,
   For,
   onSettled,
-  Show,
   untrack,
   useContext,
 } from "solid-js"
-import { Context } from "./context"
-import { Notch } from "./frame"
-import { ContextualToolbar } from "./contextual-toolbar"
 import { MiniNode } from "./breadcrumb-minimap"
+import { Context } from "./context"
+import { ContextualToolbar } from "./contextual-toolbar"
+import { Notch } from "./frame"
 import styles from "./layout-builder.module.css"
 import type { Node } from "./types"
 import {
@@ -61,35 +60,28 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   const segmentSize = () => {
     const w = SEGMENT_HEIGHT * props.canvasAspect()
     return {
-      height: `${SEGMENT_HEIGHT}px`,
-      width: `${Math.min(MAX_SEGMENT_WIDTH, w)}px`,
+      height: `${SEGMENT_HEIGHT}`,
+      width: `${MAX_SEGMENT_WIDTH}`,
     }
   }
 
   return (
-    <Notch
-      ref={context.setBreadcrumbEl}
-      class={styles.breadcrumbNotch}
-      orientation="top"
-    >
+    <Notch ref={context.setBreadcrumbEl} class={styles.breadcrumbNotch} orientation="top">
       <div class={styles.breadcrumbContent}>
         <For each={segments()}>
           {(seg, i) => (
-            <>
-              <Show when={i() > 0}>
-                <span class={styles.separator}>&gt;</span>
-              </Show>
-              <button
-                class={[
-                  styles.minimapButton,
-                  seg().depth === context.selection.depth ? styles.active : "",
-                ].join(" ")}
-                style={{ height: segmentSize().height, width: segmentSize().width }}
-                onClick={() => context.setSelection(s => ({ ...s, depth: seg().depth }))}
-              >
-                <MiniNode node={context.app.layout} highlightPath={seg().highlightPath} />
-              </button>
-            </>
+            <button
+              class={[
+                styles.minimapButton,
+                seg().depth === context.selection.depth ? styles.active : "",
+              ].join(" ")}
+              style={{
+                "aspect-ratio": props.canvasAspect(),
+              }}
+              onClick={() => context.setSelection(s => ({ ...s, depth: seg().depth }))}
+            >
+              <MiniNode node={context.app.layout} highlightPath={seg().highlightPath} />
+            </button>
           )}
         </For>
       </div>

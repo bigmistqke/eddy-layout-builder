@@ -25,7 +25,7 @@
 }
 
 .miniHighlight {
-  outline: 2px solid var(--color-active);
+  outline: 2px solid var(--color-active-back);
   outline-offset: -1px;
-  background: color-mix(in srgb, var(--color-active) 30%, transparent);
+  background: color-mix(in srgb, var(--color-back) 30%, transparent);
 }

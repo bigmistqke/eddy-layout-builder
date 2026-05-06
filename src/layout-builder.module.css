@@ -30,15 +30,15 @@
   position: absolute;
   top: 0;
   left: 12px;
-  height: var(--hud-height-notch);
+  height: var(--hud-height);
   z-index: var(--z-hud);
 }
 
 .breadcrumbContent {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding-inline: calc(var(--hud-radius) * 2);
+  gap: var(--padding);
+  padding-inline: calc(var(--radius) * 2);
   height: 100%;
   color: var(--color-front);
   white-space: nowrap;
@@ -47,12 +47,14 @@
 .breadcrumbContent .minimapButton {
   background: none;
   border: none;
-  padding: 4px;
+  padding: var(--padding);
   cursor: pointer;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
-  border-radius: 4px;
+  border-radius: var(--padding);
+  height: calc(100% - 2 * var(--padding));
+  margin: var(--padding);
   transition: background 120ms ease;
 }
 
@@ -61,7 +63,7 @@
 }
 
 .breadcrumbContent .minimapButton.active {
-  background: var(--color-active);
+  background: var(--color-active-back);
 }
 
 .breadcrumbContent .separator {

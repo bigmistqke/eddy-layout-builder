@@ -5,7 +5,7 @@
 }
 
 .notch {
-  height: calc(var(--hud-height-notch) + var(--extend, 0px));
+  height: calc(var(--hud-height) + var(--extend, 0px));
   position: absolute;
   z-index: var(--z-notch);
 
@@ -26,7 +26,7 @@
     top: 50%;
     rotate: 90deg;
     transform-origin: top;
-    translate: calc((var(--hud-height-notch) + var(--extend, 0px))) 0;
+    translate: calc((var(--hud-height) + var(--extend, 0px))) 0;
   }
 
   &.right {
@@ -34,7 +34,7 @@
     top: 50%;
     rotate: -90deg;
     transform-origin: top;
-    translate: calc(-1 * (var(--hud-height-notch) + var(--extend, 0px))) 0;
+    translate: calc(-1 * (var(--hud-height) + var(--extend, 0px))) 0;
   }
 }
 
@@ -55,14 +55,14 @@
 
   & > .center,
   & > .edge {
-    margin-inline: /* var(--center-margin,  */ var(--hud-radius) /* ) */;
+    margin-inline: /* var(--center-margin,  */ var(--radius) /* ) */;
   }
 
   & > .root,
   & > .edge {
-    border-radius: var(--hud-radius);
+    border-radius: var(--radius);
     content: "";
-    flex: 0 var(--hud-radius);
+    flex: 0 var(--radius);
     overflow: hidden;
   }
 
@@ -76,7 +76,7 @@
 .arrow {
   position: absolute;
   translate: -50% 0;
-  top: var(--hud-radius);
+  top: var(--radius);
   transform-origin: center bottom;
   z-index: var(--z-notch-handle);
   pointer-events: none;
@@ -84,8 +84,8 @@
 
 .edge-button {
   position: absolute;
-  width: calc(var(--hud-radius) * 4);
-  height: calc(var(--hud-radius) * 4);
+  width: calc(var(--radius) * 4);
+  height: calc(var(--radius) * 4);
   border-radius: 50%;
   background: var(--color-back, black);
   border: none;
@@ -165,7 +165,7 @@
 .hud-right > .notch-backdrop > .edge,
 .hud-right > .notch-backdrop > .center {
   margin-inline: 0;
-  margin-block: var(--hud-radius);
+  margin-block: var(--radius);
 }
 .hud-right > .notch-backdrop > .root {
   corner-top-left-shape: scoop; /* meets .center */
@@ -186,7 +186,7 @@
 .hud-left > .notch-backdrop > .edge,
 .hud-left > .notch-backdrop > .center {
   margin-inline: 0;
-  margin-block: var(--hud-radius);
+  margin-block: var(--radius);
 }
 .hud-left > .notch-backdrop > .root {
   corner-top-right-shape: scoop; /* meets .center */
