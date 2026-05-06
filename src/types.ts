@@ -20,6 +20,14 @@ export type Selection = { path: Array<number>; depth: number }
 export type HandleOp = "append" | "split"
 export type HandleSpec = { dir: Direction; op: HandleOp }
 
+/** Per-direction extend (HUD overlap) and stick (canvas overflow) for the
+ *  currently selected frame's handles. Owned by layout-builder; read by
+ *  the selected Frame to apply via --extend / --stick CSS variables. */
+export type SelectedHandlesState = {
+  extend: Record<Direction, number>
+  stick: Record<Direction, number>
+}
+
 export type AppContext = {
   selection: Selection
   setSelection: StoreSetter<Selection>
@@ -54,4 +62,6 @@ export type AppContext = {
    *  don't toggle handle visibility under the animation. */
   isAnimating: Accessor<boolean>
   setIsAnimating: (animating: boolean) => void
+  selectedHandlesState: Accessor<SelectedHandlesState>
+  setSelectedHandlesState: (state: SelectedHandlesState) => void
 }

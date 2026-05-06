@@ -15,7 +15,7 @@ import { Notch } from "./frame"
 import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "./icons"
 import { LayoutBuilder } from "./layout-builder"
 import { NodeComponent } from "./node-component"
-import type { AppState, Container, Direction, Entity, HandleOp, Node } from "./types"
+import type { AppState, Container, Direction, Entity, HandleOp, Node, SelectedHandlesState } from "./types"
 import { resolveNode } from "./utils"
 
 function cloneNode(node: Node): Node {
@@ -48,6 +48,11 @@ export function App() {
   const [canvasEl, setCanvasEl] = createSignal<HTMLElement | undefined>()
   const [isCanvasZoomed, setIsCanvasZoomed] = createSignal(false)
   const [isAnimating, setIsAnimating] = createSignal(false, { ownedWrite: true })
+  const ZERO_BY_DIR: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
+  const [selectedHandlesState, setSelectedHandlesState] = createSignal<SelectedHandlesState>(
+    { extend: ZERO_BY_DIR, stick: ZERO_BY_DIR },
+    { ownedWrite: true },
+  )
 
   const frameCallbacks = new Set<() => void>()
   const controller = new AbortController()
@@ -256,6 +261,8 @@ export function App() {
         setIsCanvasZoomed,
         isAnimating,
         setIsAnimating,
+        selectedHandlesState,
+        setSelectedHandlesState,
       }}
     >
       <div style={{ display: "flex", width: "100vw", height: "100%", position: "relative" }}>
