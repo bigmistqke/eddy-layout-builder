@@ -5,7 +5,7 @@ import { ArrowIcon } from "./icons"
 import styles from "./notch.module.css"
 
 export function Notch(props: {
-  ref?: (el: HTMLDivElement) => void
+  ref?: (element: HTMLDivElement) => void
   style?: JSX.CSSProperties
   children: JSX.Element
   class?: string
@@ -19,7 +19,7 @@ export function Notch(props: {
       class={[styles.notch, styles[`hud${capitalize(props.orientation ?? "bottom")}`], props.class]}
       style={props.style}
       data-direction={props["data-direction"]}
-      onClick={e => e.stopPropagation()}
+      onClick={event => event.stopPropagation()}
     >
       <div class={styles.notchBackdrop}>
         <div class={styles.edge} onClick={props.onClick} />

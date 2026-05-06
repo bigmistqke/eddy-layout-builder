@@ -33,16 +33,16 @@ function Frame(
   // frame that isn't the selection's targeted scope.
   const isSelected = createMemo(() => props.handles.length > 0)
 
-  function handleStyle(dir: Direction): JSX.CSSProperties | undefined {
+  function handleStyle(direction: Direction): JSX.CSSProperties | undefined {
     if (!isSelected()) return undefined
     const state = context.selectedHandlesState()
-    const e = state.extend[dir]
-    const s = state.stick[dir]
-    if (e === 0 && s === 0) return undefined
-    const out: Record<string, string> = {}
-    if (e > 0) out["--extend"] = `${e}px`
-    if (s > 0) out["--stick"] = `${s}px`
-    return out as JSX.CSSProperties
+    const extend = state.extend[direction]
+    const stick = state.stick[direction]
+    if (extend === 0 && stick === 0) return undefined
+    const style: Record<string, string> = {}
+    if (extend > 0) style["--extend"] = `${extend}px`
+    if (stick > 0) style["--stick"] = `${stick}px`
+    return style as JSX.CSSProperties
   }
 
   return (
@@ -54,11 +54,11 @@ function Frame(
     >
       <Show when={!context.isAnimating()}>
         <For each={props.handles}>
-          {h => (
+          {handle => (
             <ArrowNotch
-              direction={h().dir}
-              style={handleStyle(h().dir)}
-              onClick={() => props.onAddFrame(h().dir, h().op)}
+              direction={handle().dir}
+              style={handleStyle(handle().dir)}
+              onClick={() => props.onAddFrame(handle().dir, handle().op)}
             />
           )}
         </For>
@@ -92,10 +92,10 @@ export function NodeComponent(props: {
     // Mode-driven op: in append mode all 4 arrows are `+`, in split mode all
     // are split. The actual semantics of "append" on a cross-axis arrow
     // (which wraps) is resolved in app.tsx's handleAddFrame.
-    const op: HandleOp = context.app.view.mode
+    const operation: HandleOp = context.app.view.mode
     const directions: Direction[] = ["top", "bottom", "left", "right"]
 
-    return directions.map(dir => ({ dir, op }))
+    return directions.map(direction => ({ dir: direction, op: operation }))
   })
 
   const inLayoutView = () => context.app.view.type === "layout"

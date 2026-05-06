@@ -2,11 +2,11 @@ import type { Container, Entity } from "./types"
 
 export function resolveNode(layout: Container, path: number[]): Entity | Container {
   let current: Entity | Container = layout
-  for (let i = 0; i < path.length; i++) {
+  for (let index = 0; index < path.length; index++) {
     if (current.type !== "container") {
       throw new Error("Unexpected entity node")
     }
-    current = current.children[path[i]]
+    current = current.children[path[index]]
   }
   return current
 }
@@ -24,10 +24,10 @@ export function logAction(type: string, payload?: Record<string, unknown>): void
 }
 
 /** Uppercase the first character of a string. */
-export function capitalize<S extends string>(s: S): Capitalize<S> {
-  return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>
+export function capitalize<Input extends string>(value: Input): Capitalize<Input> {
+  return (value.charAt(0).toUpperCase() + value.slice(1)) as Capitalize<Input>
 }
 
-export function pathEquals(a: number[], b: number[]) {
-  return a.length === b.length && a.every((v, i) => v === b[i])
+export function pathEquals(first: number[], second: number[]) {
+  return first.length === second.length && first.every((value, index) => value === second[index])
 }

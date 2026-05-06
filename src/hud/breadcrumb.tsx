@@ -22,89 +22,112 @@ const GAP = 1
 
 /** Draw the layout tree onto a canvas, outlining the highlighted node. */
 function drawNode(
-  ctx: CanvasRenderingContext2D,
+  canvasContext: CanvasRenderingContext2D,
   node: Node,
-  hl: number[],
+  highlightPath: number[],
   x: number,
   y: number,
-  w: number,
-  h: number,
+  width: number,
+  height: number,
 ) {
-  const isHl = hl.length === 0
+  const isHighlighted = highlightPath.length === 0
   if (node.type === "entity") {
-    ctx.fillStyle = COLOR_CELL
-    ctx.fillRect(x, y, w, h)
+    canvasContext.fillStyle = COLOR_CELL
+    canvasContext.fillRect(x, y, width, height)
   } else {
-    ctx.fillStyle = COLOR_CONTAINER
-    ctx.fillRect(x, y, w, h)
-    const n = node.children.length
+    canvasContext.fillStyle = COLOR_CONTAINER
+    canvasContext.fillRect(x, y, width, height)
+    const childCount = node.children.length
     if (node.direction === "horizontal") {
-      const childW = (w - GAP * (n - 1)) / n
-      for (let i = 0; i < n; i++) {
-        const childHl = i === hl[0] ? hl.slice(1) : [-1]
-        drawNode(ctx, node.children[i], childHl, x + i * (childW + GAP), y, childW, h)
+      const childWidth = (width - GAP * (childCount - 1)) / childCount
+      for (let index = 0; index < childCount; index++) {
+        const childHighlight = index === highlightPath[0] ? highlightPath.slice(1) : [-1]
+        drawNode(
+          canvasContext,
+          node.children[index],
+          childHighlight,
+          x + index * (childWidth + GAP),
+          y,
+          childWidth,
+          height,
+        )
       }
     } else {
-      const childH = (h - GAP * (n - 1)) / n
-      for (let i = 0; i < n; i++) {
-        const childHl = i === hl[0] ? hl.slice(1) : [-1]
-        drawNode(ctx, node.children[i], childHl, x, y + i * (childH + GAP), w, childH)
+      const childHeight = (height - GAP * (childCount - 1)) / childCount
+      for (let index = 0; index < childCount; index++) {
+        const childHighlight = index === highlightPath[0] ? highlightPath.slice(1) : [-1]
+        drawNode(
+          canvasContext,
+          node.children[index],
+          childHighlight,
+          x,
+          y + index * (childHeight + GAP),
+          width,
+          childHeight,
+        )
       }
     }
   }
-  if (isHl) {
-    ctx.strokeStyle = COLOR_HIGHLIGHT
-    ctx.lineWidth = HIGHLIGHT_WIDTH
+  if (isHighlighted) {
+    canvasContext.strokeStyle = COLOR_HIGHLIGHT
+    canvasContext.lineWidth = HIGHLIGHT_WIDTH
     const inset = HIGHLIGHT_WIDTH / 2
-    ctx.strokeRect(x + inset, y + inset, w - HIGHLIGHT_WIDTH, h - HIGHLIGHT_WIDTH)
+    canvasContext.strokeRect(
+      x + inset,
+      y + inset,
+      width - HIGHLIGHT_WIDTH,
+      height - HIGHLIGHT_WIDTH,
+    )
   }
 }
 
 function Minimap(props: { layout: Container; highlightPath: number[]; aspect: number }) {
-  let canvasEl!: HTMLCanvasElement
-  // Canvas display size is CSS-driven (height: 100%; aspect-ratio). When
-  // the breadcrumb's scrollbar appears, the button shrinks vertically and
-  // the canvas's CSS height shrinks too — we observe that and resize the
+  let canvasElement!: HTMLCanvasElement
+  // Canvas display size is CSS-driven (width/height: 100%). When the
+  // breadcrumb's scrollbar appears the button shrinks vertically and the
+  // canvas's CSS height shrinks too — we observe that and resize the
   // bitmap to match. Width is locked at the full-size canvas width on
   // .button itself, so total content width stays stable across scrollbar
   // toggles (no resize-loop).
-  const [size, setSize] = createSignal({ w: 0, h: 0 })
+  const [size, setSize] = createSignal({ width: 0, height: 0 })
   onSettled(() => {
-    if (!canvasEl) return
-    const ro = new ResizeObserver(() => {
-      const r = canvasEl.getBoundingClientRect()
-      setSize({ w: r.width, h: r.height })
+    if (!canvasElement) return
+    const resizeObserver = new ResizeObserver(() => {
+      const rect = canvasElement.getBoundingClientRect()
+      setSize({ width: rect.width, height: rect.height })
     })
-    ro.observe(canvasEl)
-    return () => ro.disconnect()
+    resizeObserver.observe(canvasElement)
+    return () => resizeObserver.disconnect()
   })
   createEffect(
     () => [props.layout, props.highlightPath, props.aspect, size()] as const,
-    ([layout, highlightPath, aspect, sz]) => {
-      if (!canvasEl || sz.w < 1 || sz.h < 1) return
-      const dpr = window.devicePixelRatio || 1
-      canvasEl.width = sz.w * dpr
-      canvasEl.height = sz.h * dpr
-      const ctx = canvasEl.getContext("2d")!
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      ctx.clearRect(0, 0, sz.w, sz.h)
+    ([layout, highlightPath, aspect, currentSize]) => {
+      if (!canvasElement || currentSize.width < 1 || currentSize.height < 1) return
+      const devicePixelRatio = window.devicePixelRatio || 1
+      canvasElement.width = currentSize.width * devicePixelRatio
+      canvasElement.height = currentSize.height * devicePixelRatio
+      const canvasContext = canvasElement.getContext("2d")!
+      canvasContext.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0)
+      canvasContext.clearRect(0, 0, currentSize.width, currentSize.height)
       // Letterbox the layout inside the canvas box — same idea as
       // object-fit: contain, done in the draw call so the bitmap matches
       // the canvas's actual pixel size with no wasted resolution.
-      let dw: number, dh: number
-      if (sz.w / sz.h > aspect) {
-        dh = sz.h
-        dw = dh * aspect
+      let drawWidth: number, drawHeight: number
+      if (currentSize.width / currentSize.height > aspect) {
+        drawHeight = currentSize.height
+        drawWidth = drawHeight * aspect
       } else {
-        dw = sz.w
-        dh = dw / aspect
+        drawWidth = currentSize.width
+        drawHeight = drawWidth / aspect
       }
-      const dx = (sz.w - dw) / 2
-      const dy = (sz.h - dh) / 2
-      untrack(() => drawNode(ctx, layout, highlightPath, dx, dy, dw, dh))
+      const drawX = (currentSize.width - drawWidth) / 2
+      const drawY = (currentSize.height - drawHeight) / 2
+      untrack(() =>
+        drawNode(canvasContext, layout, highlightPath, drawX, drawY, drawWidth, drawHeight),
+      )
     },
   )
-  return <canvas ref={canvasEl} style={{ width: "100%", height: "100%", display: "block" }} />
+  return <canvas ref={canvasElement} style={{ width: "100%", height: "100%", display: "block" }} />
 }
 
 export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
@@ -115,21 +138,21 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   // `selection.depth` should take when this segment is tapped.
   const segments = createMemo(() => {
     const { path } = context.app.selection
-    const segs: Array<{ highlightPath: number[]; depth: number }> = []
+    const result: Array<{ highlightPath: number[]; depth: number }> = []
 
     // Segment 0: root scope — empty highlight path means "this node (root)
     // is highlighted." Visually the entire minimap is outlined.
-    segs.push({ highlightPath: [], depth: path.length })
+    result.push({ highlightPath: [], depth: path.length })
 
     let current: Node = context.app.layout
-    for (let i = 0; i < path.length; i++) {
+    for (let index = 0; index < path.length; index++) {
       if (current.type !== "container") break
-      current = current.children[path[i]]
-      const depth = path.length - 1 - i
-      segs.push({ highlightPath: path.slice(0, i + 1), depth })
+      current = current.children[path[index]]
+      const depth = path.length - 1 - index
+      result.push({ highlightPath: path.slice(0, index + 1), depth })
     }
 
-    return segs
+    return result
   })
 
   // Lock the button's inner width to the canvas's full-size width via a
@@ -141,32 +164,35 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   const FULL_CANVAS_H = 40
   const buttonWidth = () => `${Math.max(8, Math.round(FULL_CANVAS_H * props.canvasAspect()))}px`
 
-  let contentEl!: HTMLDivElement
+  let contentElement!: HTMLDivElement
   // Scroll the trailing breadcrumb into view whenever the chain grows.
   createEffect(
     () => segments().length,
-    n => {
-      if (!contentEl || n === 0) return
-      contentEl.scrollTo({ left: contentEl.scrollWidth, behavior: "smooth" })
+    count => {
+      if (!contentElement || count === 0) {
+        return
+      }
+
+      contentElement.scrollTo({ left: contentElement.scrollWidth, behavior: "smooth" })
     },
   )
 
   return (
     <Notch ref={context.setHudElement("breadcrumb")} class={styles.notch} orientation="top">
       <div
-        ref={contentEl}
+        ref={contentElement}
         class={styles.content}
         style={{ "--breadcrumb-button-width": buttonWidth() }}
       >
         <For each={segments()}>
-          {(segment, i) => (
+          {(segment, index) => (
             <button
               class={[
                 styles.button,
                 segment().depth === context.app.selection.depth ? styles.active : "",
               ].join(" ")}
               onClick={() => {
-                logAction("tap-breadcrumb", { depth: segment().depth, segmentIndex: i() })
+                logAction("tap-breadcrumb", { depth: segment().depth, segmentIndex: index() })
                 context.setSelection(selection => {
                   selection.depth = segment().depth
                 })

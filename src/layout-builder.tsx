@@ -36,16 +36,16 @@ function layoutSignature(layout: Container, selection: Selection): string {
 type ViewportState = ReturnType<typeof computeViewportTransform> & {
   // canvas viewport dimensions captured at the time of computation —
   // used to size canvasInner explicitly when zoomed.
-  baseW: number
-  baseH: number
+  baseWidth: number
+  baseHeight: number
 }
 
-const INITIAL_VIEWPORT: ViewportState = { ...IDENTITY_VIEWPORT, baseW: 0, baseH: 0 }
+const INITIAL_VIEWPORT: ViewportState = { ...IDENTITY_VIEWPORT, baseWidth: 0, baseHeight: 0 }
 
 export function LayoutBuilder(props: { children: ComponentProps<"div">["children"] }) {
   const context = useContext(Context)!
-  let canvasEl!: HTMLDivElement
-  let innerEl!: HTMLDivElement
+  let canvasElement!: HTMLDivElement
+  let innerElement!: HTMLDivElement
   // ownedWrite: signals can be written from the effect callback below
   // (which runs in unowned scope per @solidjs/signals, but this is a defensive
   // opt-in in case any caller path is owned).
@@ -54,7 +54,8 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // Uses epsilon comparison because computeViewportTransform can produce
   // sub-pixel floating-point drift between calls — without this, a recompute
   // post-animation would be flagged as "changed" and start a new animation.
-  const eq = (a: number, b: number, eps = 0.5) => Math.abs(a - b) < eps
+  const equalsWithin = (first: number, second: number, epsilon = 0.5) =>
+    Math.abs(first - second) < epsilon
   // Canvas aspect ratio (width / height) — driven by the canvas ResizeObserver
   // and consumed by Breadcrumb to size minimap segments. Defaults to 1 until
   // the first measurement; the breadcrumb briefly renders square segments and
@@ -62,12 +63,12 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   const [canvasAspect, setCanvasAspect] = createSignal(1, { ownedWrite: true })
   const [viewport, setViewport] = createSignal<ViewportState>(INITIAL_VIEWPORT, {
     ownedWrite: true,
-    equals: (a, b) =>
-      eq(a.scale, b.scale, 0.001) &&
-      eq(a.x, b.x) &&
-      eq(a.y, b.y) &&
-      eq(a.baseW, b.baseW) &&
-      eq(a.baseH, b.baseH),
+    equals: (first, second) =>
+      equalsWithin(first.scale, second.scale, 0.001) &&
+      equalsWithin(first.x, second.x) &&
+      equalsWithin(first.y, second.y) &&
+      equalsWithin(first.baseWidth, second.baseWidth) &&
+      equalsWithin(first.baseHeight, second.baseHeight),
   })
   // Imperative recompute: called from the selection-change effect, the
   // canvas-resize observer, and the post-animation settle. Short-circuits
@@ -76,15 +77,15 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // would retarget the CSS transition mid-flight).
   function layoutPass() {
     if (untrack(context.isAnimating)) return
-    if (!canvasEl) return
-    const canvasRect = canvasEl.getBoundingClientRect()
-    const canvas = { w: canvasRect.width, h: canvasRect.height }
+    if (!canvasElement) return
+    const canvasRect = canvasElement.getBoundingClientRect()
+    const canvas = { width: canvasRect.width, height: canvasRect.height }
 
     // Read selection inside untrack — layoutPass is the createEffect
     // callback (non-tracking by default in Solid 2.x), but the store-proxy
     // reads still warn STRICT_READ_UNTRACKED. Re-firing is driven by the
     // compute via layoutSignature, so untrack is correct here.
-    const sel = untrack(() => ({
+    const selection = untrack(() => ({
       path: context.app.selection.path.slice(),
       depth: context.app.selection.depth,
     }))
@@ -93,8 +94,8 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     // its path matches the empty targetedPath. So compute handle state
     // for the root rect; computeViewportTransform returns identity for
     // any frame that fits naturally, so the canvas pan/zoom stays zero.
-    const len = sel.path.length - sel.depth
-    const selectedPath = sel.path.slice(0, Math.max(0, len))
+    const targetedDepth = selection.path.length - selection.depth
+    const selectedPath = selection.path.slice(0, Math.max(0, targetedDepth))
 
     const hudRects = context.computeHudRects(canvasRect)
     const transform = untrack(() =>
@@ -106,38 +107,42 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     // at the scaled canvasInner size for accurate extend/stick checks.
     const realRect = untrack(() =>
       frameRect(context.app.layout, selectedPath, {
-        w: canvas.w * transform.scale,
-        h: canvas.h * transform.scale,
+        width: canvas.width * transform.scale,
+        height: canvas.height * transform.scale,
       }),
     )
     const postRect: Rect = {
       x: realRect.x + transform.x,
       y: realRect.y + transform.y,
-      w: realRect.w,
-      h: realRect.h,
+      width: realRect.width,
+      height: realRect.height,
     }
     const extend = computeExtends(postRect, hudRects)
     const stick = computeSticks(postRect, canvas)
 
-    setViewport({ ...transform, baseW: canvas.w, baseH: canvas.h })
+    setViewport({ ...transform, baseWidth: canvas.width, baseHeight: canvas.height })
     context.setSelectedHandlesState({ extend, stick })
   }
 
   onSettled(() => {
-    if (!canvasEl) return
-    // Seed baseW/baseH so the first render has explicit pixel dimensions
-    // on canvasInner — required for width/height transitions to animate
-    // (browsers won't interpolate between auto and a pixel value).
-    const rect = canvasEl.getBoundingClientRect()
-    setViewport(v => ({ ...v, baseW: rect.width, baseH: rect.height }))
-    setCanvasAspect(rect.height > 0 ? rect.width / rect.height : 1)
-    const ro = new ResizeObserver(() => {
-      const r = canvasEl.getBoundingClientRect()
-      if (r.height > 0) setCanvasAspect(r.width / r.height)
+    if (!canvasElement) return
+    // Seed baseWidth/baseHeight so the first render has explicit pixel
+    // dimensions on canvasInner — required for width/height transitions to
+    // animate (browsers won't interpolate between auto and a pixel value).
+    const initialRect = canvasElement.getBoundingClientRect()
+    setViewport(viewport => ({
+      ...viewport,
+      baseWidth: initialRect.width,
+      baseHeight: initialRect.height,
+    }))
+    setCanvasAspect(initialRect.height > 0 ? initialRect.width / initialRect.height : 1)
+    const resizeObserver = new ResizeObserver(() => {
+      const rect = canvasElement.getBoundingClientRect()
+      if (rect.height > 0) setCanvasAspect(rect.width / rect.height)
       layoutPass()
     })
-    ro.observe(canvasEl)
-    return () => ro.disconnect()
+    resizeObserver.observe(canvasElement)
+    return () => resizeObserver.disconnect()
   })
 
   // Selection or layout-topology change drives viewport recomputes.
@@ -151,9 +156,9 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // so the setter's return value isn't treated as a cleanup function.
   createEffect(
     () => {
-      const v = viewport()
+      const current = viewport()
       // Any non-identity transform — including pan-only (scale=1, x or y != 0).
-      return v.scale > 1 || Math.abs(v.x) > 0.5 || Math.abs(v.y) > 0.5
+      return current.scale > 1 || Math.abs(current.x) > 0.5 || Math.abs(current.y) > 0.5
     },
     zoomed => {
       context.setIsCanvasZoomed(zoomed)
@@ -167,43 +172,44 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // keyframes in a single Animation, so the easing curve's time fraction is
   // applied to all of them together — width can't fall behind transform
   // the way it can with separate CSS transitions.
-  let currentAnim: Animation | undefined
+  let currentAnimation: Animation | undefined
   let animationTimer: ReturnType<typeof setTimeout> | undefined
   const ANIMATION_MS = 220
   const SETTLE_MS = ANIMATION_MS + 20
 
-  createEffect(viewport, v => {
-    if (!innerEl) return
-    if (v.baseW === 0 || v.baseH === 0) return
+  createEffect(viewport, viewport => {
+    if (!innerElement) return
+    if (viewport.baseWidth === 0 || viewport.baseHeight === 0) return
 
-    const toTransform = transformToCss(v)
-    const toW = `${v.baseW * v.scale}px`
-    const toH = `${v.baseH * v.scale}px`
+    const toTransform = transformToCss(viewport)
+    const toWidth = `${viewport.baseWidth * viewport.scale}px`
+    const toHeight = `${viewport.baseHeight * viewport.scale}px`
 
     // Read the rendered "from" state. If a previous animation was running,
     // computedStyle reflects its current value (mid-interpolation), so the
     // new animation seamlessly continues from there.
-    const cs = getComputedStyle(innerEl)
-    const fromTransform = cs.transform === "none" ? "translate(0px, 0px)" : cs.transform
-    const fromW = cs.width
-    const fromH = cs.height
+    const computedStyle = getComputedStyle(innerElement)
+    const fromTransform =
+      computedStyle.transform === "none" ? "translate(0px, 0px)" : computedStyle.transform
+    const fromWidth = computedStyle.width
+    const fromHeight = computedStyle.height
 
     // Cancel any in-flight animation; we're replacing it with a new one
     // that starts from where the canvas actually IS right now.
-    currentAnim?.cancel()
+    currentAnimation?.cancel()
 
     // Set the underlying inline style so post-animation the element rests
     // at the new state (fill: 'forwards' on the animation alone would also
     // work, but we want the underlying style to match for any consumer
     // reading style directly).
-    innerEl.style.transform = toTransform
-    innerEl.style.width = toW
-    innerEl.style.height = toH
+    innerElement.style.transform = toTransform
+    innerElement.style.width = toWidth
+    innerElement.style.height = toHeight
 
-    currentAnim = innerEl.animate(
+    currentAnimation = innerElement.animate(
       [
-        { transform: fromTransform, width: fromW, height: fromH },
-        { transform: toTransform, width: toW, height: toH },
+        { transform: fromTransform, width: fromWidth, height: fromHeight },
+        { transform: toTransform, width: toWidth, height: toHeight },
       ],
       { duration: ANIMATION_MS, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "none" },
     )
@@ -220,8 +226,8 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
 
   return (
     <div class={styles.layoutBuilder}>
-      <div class={styles.canvas} ref={canvasEl} data-canvas="true">
-        <div class={styles.canvasInner} data-canvas-inner="true" ref={innerEl}>
+      <div class={styles.canvas} ref={canvasElement} data-canvas="true">
+        <div class={styles.canvasInner} data-canvas-inner="true" ref={innerElement}>
           {props.children}
         </div>
         <Breadcrumb canvasAspect={canvasAspect} />

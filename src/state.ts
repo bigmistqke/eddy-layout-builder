@@ -74,18 +74,18 @@ export function createAppState(): AppContext {
       untrack(hudSignals.main[0]),
       untrack(hudSignals.contextual[0]),
     ]
-    const out: Rect[] = []
+    const rects: Rect[] = []
     for (const element of elements) {
       if (!element?.isConnected) continue
-      const r = element.getBoundingClientRect()
-      out.push({
-        x: r.left - canvasRect.left,
-        y: r.top - canvasRect.top,
-        w: r.width,
-        h: r.height,
+      const elementRect = element.getBoundingClientRect()
+      rects.push({
+        x: elementRect.left - canvasRect.left,
+        y: elementRect.top - canvasRect.top,
+        width: elementRect.width,
+        height: elementRect.height,
       })
     }
-    return out
+    return rects
   }
 
   const [isCanvasZoomed, setIsCanvasZoomed] = createSignal(false)
@@ -95,11 +95,11 @@ export function createAppState(): AppContext {
     { ownedWrite: true },
   )
 
-  const setSelection: StoreSetter<Selection> = function (fn) {
+  const setSelection: StoreSetter<Selection> = function (update) {
     setApp(app => {
-      const _selection = fn(app.selection)
-      if (_selection) {
-        app.selection = _selection
+      const nextSelection = update(app.selection)
+      if (nextSelection) {
+        app.selection = nextSelection
         return app
       }
     })
@@ -107,15 +107,15 @@ export function createAppState(): AppContext {
 
   function appendToContainer(containerPath: number[], insertIndex: number) {
     const newEntity = createEntity()
-    setApp(proxy => {
-      const container = resolveNode(proxy.layout, containerPath) as Container
+    setApp(app => {
+      const container = resolveNode(app.layout, containerPath) as Container
       container.children.splice(insertIndex, 0, newEntity)
     })
     setSelection(() => ({ path: [...containerPath, insertIndex], depth: 0 }))
   }
 
   function splitNode(nodePath: number[], direction: Direction) {
-    const splitDir: "horizontal" | "vertical" =
+    const splitDirection: "horizontal" | "vertical" =
       direction === "left" || direction === "right" ? "horizontal" : "vertical"
     const newEntityFirst = direction === "top" || direction === "left"
     const newEntityIndex = newEntityFirst ? 0 : 1
@@ -127,11 +127,11 @@ export function createAppState(): AppContext {
         direction: app.layout.direction,
         children: app.layout.children.map(cloneNode) as (Entity | Container)[],
       }
-      setApp(proxy => {
-        proxy.layout.direction = splitDir
-        proxy.layout.children.splice(
+      setApp(app => {
+        app.layout.direction = splitDirection
+        app.layout.children.splice(
           0,
-          proxy.layout.children.length,
+          app.layout.children.length,
           ...(newEntityFirst ? [newEntity, inner] : [inner, newEntity]),
         )
       })
@@ -147,10 +147,10 @@ export function createAppState(): AppContext {
     const parent = resolveNode(app.layout, parentPath) as Container
 
     if (parent.children.length === 1) {
-      setApp(proxy => {
-        const p = resolveNode(proxy.layout, parentPath) as Container
-        p.direction = splitDir
-        p.children.splice(newEntityFirst ? 0 : 1, 0, newEntity)
+      setApp(app => {
+        const parent = resolveNode(app.layout, parentPath) as Container
+        parent.direction = splitDirection
+        parent.children.splice(newEntityFirst ? 0 : 1, 0, newEntity)
       })
       setApp(app => {
         app.selection = { path: [...parentPath, newEntityIndex], depth: 0 }
@@ -162,12 +162,12 @@ export function createAppState(): AppContext {
     const node = resolveNode(app.layout, nodePath)
     const newContainer: Container = {
       type: "container",
-      direction: splitDir,
+      direction: splitDirection,
       children: newEntityFirst ? [newEntity, cloneNode(node)] : [cloneNode(node), newEntity],
     }
-    setApp(proxy => {
-      const p = resolveNode(proxy.layout, parentPath) as Container
-      p.children.splice(nodeIndex, 1, newContainer)
+    setApp(app => {
+      const parent = resolveNode(app.layout, parentPath) as Container
+      parent.children.splice(nodeIndex, 1, newContainer)
     })
     setSelection(() => ({ path: [...nodePath, newEntityIndex], depth: 0 }))
   }
@@ -180,25 +180,26 @@ export function createAppState(): AppContext {
   }
 
   function setView(view: AppView) {
-    setApp(store => {
-      store.view = view
+    setApp(app => {
+      app.view = view
     })
   }
 
-  function handleAddFrame(path: number[], direction: Direction, op: HandleOp) {
-    if (op === "split") {
+  function handleAddFrame(path: number[], direction: Direction, operation: HandleOp) {
+    if (operation === "split") {
       splitNode(path, direction)
       return
     }
-    // op === "append" — but if the requested direction is perpendicular to
-    // the parent's flex axis, a sibling-insert is meaningless. Wrap the
-    // entity instead (delegating to splitNode, which already does this).
+    // operation === "append" — but if the requested direction is
+    // perpendicular to the parent's flex axis, a sibling-insert is
+    // meaningless. Wrap the entity instead (delegating to splitNode,
+    // which already does this).
     const parentDirection: "horizontal" | "vertical" =
       path.length === 0
         ? app.layout.direction
         : (resolveNode(app.layout, path.slice(0, -1)) as Container).direction
-    const dirAxis = direction === "left" || direction === "right" ? "horizontal" : "vertical"
-    if (dirAxis !== parentDirection) {
+    const directionAxis = direction === "left" || direction === "right" ? "horizontal" : "vertical"
+    if (directionAxis !== parentDirection) {
       splitNode(path, direction)
       return
     }
