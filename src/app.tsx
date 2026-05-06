@@ -118,7 +118,7 @@ export function App() {
       const container = resolveNode(proxy.layout, containerPath) as Container
       container.children.splice(insertIndex, 0, newEntity)
     })
-    setSelection(() => ({ path: [...containerPath, insertIndex], depth: 1 }))
+    setSelection(() => ({ path: [...containerPath, insertIndex], depth: 0 }))
   }
 
   function splitNode(nodePath: number[], direction: Direction) {
