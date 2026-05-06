@@ -1,12 +1,11 @@
-import { createSignal, createStore, Match, Show, Switch } from "solid-js"
+import { createSignal, createStore, Show } from "solid-js"
 import styles from "./app.module.css"
 import { Context } from "./context"
-import { Notch } from "./frame"
-import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "./icons"
+import { Main } from "./hud/main"
 import { LayoutBuilder } from "./layout-builder"
 import { NodeComponent } from "./node-component"
 import type { AppState, Container, Direction, Entity, HandleOp, Node, SelectedHandlesState } from "./types"
-import { logAction, resolveNode } from "./utils"
+import { resolveNode } from "./utils"
 
 function cloneNode(node: Node): Node {
   if (node.type === "entity") return { ...node }
@@ -144,9 +143,6 @@ export function App() {
     handleAppend(path, direction)
   }
 
-  const layoutView = () =>
-    app.view.type === "layout" ? (app.view as { type: "layout"; mode: "append" | "split" }) : null
-
   return (
     <Context
       value={{
@@ -187,66 +183,19 @@ export function App() {
             />
           </LayoutBuilder>
         </Show>
-        <Notch ref={setBottomBarEl} class={styles.bottomBar}>
-          <div class={styles.bottomBarContent}>
-            <Switch>
-              <Match when={app.view.type === "recording"}>
-                <button
-                  class={styles.barButton}
-                  data-action="enter-layout"
-                  onClick={() => {
-                    logAction("enter-layout")
-                    enterAppendMode()
-                  }}
-                >
-                  <PlusIcon />
-                </button>
-                <button class={styles.barButton}>
-                  <RecordIcon />
-                </button>
-                <button class={styles.barButton}>
-                  <PlayIcon />
-                </button>
-              </Match>
-              <Match when={app.view.type === "layout"}>
-                <button
-                  class={[styles.modeButton, layoutView()?.mode === "append" ? styles.active : ""]}
-                  data-action="set-mode-append"
-                  onClick={() => {
-                    logAction("set-mode", { mode: "append" })
-                    enterAppendMode()
-                  }}
-                >
-                  <PlusIcon />
-                </button>
-                <button
-                  class={[styles.modeButton, layoutView()?.mode === "split" ? styles.active : ""]}
-                  data-action="set-mode-split"
-                  onClick={() => {
-                    logAction("set-mode", { mode: "split" })
-                    setApp(app => {
-                      app.view = { type: "layout", mode: "split" }
-                    })
-                  }}
-                >
-                  <SplitIcon />
-                </button>
-                <button
-                  class={styles.closeButton}
-                  data-action="exit-layout"
-                  onClick={() => {
-                    logAction("exit-layout")
-                    setApp(app => {
-                      app.view = { type: "recording" }
-                    })
-                  }}
-                >
-                  <CloseIcon />
-                </button>
-              </Match>
-            </Switch>
-          </div>
-        </Notch>
+        <Main
+          onEnterLayout={enterAppendMode}
+          onSetSplitMode={() =>
+            setApp(app => {
+              app.view = { type: "layout", mode: "split" }
+            })
+          }
+          onExitLayout={() =>
+            setApp(app => {
+              app.view = { type: "recording" }
+            })
+          }
+        />
       </div>
     </Context>
   )
