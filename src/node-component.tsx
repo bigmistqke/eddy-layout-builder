@@ -11,14 +11,6 @@ function pathEquals(a: number[], b: number[]) {
   return a.length === b.length && a.every((v, i) => v === b[i])
 }
 
-function opForDirection(
-  dir: Direction,
-  parentDirection: "horizontal" | "vertical",
-): HandleOp {
-  const dirAxis = dir === "left" || dir === "right" ? "horizontal" : "vertical"
-  return dirAxis === parentDirection ? "append" : "split"
-}
-
 function EntityFrame(
   props: ComponentProps<typeof Frame> & {
     entity: Entity
@@ -36,7 +28,6 @@ function EntityFrame(
 export function NodeComponent(props: {
   layout: Container | Entity
   onAddFrame(path: number[], direction: Direction, op: HandleOp): void
-  onSwapDirection(path: number[]): void
   path: Array<number>
 }) {
   const context = useContext(Context)!
@@ -49,18 +40,14 @@ export function NodeComponent(props: {
     const targetedPath = s.path.slice(0, s.path.length - s.depth)
     if (!pathEquals(props.path, targetedPath)) return []
 
-    // Parent direction: for non-root, the container that holds this frame.
-    // For root selection, root's own direction (root acts as its own parent).
-    const parentDirection: "horizontal" | "vertical" =
-      props.path.length === 0
-        ? context.app.layout.direction
-        : (resolveNode(context.app.layout, props.path.slice(0, -1)) as Container).direction
-
+    // Mode-driven op: in append mode all 4 arrows are `+`, in split mode all
+    // are split. The actual semantics of "append" on a cross-axis arrow
+    // (which wraps) is resolved in app.tsx's handleAddFrame.
+    const op: HandleOp = context.app.view.mode
     const directions: Direction[] = ["top", "bottom", "left", "right"]
-    return directions.map(dir => ({ dir, op: opForDirection(dir, parentDirection) }))
+    return directions.map(dir => ({ dir, op }))
   })
 
-  const isSelected = () => handles().length > 0
   const inLayoutView = () => context.app.view.type === "layout"
 
   return (
@@ -71,7 +58,6 @@ export function NodeComponent(props: {
             handles={handles()}
             style={{ "flex-direction": layout().direction === "horizontal" ? "row" : "column" }}
             onAddFrame={(direction, op) => props.onAddFrame(props.path, direction, op)}
-            onSwapDirection={isSelected() ? () => props.onSwapDirection(props.path) : undefined}
             class={[
               styles.container,
               inLayoutView()
@@ -88,7 +74,6 @@ export function NodeComponent(props: {
                   layout={child()}
                   path={[...props.path, index()]}
                   onAddFrame={props.onAddFrame}
-                  onSwapDirection={props.onSwapDirection}
                 />
               )}
             </For>
@@ -103,7 +88,6 @@ export function NodeComponent(props: {
             handles={handles()}
             class={inLayoutView() ? styles.layoutEntity : undefined}
             onAddFrame={(direction, op) => props.onAddFrame(props.path, direction, op)}
-            onSwapDirection={isSelected() ? () => props.onSwapDirection(props.path) : undefined}
             onClick={() => {
               if (!inLayoutView()) return
               context.setSelection(() => ({ path: props.path, depth: 0 }))

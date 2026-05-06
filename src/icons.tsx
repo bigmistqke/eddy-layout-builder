@@ -108,32 +108,3 @@ export function BackIcon(props: { class?: string }) {
   )
 }
 
-export function SwapIcon(props: { class?: string }) {
-  return (
-    <svg
-      class={props.class}
-      width="35"
-      height="35"
-      viewBox="0 0 35 35"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M2 17.5 L33 17.5 M2 17.5 L8 11.5 M2 17.5 L8 23.5 M33 17.5 L27 11.5 M33 17.5 L27 23.5"
-        stroke="currentColor"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        fill="none"
-      />
-      <path
-        d="M17.5 2 L17.5 33 M17.5 2 L11.5 8 M17.5 2 L23.5 8 M17.5 33 L11.5 27 M17.5 33 L23.5 27"
-        stroke="currentColor"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        fill="none"
-      />
-    </svg>
-  )
-}

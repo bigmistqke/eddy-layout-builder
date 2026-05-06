@@ -11,7 +11,7 @@ import {
 } from "solid-js"
 import { Context } from "./context"
 import styles from "./frame.module.css"
-import { PlusIcon, SplitIcon, SwapIcon } from "./icons"
+import { PlusIcon, SplitIcon } from "./icons"
 import type { Direction, HandleSpec } from "./types"
 
 export function Notch(props: {
@@ -62,7 +62,6 @@ export function Frame(
     class?: string
     "data-path"?: string
     onAddFrame(direction: Direction, op: "append" | "split"): void
-    onSwapDirection?: () => void
   }>,
 ) {
   const handles = () => props.handles ?? []
@@ -274,17 +273,6 @@ export function Frame(
             />
           )}
         </For>
-        <Show when={props.onSwapDirection}>
-          <button
-            class={styles["swap-button"]}
-            onClick={e => {
-              e.stopPropagation()
-              props.onSwapDirection?.()
-            }}
-          >
-            <SwapIcon />
-          </button>
-        </Show>
       </Show>
       {props.children}
     </div>

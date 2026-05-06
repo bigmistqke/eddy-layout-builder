@@ -26,20 +26,6 @@ const HANDLE_BUFFER = 20
 const SAME_AXIS_MIN = 2 * HANDLE_H + HANDLE_BUFFER
 const CROSS_PAIR_MIN = HANDLE_W + 2 * HANDLE_H + HANDLE_BUFFER
 
-// Center swap-button dimensions in CSS pixels — must match the CSS sizing
-// in frame.module.css (.swap-button width/height).
-const SWAP_W = 100
-const SWAP_H = 60
-
-// For the center swap button to fit with HANDLE_BUFFER clearance from the
-// inner edges of the 4 directional handles (which extend HANDLE_H inward
-// from each frame edge):
-//
-//   • frameW ≥ SWAP_W + 2·HANDLE_H + 2·HANDLE_BUFFER
-//   • frameH ≥ SWAP_H + 2·HANDLE_H + 2·HANDLE_BUFFER
-const SWAP_FIT_W = SWAP_W + 2 * HANDLE_H + 2 * HANDLE_BUFFER
-const SWAP_FIT_H = SWAP_H + 2 * HANDLE_H + 2 * HANDLE_BUFFER
-
 /**
  * `scale` is the *size multiplier* applied to the canvas by setting
  * `width = canvasW * scale; height = canvasH * scale` on the layout root —
@@ -112,8 +98,6 @@ export function computeViewportTransform(
     SAME_AXIS_MIN / nw,
     SAME_AXIS_MIN / nh,
     Math.min(CROSS_PAIR_MIN / nw, CROSS_PAIR_MIN / nh),
-    SWAP_FIT_W / nw,
-    SWAP_FIT_H / nh,
   )
 
   const scale = Math.max(handleScale, minScale)

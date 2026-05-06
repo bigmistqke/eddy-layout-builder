@@ -12,7 +12,7 @@ import type { Collidable, CollisionHit, CollisionKind } from "./collision"
 import { rectsOverlap } from "./collision"
 import { Context } from "./context"
 import { Notch } from "./frame"
-import { CloseIcon, PlayIcon, PlusIcon, RecordIcon } from "./icons"
+import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "./icons"
 import { LayoutBuilder } from "./layout-builder"
 import { NodeComponent } from "./node-component"
 import type { AppState, Container, Direction, Entity, HandleOp, Node } from "./types"
@@ -180,29 +180,41 @@ export function App() {
     appendToContainer(containerPath, insertAfter ? childIndex + 1 : childIndex)
   }
 
-  function enterLayoutMode() {
+  function enterAppendMode() {
     setApp(store => {
-      store.view = { type: "layout" }
-    })
-  }
-
-  function swapDirection(path: number[]) {
-    setApp(proxy => {
-      // Swap the parent's direction (for non-root selections) or root's own
-      // direction (for root selections — root acts as its own parent).
-      const containerToFlip =
-        path.length === 0
-          ? proxy.layout
-          : (resolveNode(proxy.layout, path.slice(0, -1)) as Container)
-      containerToFlip.direction =
-        containerToFlip.direction === "horizontal" ? "vertical" : "horizontal"
+      store.view = { type: "layout", mode: "append" }
     })
   }
 
   function handleAddFrame(path: number[], direction: Direction, op: HandleOp) {
-    if (op === "append") handleAppend(path, direction)
-    else splitNode(path, direction)
+    if (op === "split") {
+      splitNode(path, direction)
+      return
+    }
+    // op === "append" — but if the requested direction is perpendicular to
+    // the parent's flex axis, a sibling-insert is meaningless. Wrap the
+    // entity instead (delegating to splitNode, which already does this).
+    const parentDirection: "horizontal" | "vertical" =
+      path.length === 0
+        ? app.layout.direction
+        : (resolveNode(app.layout, path.slice(0, -1)) as Container).direction
+    const dirAxis = direction === "left" || direction === "right" ? "horizontal" : "vertical"
+    if (dirAxis !== parentDirection) {
+      splitNode(path, direction)
+      return
+    }
+    // Parent-axis append.
+    if (path.length === 0) {
+      // Root: append a child to root itself.
+      const insertAfter = direction === "right" || direction === "bottom"
+      appendToContainer([], insertAfter ? app.layout.children.length : 0)
+      return
+    }
+    handleAppend(path, direction)
   }
+
+  const layoutView = () =>
+    app.view.type === "layout" ? (app.view as { type: "layout"; mode: "append" | "split" }) : null
 
   createEffect(bottomBarEl, bar => {
     if (!bar) return
@@ -253,7 +265,6 @@ export function App() {
               layout={app.layout}
               path={[]}
               onAddFrame={handleAddFrame}
-              onSwapDirection={swapDirection}
             />
           </div>
         </Show>
@@ -263,7 +274,6 @@ export function App() {
               layout={app.layout}
               path={[]}
               onAddFrame={handleAddFrame}
-              onSwapDirection={swapDirection}
             />
           </LayoutBuilder>
         </Show>
@@ -271,7 +281,7 @@ export function App() {
           <div class={styles.bottomBarContent}>
             <Switch>
               <Match when={app.view.type === "recording"}>
-                <button class={styles.barButton} onClick={() => enterLayoutMode()}>
+                <button class={styles.barButton} onClick={() => enterAppendMode()}>
                   <PlusIcon />
                 </button>
                 <button class={styles.barButton}>
@@ -282,6 +292,22 @@ export function App() {
                 </button>
               </Match>
               <Match when={app.view.type === "layout"}>
+                <button
+                  class={[styles.modeButton, layoutView()?.mode === "append" ? styles.active : ""]}
+                  onClick={() => enterAppendMode()}
+                >
+                  <PlusIcon />
+                </button>
+                <button
+                  class={[styles.modeButton, layoutView()?.mode === "split" ? styles.active : ""]}
+                  onClick={() => {
+                    setApp(app => {
+                      app.view = { type: "layout", mode: "split" }
+                    })
+                  }}
+                >
+                  <SplitIcon />
+                </button>
                 <button
                   class={styles.closeButton}
                   onClick={() => {

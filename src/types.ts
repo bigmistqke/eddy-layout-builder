@@ -10,7 +10,7 @@ export type Container = {
 export type Entity = { type: "entity"; color: string }
 export type Node = Container | Entity
 
-export type AppView = { type: "recording" } | { type: "layout" }
+export type AppView = { type: "recording" } | { type: "layout"; mode: "append" | "split" }
 export type AppState = { view: AppView; layout: Container }
 
 export type Direction = "top" | "bottom" | "left" | "right"
