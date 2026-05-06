@@ -181,16 +181,11 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
       path: context.selection.path.slice(),
       depth: context.selection.depth,
     }))
-    // Cleared selection (back button) — reset everything.
-    if (sel.path.length === 0) {
-      setViewport({ ...IDENTITY_VIEWPORT, baseW: canvas.w, baseH: canvas.h })
-      context.setSelectedHandlesState({
-        extend: { top: 0, bottom: 0, left: 0, right: 0 },
-        stick: { top: 0, bottom: 0, left: 0, right: 0 },
-      })
-      return
-    }
-
+    // Empty selection (back button cleared) is treated as "root scope" —
+    // root frame still renders handles via NodeComponent.handles() because
+    // its path matches the empty targetedPath. So compute handle state
+    // for the root rect; computeViewportTransform returns identity for
+    // any frame that fits naturally, so the canvas pan/zoom stays zero.
     const len = sel.path.length - sel.depth
     const selectedPath = sel.path.slice(0, Math.max(0, len))
     const baseRect = untrack(() => frameRect(context.app.layout, selectedPath, canvas))
