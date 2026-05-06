@@ -6,7 +6,7 @@ import {
   useContext,
 } from "solid-js"
 import { Context } from "../context"
-import { Notch } from "../frame"
+import { Notch } from "../notch"
 import type { Container, Node } from "../types"
 import { logAction } from "../utils"
 import styles from "./breadcrumb.module.css"

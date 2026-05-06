@@ -1,55 +1,8 @@
 import { For, Show, createMemo, type JSX, type ParentProps, useContext } from "solid-js"
 import { Context } from "./context"
 import styles from "./frame.module.css"
-import { ArrowIcon } from "./icons"
+import { ArrowNotch } from "./notch"
 import type { Direction, HandleSpec } from "./types"
-import { capitalize } from "./utils"
-
-export function Notch(props: {
-  ref?: (el: HTMLDivElement) => void
-  style?: JSX.CSSProperties
-  children: JSX.Element
-  class: string
-  onClick?(): void
-  orientation?: "top" | "bottom" | "left" | "right"
-  "data-direction"?: Direction
-}) {
-  return (
-    <div
-      ref={props.ref}
-      class={[styles.notch, styles[`hud${capitalize(props.orientation ?? "bottom")}`], props.class]}
-      style={props.style}
-      data-direction={props["data-direction"]}
-      onClick={e => e.stopPropagation()}
-    >
-      <div class={styles.notchBackdrop}>
-        <div class={styles.edge} onClick={props.onClick} />
-        <div class={styles.center} onClick={props.onClick} />
-        <div class={styles.root} onClick={props.onClick} />
-      </div>
-      {props.children}
-    </div>
-  )
-}
-
-function ArrowNotch(props: {
-  style?: JSX.CSSProperties
-  class: string
-  icon: JSX.Element
-  direction: Direction
-  onClick?(): void
-}) {
-  return (
-    <Notch
-      style={props.style}
-      class={props.class}
-      onClick={props.onClick}
-      data-direction={props.direction}
-    >
-      {props.icon}
-    </Notch>
-  )
-}
 
 export function Frame(
   props: ParentProps<{
@@ -92,9 +45,7 @@ export function Frame(
         <For each={handles()}>
           {h => (
             <ArrowNotch
-              class={styles[h().dir]}
               direction={h().dir}
-              icon={<ArrowIcon class={styles.arrow} />}
               style={handleStyle(h().dir)}
               onClick={() => props.onAddFrame(h().dir, h().op)}
             />

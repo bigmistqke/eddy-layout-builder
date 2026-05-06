@@ -1,6 +1,6 @@
 import { Show, useContext } from "solid-js"
 import { Context } from "../context"
-import { Notch } from "../frame"
+import { Notch } from "../notch"
 import { BackIcon } from "../icons"
 import { logAction } from "../utils"
 import styles from "./contextual.module.css"

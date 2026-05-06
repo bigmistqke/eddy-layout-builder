@@ -1,6 +1,6 @@
 import { Match, Switch, useContext } from "solid-js"
 import { Context } from "../context"
-import { Notch } from "../frame"
+import { Notch } from "../notch"
 import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "../icons"
 import { logAction } from "../utils"
 import styles from "./main.module.css"
