@@ -18,12 +18,23 @@
   align-items: center;
   gap: var(--padding);
   padding-inline: calc(var(--radius) * 2);
+  /* Inset the scrollbar from the backdrop's bottom by --radius. The
+     scrollbar appears at the content-box's bottom edge; padding-block-end
+     pulls it up. box-sizing: border-box keeps the total .content height
+     equal to the notch's hud-height so it never overlaps the canvas
+     below. align-items: center keeps the buttons vertically centered
+     within the (smaller) content-box. */
+  padding-block-end: var(--radius);
+  box-sizing: border-box;
   height: 100%;
   color: var(--color-front);
   white-space: nowrap;
   /* Long breadcrumb chains scroll horizontally rather than overflowing. */
   overflow-x: auto;
   overflow-y: hidden;
+  /* Thin scrollbar with transparent track and themed thumb. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scroll-thumb) transparent;
 
   & .button {
     background: none;

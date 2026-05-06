@@ -5,6 +5,8 @@
   --color-active-front: rgb(0, 0, 0);
   --color-active-back: rgb(216, 216, 216);
 
+  --color-scroll-thumb: rgba(216, 216, 216, 0.3);
+
   --radius: 12px;
   --padding: 4px;
 
