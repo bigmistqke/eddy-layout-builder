@@ -24,6 +24,7 @@ import {
   frameRect,
   IDENTITY_VIEWPORT,
   transformToCss,
+  type Rect,
 } from "./viewport"
 
 /** Produce a string signature of the layout tree + selection. Reading this
@@ -142,33 +143,28 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
   // while the canvas is mid-transition (ResizeObserver fires repeatedly as
   // canvasInner's width/height interpolate, and any setViewport call here
   // would retarget the CSS transition mid-flight).
-  // HUD insets relative to the canvas viewport. Each value is how far that
-  // HUD intrudes from its respective canvas edge. Used by computeViewportTransform
-  // to detect whether a frame's natural position leaves room for HUD-induced
-  // handle extends without same-axis-pair overlap.
-  function computeHudInsets(canvasRect: DOMRect): {
-    top: number
-    right: number
-    bottom: number
-    left: number
-  } {
-    // `isConnected` guards against stale refs: when an HUD unmounts via
-    // <Show>, its ref signal stays pointing at the (now detached) element.
-    // getBoundingClientRect on a detached element returns 0s, which would
-    // be misinterpreted as "the HUD spans the whole canvas edge."
-    const breadcrumb = untrack(() => context.breadcrumbEl())
-    const bottomBar = untrack(() => context.bottomBarEl())
-    const contextualToolbar = untrack(() => context.contextualToolbarEl())
-    const top = breadcrumb?.isConnected
-      ? Math.max(0, breadcrumb.getBoundingClientRect().bottom - canvasRect.top)
-      : 0
-    const bottom = bottomBar?.isConnected
-      ? Math.max(0, canvasRect.bottom - bottomBar.getBoundingClientRect().top)
-      : 0
-    const right = contextualToolbar?.isConnected
-      ? Math.max(0, canvasRect.right - contextualToolbar.getBoundingClientRect().left)
-      : 0
-    return { top, right, bottom, left: 0 }
+  // Read each HUD's bounding rect in canvas-relative coords, skipping
+  // detached refs. HUDs are partial-edge rectangles (corners, center
+  // strips), not full-edge insets — model them as rects so per-handle
+  // overlap detection can be precise.
+  function computeHudRects(canvasRect: DOMRect): Rect[] {
+    const hudEls = [
+      untrack(() => context.breadcrumbEl()),
+      untrack(() => context.bottomBarEl()),
+      untrack(() => context.contextualToolbarEl()),
+    ]
+    const out: Rect[] = []
+    for (const el of hudEls) {
+      if (!el?.isConnected) continue
+      const r = el.getBoundingClientRect()
+      out.push({
+        x: r.left - canvasRect.left,
+        y: r.top - canvasRect.top,
+        w: r.width,
+        h: r.height,
+      })
+    }
+    return out
   }
 
   function layoutPass() {
@@ -199,14 +195,14 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     const selectedPath = sel.path.slice(0, Math.max(0, len))
     const baseRect = untrack(() => frameRect(context.app.layout, selectedPath, canvas))
 
-    const hudInsets = computeHudInsets(canvasRect)
-    const transform = computeViewportTransform(baseRect, canvas, 1, hudInsets)
+    const hudRects = computeHudRects(canvasRect)
+    const transform = computeViewportTransform(baseRect, canvas, 1, hudRects)
 
     const postRect = applyTransform(baseRect, transform.scale, {
       x: transform.x,
       y: transform.y,
     })
-    const extend = computeExtends(postRect, canvas, hudInsets)
+    const extend = computeExtends(postRect, hudRects)
     const stick = computeSticks(postRect, canvas)
 
     setViewport({ ...transform, baseW: canvas.w, baseH: canvas.h })

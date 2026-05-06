@@ -32,33 +32,23 @@ export function selectedPathKey(selection: Selection): string {
 }
 
 /**
- * Insets (in canvas-viewport pixels) of HUDs along each canvas edge. Used to
- * detect when a frame's natural position would put a directional handle
- * underneath a HUD by enough that the existing extend-into-HUD mechanism
- * can't compensate without making the same-axis handle pair overlap.
- */
-export type HudInsets = { top: number; right: number; bottom: number; left: number }
-
-export const NO_HUD_INSETS: HudInsets = { top: 0, right: 0, bottom: 0, left: 0 }
-
-/**
  * Compute the viewport transform for a selected frame's base rect.
  *
  * `minScale`: minimum scale to apply regardless of handle-fit needs. When
  * already zoomed, callers pass `currentScale` here so the viewport never
  * zooms *out* on tap; only the back button does that.
  *
- * `hudInsets`: how far each HUD intrudes from its canvas edge. Used to
- * decide whether the frame's natural position leaves room for handle
- * extends without same-axis-pair overlap. If natural is fine, identity —
- * preserves "no pan when not needed" UX. Otherwise the frame is panned
- * to the canvas's effective center (canvas minus HUD insets).
+ * `hudRects`: actual HUD rectangles in canvas-relative coords (so a corner
+ * HUD doesn't get treated as spanning the whole edge). Used for natural-fit
+ * decision: if the frame's handles overlap any HUD enough that extend-
+ * induced same-axis-pair overlap occurs, pan to canvas center. Otherwise
+ * identity — preserves "no pan when not needed" UX.
  */
 export function computeViewportTransform(
   baseRect: Rect,
   canvas: { w: number; h: number },
   minScale = 1,
-  hudInsets: HudInsets = NO_HUD_INSETS,
+  hudRects: Rect[] = [],
 ): ViewportTransform {
   if (baseRect.w === 0 || baseRect.h === 0) return IDENTITY_VIEWPORT
 
@@ -71,25 +61,21 @@ export function computeViewportTransform(
   const scale = Math.max(handleScale, minScale)
 
   // Identity-eligible (no zoom needed) — but check whether the frame's
-  // *natural* position has acceptable extends. If a HUD-induced extend
-  // would push a same-axis handle pair into overlap, pan to effective
-  // center; otherwise return identity.
+  // handles at their natural positions overlap any HUDs in a way that
+  // makes a same-axis handle pair overlap each other. If yes, pan to
+  // canvas center; otherwise identity.
   if (scale <= 1) {
-    const naturalExt = computeExtends(baseRect, canvas, hudInsets)
+    const naturalExt = computeExtends(baseRect, hudRects)
     const verticalFits = baseRect.h >= SAME_AXIS_MIN + naturalExt.top + naturalExt.bottom
     const horizontalFits = baseRect.w >= SAME_AXIS_MIN + naturalExt.left + naturalExt.right
     if (verticalFits && horizontalFits) return IDENTITY_VIEWPORT
   }
 
-  // Pan the frame's center to the canvas's *effective* center
-  // (canvas minus HUD insets). This honors asymmetric HUDs — e.g., when
-  // the right contextual toolbar is visible, effective center shifts left.
-  const effectiveCx = (hudInsets.left + canvas.w - hudInsets.right) / 2
-  const effectiveCy = (hudInsets.top + canvas.h - hudInsets.bottom) / 2
+  // Pan the frame's center to canvas center.
   const nodeCenterX = (baseRect.x + baseRect.w / 2) * scale
   const nodeCenterY = (baseRect.y + baseRect.h / 2) * scale
-  const x = effectiveCx - nodeCenterX
-  const y = effectiveCy - nodeCenterY
+  const x = canvas.w / 2 - nodeCenterX
+  const y = canvas.h / 2 - nodeCenterY
   return { scale, x, y }
 }
 
@@ -166,20 +152,65 @@ export function applyTransform(
   }
 }
 
-/** Per-direction extend amount (px) for a frame's handle notches against
- *  the HUDs on each canvas edge. Non-zero when the frame's edge is
- *  underneath the corresponding HUD's interior face. */
-export function computeExtends(
-  rect: Rect,
-  canvas: { w: number; h: number },
-  hudInsets: HudInsets,
-): Record<Direction, number> {
+/** Compute each handle's natural rect (in canvas-relative coords) given
+ *  the frame's rect. Mirrors the CSS positioning of ArrowNotch:
+ *  top/bottom centered horizontally on the respective edge; left/right
+ *  rotated 90° so dimensions swap. */
+export function handleRects(frame: Rect): Record<Direction, Rect> {
+  const cx = frame.x + frame.w / 2
+  const cy = frame.y + frame.h / 2
   return {
-    top: Math.max(0, hudInsets.top - rect.y),
-    bottom: Math.max(0, rect.y + rect.h - (canvas.h - hudInsets.bottom)),
-    left: Math.max(0, hudInsets.left - rect.x),
-    right: Math.max(0, rect.x + rect.w - (canvas.w - hudInsets.right)),
+    top: { x: cx - HANDLE_W / 2, y: frame.y, w: HANDLE_W, h: HANDLE_H },
+    bottom: {
+      x: cx - HANDLE_W / 2,
+      y: frame.y + frame.h - HANDLE_H,
+      w: HANDLE_W,
+      h: HANDLE_H,
+    },
+    left: { x: frame.x, y: cy - HANDLE_W / 2, w: HANDLE_H, h: HANDLE_W },
+    right: {
+      x: frame.x + frame.w - HANDLE_H,
+      y: cy - HANDLE_W / 2,
+      w: HANDLE_H,
+      h: HANDLE_W,
+    },
   }
+}
+
+function rectsOverlap(a: Rect, b: Rect): boolean {
+  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
+}
+
+/** Per-direction extend amount (px) for a frame's handle notches against
+ *  HUDs. For each handle, finds the maximum overlap with any HUD on that
+ *  handle's outward side; that distance is how far the notch needs to
+ *  grow to push its visible portion past the HUD. */
+export function computeExtends(frame: Rect, hudRects: Rect[]): Record<Direction, number> {
+  const handles = handleRects(frame)
+  const out: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
+  for (const hud of hudRects) {
+    for (const dir of ["top", "bottom", "left", "right"] as Direction[]) {
+      const h = handles[dir]
+      if (!rectsOverlap(h, hud)) continue
+      let e = 0
+      switch (dir) {
+        case "top":
+          e = hud.y + hud.h - h.y
+          break
+        case "bottom":
+          e = h.y + h.h - hud.y
+          break
+        case "left":
+          e = hud.x + hud.w - h.x
+          break
+        case "right":
+          e = h.x + h.w - hud.x
+          break
+      }
+      if (e > out[dir]) out[dir] = e
+    }
+  }
+  return out
 }
 
 /** Per-direction stick amount (px) — how far to pull each handle inward
