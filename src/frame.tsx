@@ -14,12 +14,10 @@ export function Notch(props: {
   orientation?: "top" | "bottom" | "left" | "right"
   "data-direction"?: Direction
 }) {
-  const orient = () => props.orientation ?? "bottom"
-  const orientClass = () => styles[`hud${capitalize(orient())}`]
   return (
     <div
       ref={props.ref}
-      class={[styles.notch, orientClass(), props.class]}
+      class={[styles.notch, styles[`hud${capitalize(props.orientation ?? "bottom")}`], props.class]}
       style={props.style}
       data-direction={props["data-direction"]}
       onClick={e => e.stopPropagation()}
