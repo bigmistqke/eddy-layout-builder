@@ -17,28 +17,28 @@
   height: 100%;
   color: var(--color-front);
   white-space: nowrap;
-}
 
-.content .button {
-  background: none;
-  border: none;
-  padding: var(--padding);
-  cursor: pointer;
-  display: flex;
-  align-items: stretch;
-  justify-content: stretch;
-  border-radius: var(--padding);
-  height: calc(100% - 2 * var(--padding));
-  margin: var(--padding);
-  transition: background 120ms ease;
-}
+  & .button {
+    background: none;
+    border: none;
+    padding: var(--padding);
+    cursor: pointer;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    border-radius: var(--padding);
+    height: calc(100% - 2 * var(--padding));
+    margin: var(--padding);
+    transition: background 120ms ease;
 
-.content .button:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
 
-.content .button.active {
-  background: var(--color-active-back);
+    &.active {
+      background: var(--color-active-back);
+    }
+  }
 }
 
 /* MiniNode renderer */
@@ -51,14 +51,14 @@
   border-radius: 2px;
   min-width: 0;
   min-height: 0;
-}
 
-.miniContainer.row {
-  flex-direction: row;
-}
+  &.row {
+    flex-direction: row;
+  }
 
-.miniContainer.col {
-  flex-direction: column;
+  &.col {
+    flex-direction: column;
+  }
 }
 
 .miniCell {

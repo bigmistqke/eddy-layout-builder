@@ -39,7 +39,7 @@
   }
 }
 
-.notch-backdrop {
+.notchBackdrop {
   translate: var(--backdrop-x, -50%);
   display: flex;
   position: absolute;
@@ -56,7 +56,7 @@
 
   & > .center,
   & > .edge {
-    margin-inline: /* var(--center-margin,  */ var(--radius) /* ) */;
+    margin-inline: var(--radius);
   }
 
   & > .root,
@@ -83,47 +83,11 @@
   pointer-events: none;
 }
 
-.edge-button {
-  position: absolute;
-  width: calc(var(--radius) * 4);
-  height: calc(var(--radius) * 4);
-  border-radius: 50%;
-  background: var(--color-back, black);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: var(--z-notch-handle);
-  padding: 0;
-
-  &.left {
-    left: calc(var(--padding) * -0.5 + var(--stick, 0px));
-    top: 50%;
-    translate: -50% -50%;
-  }
-  &.right {
-    right: calc(var(--padding) * -0.5 + var(--stick, 0px));
-    top: 50%;
-    translate: 50% -50%;
-  }
-  &.top {
-    top: calc(var(--padding) * -0.5 + var(--stick, 0px));
-    left: 50%;
-    translate: -50% -50%;
-  }
-  &.bottom {
-    bottom: calc(var(--padding) * -0.5 + var(--stick, 0px));
-    left: 50%;
-    translate: -50% 50%;
-  }
-}
-
 /*
  * HUD-orientation modifiers for the Notch component.
  *
- * The default `.notch-backdrop` rules (no orientation prefix) match
- * `.hud-bottom`: column layout with .edge at the canvas-facing top of the
+ * The default `.notchBackdrop` rules (no orientation prefix) match
+ * `.hudBottom`: column layout with .edge at the canvas-facing top of the
  * bar, .root full-width at the screen-facing bottom, scoops at the .root/.center
  * transition. Other orientations override the flex direction so the same
  * "wide root, narrow edge/center" silhouette ends up on the correct side,
@@ -136,67 +100,78 @@
  */
 
 /* Bottom — explicit redeclaration of defaults for symmetry with the others. */
-.hud-bottom > .notch-backdrop > .root {
-  corner-top-shape: scoop;
-  corner-bottom-shape: square;
-}
-.hud-bottom > .notch-backdrop > .edge {
-  corner-bottom-shape: square;
+.hudBottom > .notchBackdrop {
+  & > .root {
+    corner-top-shape: scoop;
+    corner-bottom-shape: square;
+  }
+
+  & > .edge {
+    corner-bottom-shape: square;
+  }
 }
 
 /* Top — flip column so .root is at the screen-edge top of the bar. */
-.hud-top > .notch-backdrop {
+.hudTop > .notchBackdrop {
   flex-direction: column-reverse;
-}
-.hud-top > .notch-backdrop > .root {
-  corner-top-shape: square; /* outer (screen edge) */
-  corner-bottom-shape: scoop; /* meets .center */
-}
-.hud-top > .notch-backdrop > .edge {
-  corner-top-shape: square; /* meets .center */
-  /* corner-bottom-shape stays default = round (canvas-meeting outer cap) */
+
+  & > .root {
+    corner-top-shape: square; /* outer (screen edge) */
+    corner-bottom-shape: scoop; /* meets .center */
+  }
+
+  & > .edge {
+    corner-top-shape: square; /* meets .center */
+    /* corner-bottom-shape stays default = round (canvas-meeting outer cap) */
+  }
 }
 
 /* Right — row direction so children stack horizontally. .root on the right
    (screen edge), .edge on the left (canvas-meeting). Margins flip from
    inline to block so .center/.edge become narrower on the cross axis. */
-.hud-right > .notch-backdrop {
+.hudRight > .notchBackdrop {
   flex-direction: row;
-}
-.hud-right > .notch-backdrop > .edge,
-.hud-right > .notch-backdrop > .center {
-  margin-inline: 0;
-  margin-block: var(--radius);
-}
-.hud-right > .notch-backdrop > .root {
-  corner-top-left-shape: scoop; /* meets .center */
-  corner-bottom-left-shape: scoop; /* meets .center */
-  corner-top-right-shape: square; /* outer screen edge */
-  corner-bottom-right-shape: square; /* outer screen edge */
-}
-.hud-right > .notch-backdrop > .edge {
-  corner-top-right-shape: square; /* meets .center */
-  corner-bottom-right-shape: square; /* meets .center */
-  /* top-left and bottom-left stay default = round (canvas-meeting outer cap) */
+
+  & > .edge,
+  & > .center {
+    margin-inline: 0;
+    margin-block: var(--radius);
+  }
+
+  & > .root {
+    corner-top-left-shape: scoop; /* meets .center */
+    corner-bottom-left-shape: scoop; /* meets .center */
+    corner-top-right-shape: square; /* outer screen edge */
+    corner-bottom-right-shape: square; /* outer screen edge */
+  }
+
+  & > .edge {
+    corner-top-right-shape: square; /* meets .center */
+    corner-bottom-right-shape: square; /* meets .center */
+    /* top-left and bottom-left stay default = round (canvas-meeting outer cap) */
+  }
 }
 
 /* Left — mirror of right via row-reverse. .root on the left (screen edge). */
-.hud-left > .notch-backdrop {
+.hudLeft > .notchBackdrop {
   flex-direction: row-reverse;
-}
-.hud-left > .notch-backdrop > .edge,
-.hud-left > .notch-backdrop > .center {
-  margin-inline: 0;
-  margin-block: var(--radius);
-}
-.hud-left > .notch-backdrop > .root {
-  corner-top-right-shape: scoop; /* meets .center */
-  corner-bottom-right-shape: scoop; /* meets .center */
-  corner-top-left-shape: square; /* outer screen edge */
-  corner-bottom-left-shape: square; /* outer screen edge */
-}
-.hud-left > .notch-backdrop > .edge {
-  corner-top-left-shape: square; /* meets .center */
-  corner-bottom-left-shape: square; /* meets .center */
-  /* top-right and bottom-right stay default = round (canvas-meeting outer cap) */
+
+  & > .edge,
+  & > .center {
+    margin-inline: 0;
+    margin-block: var(--radius);
+  }
+
+  & > .root {
+    corner-top-right-shape: scoop; /* meets .center */
+    corner-bottom-right-shape: scoop; /* meets .center */
+    corner-top-left-shape: square; /* outer screen edge */
+    corner-bottom-left-shape: square; /* outer screen edge */
+  }
+
+  & > .edge {
+    corner-top-left-shape: square; /* meets .center */
+    corner-bottom-left-shape: square; /* meets .center */
+    /* top-right and bottom-right stay default = round (canvas-meeting outer cap) */
+  }
 }

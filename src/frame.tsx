@@ -14,15 +14,19 @@ export function Notch(props: {
   "data-direction"?: Direction
 }) {
   const orient = () => props.orientation ?? "bottom"
+  const orientClass = () => {
+    const o = orient()
+    return styles[`hud${o[0].toUpperCase()}${o.slice(1)}`]
+  }
   return (
     <div
       ref={props.ref}
-      class={[styles.notch, styles[`hud-${orient()}`], props.class]}
+      class={[styles.notch, orientClass(), props.class]}
       style={props.style}
       data-direction={props["data-direction"]}
       onClick={e => e.stopPropagation()}
     >
-      <div class={styles["notch-backdrop"]}>
+      <div class={styles.notchBackdrop}>
         <div class={styles.edge} onClick={props.onClick} />
         <div class={styles.center} onClick={props.onClick} />
         <div class={styles.root} onClick={props.onClick} />
