@@ -17,6 +17,7 @@ import styles from "./layout-builder.module.css"
 import type { Node } from "./types"
 import {
   computeViewportTransform,
+  frameRect,
   IDENTITY_VIEWPORT,
   selectedPathKey,
   transformToCss,
@@ -168,8 +169,12 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
       setViewport({ ...IDENTITY_VIEWPORT, baseW, baseH })
       return
     }
-    const node = innerEl.querySelector<HTMLElement>(`[data-path="${key}"]`)
-    if (!node) return
+    // Reconstruct the selected path from selection (back-engineering of
+    // selectedPathKey: path.slice(0, len) where len = path.length - depth).
+    const sel = untrack(() => context.selection)
+    const len = sel.path.length - sel.depth
+    const selectedPath = sel.path.slice(0, Math.max(0, len))
+    const baseRect = frameRect(context.app.layout, selectedPath, { w: baseW, h: baseH })
 
     // Always fit the new selection. The viewport signal's `equals` is
     // epsilon-based — identity→identity is a no-op, sub-pixel drift from
@@ -177,7 +182,7 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     // change (different selection, real resize) does propagate.
     const prev = untrack(() => viewport())
     const hudInsets = computeHudInsets(rect)
-    const t = computeViewportTransform(node, innerEl, baseW, baseH, prev.scale, 1, hudInsets)
+    const t = computeViewportTransform(baseRect, { w: baseW, h: baseH }, prev.scale, hudInsets)
     setViewport({ ...t, baseW, baseH })
   }
 
