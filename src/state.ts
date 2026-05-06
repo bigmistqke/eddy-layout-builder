@@ -2,6 +2,7 @@ import { createSignal, createStore } from "solid-js"
 import type {
   AppContext,
   AppState,
+  AppView,
   Container,
   Direction,
   Entity,
@@ -12,7 +13,10 @@ import type {
 import { resolveNode } from "./utils"
 
 function cloneNode(node: Node): Node {
-  if (node.type === "entity") return { ...node }
+  if (node.type === "entity") {
+    return { ...node }
+  }
+
   return { type: "container", direction: node.direction, children: node.children.map(cloneNode) }
 }
 
@@ -30,12 +34,7 @@ const ZERO_BY_DIR: Record<Direction, number> = { top: 0, bottom: 0, left: 0, rig
  * Called once in App(); the returned object is passed straight into the
  * Context provider.
  */
-export function createAppState(): AppContext & {
-  enterAppendMode: () => void
-  enterSplitMode: () => void
-  exitLayout: () => void
-  handleAddFrame: (path: number[], direction: Direction, op: HandleOp) => void
-} {
+export function createAppState(): AppContext {
   const [selection, setSelection] = createStore({ path: [0] as Array<number>, depth: 0 })
   const [app, setApp] = createStore<AppState>({
     view: { type: "recording" },
@@ -124,21 +123,9 @@ export function createAppState(): AppContext & {
     appendToContainer(containerPath, insertAfter ? childIndex + 1 : childIndex)
   }
 
-  function enterAppendMode() {
+  function setView(view: AppView) {
     setApp(store => {
-      store.view = { type: "layout", mode: "append" }
-    })
-  }
-
-  function enterSplitMode() {
-    setApp(store => {
-      store.view = { type: "layout", mode: "split" }
-    })
-  }
-
-  function exitLayout() {
-    setApp(store => {
-      store.view = { type: "recording" }
+      store.view = view
     })
   }
 
@@ -185,9 +172,7 @@ export function createAppState(): AppContext & {
     setIsAnimating,
     selectedHandlesState,
     setSelectedHandlesState,
-    enterAppendMode,
-    enterSplitMode,
-    exitLayout,
+    setView,
     handleAddFrame,
   }
 }

@@ -21,3 +21,8 @@
   border-radius: var(--padding);
 }
 
+.frame {
+  position: relative;
+  flex: 1;
+  box-sizing: border-box;
+}

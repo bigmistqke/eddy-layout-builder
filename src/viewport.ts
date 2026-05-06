@@ -1,12 +1,11 @@
 import {
-  HANDLE_BUFFER,
+  CROSS_PAIR_MIN,
   HANDLE_H,
   HANDLE_W,
   ROOT_PADDING,
   SAME_AXIS_MIN,
   SIBLING_GAP,
-  CROSS_PAIR_MIN,
-} from "./ui-constants"
+} from "./constants"
 import type { Container, Direction, Node, Selection } from "./types"
 
 /**

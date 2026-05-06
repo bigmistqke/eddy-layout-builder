@@ -1,7 +1,7 @@
 import { Show, useContext } from "solid-js"
+import { BackIcon } from "../components/icons"
+import { Notch } from "../components/notch"
 import { Context } from "../context"
-import { Notch } from "../notch"
-import { BackIcon } from "../icons"
 import { logAction } from "../utils"
 import styles from "./contextual.module.css"
 
@@ -13,11 +13,7 @@ export function Contextual() {
 
   return (
     <Show when={hasAnyButton()}>
-      <Notch
-        ref={context.setContextualToolbarEl}
-        class={styles.notch}
-        orientation="right"
-      >
+      <Notch ref={context.setContextualToolbarEl} class={styles.notch} orientation="right">
         <div class={styles.content}>
           <Show when={context.isCanvasZoomed()}>
             <button

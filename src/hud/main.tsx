@@ -1,15 +1,11 @@
 import { Match, Switch, useContext } from "solid-js"
+import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "../components/icons"
+import { Notch } from "../components/notch"
 import { Context } from "../context"
-import { Notch } from "../notch"
-import { CloseIcon, PlayIcon, PlusIcon, RecordIcon, SplitIcon } from "../icons"
 import { logAction } from "../utils"
 import styles from "./main.module.css"
 
-export function Main(props: {
-  onEnterLayout: () => void
-  onSetSplitMode: () => void
-  onExitLayout: () => void
-}) {
+export function Main() {
   const context = useContext(Context)!
   const layoutView = () =>
     context.app.view.type === "layout"
@@ -21,46 +17,40 @@ export function Main(props: {
       <div class={styles.content}>
         <Switch>
           <Match when={context.app.view.type === "recording"}>
+            <button class={styles.button}>
+              <PlayIcon />
+            </button>
+            <button class={styles.button}>
+              <RecordIcon />
+            </button>
             <button
               class={styles.button}
               data-action="enter-layout"
               onClick={() => {
                 logAction("enter-layout")
-                props.onEnterLayout()
+                context.setView({ type: "layout", mode: "append" })
               }}
             >
               <PlusIcon />
-            </button>
-            <button class={styles.button}>
-              <RecordIcon />
-            </button>
-            <button class={styles.button}>
-              <PlayIcon />
             </button>
           </Match>
           <Match when={context.app.view.type === "layout"}>
             <button
-              class={[
-                styles.modeButton,
-                layoutView()?.mode === "append" ? styles.active : "",
-              ]}
+              class={[styles.button, layoutView()?.mode === "append" ? styles.active : ""]}
               data-action="set-mode-append"
               onClick={() => {
                 logAction("set-mode", { mode: "append" })
-                props.onEnterLayout()
+                context.setView({ type: "layout", mode: "append" })
               }}
             >
               <PlusIcon />
             </button>
             <button
-              class={[
-                styles.modeButton,
-                layoutView()?.mode === "split" ? styles.active : "",
-              ]}
+              class={[styles.button, layoutView()?.mode === "split" ? styles.active : ""]}
               data-action="set-mode-split"
               onClick={() => {
                 logAction("set-mode", { mode: "split" })
-                props.onSetSplitMode()
+                context.setView({ type: "layout", mode: "split" })
               }}
             >
               <SplitIcon />
@@ -70,7 +60,7 @@ export function Main(props: {
               data-action="exit-layout"
               onClick={() => {
                 logAction("exit-layout")
-                props.onExitLayout()
+                context.setView({ type: "recording" })
               }}
             >
               <CloseIcon />

@@ -1,8 +1,8 @@
 import { type JSX } from "solid-js"
+import type { Direction } from "../types"
+import { capitalize } from "../utils"
 import { ArrowIcon } from "./icons"
 import styles from "./notch.module.css"
-import type { Direction } from "./types"
-import { capitalize } from "./utils"
 
 export function Notch(props: {
   ref?: (el: HTMLDivElement) => void
@@ -16,11 +16,7 @@ export function Notch(props: {
   return (
     <div
       ref={props.ref}
-      class={[
-        styles.notch,
-        styles[`hud${capitalize(props.orientation ?? "bottom")}`],
-        props.class,
-      ]}
+      class={[styles.notch, styles[`hud${capitalize(props.orientation ?? "bottom")}`], props.class]}
       style={props.style}
       data-direction={props["data-direction"]}
       onClick={e => e.stopPropagation()}

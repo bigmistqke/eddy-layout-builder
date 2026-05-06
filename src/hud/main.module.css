@@ -20,30 +20,17 @@
 .button {
   background: none;
   border: none;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-front);
-}
-
-.modeButton {
-  --margin: 4px;
-
-  background: none;
-  border: none;
+  margin: var(--padding);
   padding: 4px 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-front);
-  border-radius: calc(var(--radius) - var(--margin));
+  border-radius: calc(var(--radius) - var(--padding));
 
   &.active {
     background: var(--color-active-back);
     color: var(--color-active-front);
-    margin: var(--margin);
   }
 }

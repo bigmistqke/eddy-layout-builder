@@ -27,3 +27,7 @@ export function logAction(type: string, payload?: Record<string, unknown>): void
 export function capitalize<S extends string>(s: S): Capitalize<S> {
   return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>
 }
+
+export function pathEquals(a: number[], b: number[]) {
+  return a.length === b.length && a.every((v, i) => v === b[i])
+}

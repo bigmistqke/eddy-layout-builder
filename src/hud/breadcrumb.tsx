@@ -1,12 +1,6 @@
-import {
-  Accessor,
-  createMemo,
-  For,
-  Show,
-  useContext,
-} from "solid-js"
+import { Accessor, createMemo, For, Show, useContext } from "solid-js"
+import { Notch } from "../components/notch"
 import { Context } from "../context"
-import { Notch } from "../notch"
 import type { Container, Node } from "../types"
 import { logAction } from "../utils"
 import styles from "./breadcrumb.module.css"
@@ -56,9 +50,7 @@ function MiniContainer(props: { container: Container; highlightPath: number[] })
         .join(" ")}
     >
       <For each={props.container.children}>
-        {(child, i) => (
-          <MiniNode node={child()} highlightPath={i() === head() ? rest() : [-1]} />
-        )}
+        {(child, i) => <MiniNode node={child()} highlightPath={i() === head() ? rest() : [-1]} />}
       </For>
     </div>
   )

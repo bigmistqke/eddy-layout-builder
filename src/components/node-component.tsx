@@ -1,27 +1,70 @@
-import { omit } from "@solidjs/signals"
-import type { ComponentProps, JSX } from "solid-js"
-import { createMemo, For, Match, Switch, useContext } from "solid-js"
+import {
+  createMemo,
+  For,
+  type JSX,
+  Match,
+  merge,
+  type ParentProps,
+  Show,
+  Switch,
+  useContext,
+} from "solid-js"
+import { Context } from "../context"
+import type { Container, Direction, Entity, HandleOp, HandleSpec } from "../types"
+import { logAction, pathEquals } from "../utils"
 import styles from "./node-component.module.css"
-import { Context } from "./context"
-import { Frame } from "./frame"
-import type { Container, Direction, Entity, HandleOp, HandleSpec } from "./types"
-import { logAction, resolveNode } from "./utils"
+import { ArrowNotch } from "./notch"
 
-function pathEquals(a: number[], b: number[]) {
-  return a.length === b.length && a.every((v, i) => v === b[i])
-}
-
-function EntityFrame(
-  props: ComponentProps<typeof Frame> & {
-    entity: Entity
-  },
+function Frame(
+  _props: ParentProps<{
+    onClick?: JSX.EventHandlersElement<HTMLDivElement>["onClick"]
+    handles?: HandleSpec[]
+    style?: JSX.CSSProperties
+    class?: string
+    "data-path"?: string
+    onAddFrame(direction: Direction, op: "append" | "split"): void
+  }>,
 ) {
-  const rest = omit(props, "entity")
+  const props = merge({ handles: [] }, _props)
+  const context = useContext(Context)!
+
+  // True iff this frame is the currently selected one. Equivalent to
+  // "we have any handles to render," since handles() is empty for any
+  // frame that isn't the selection's targeted scope.
+  const isSelected = createMemo(() => props.handles.length > 0)
+
+  function handleStyle(dir: Direction): JSX.CSSProperties | undefined {
+    if (!isSelected()) return undefined
+    const state = context.selectedHandlesState()
+    const e = state.extend[dir]
+    const s = state.stick[dir]
+    if (e === 0 && s === 0) return undefined
+    const out: Record<string, string> = {}
+    if (e > 0) out["--extend"] = `${e}px`
+    if (s > 0) out["--stick"] = `${s}px`
+    return out as JSX.CSSProperties
+  }
+
   return (
-    <Frame
-      {...rest}
-      style={{ ...(props.style as JSX.CSSProperties), background: props.entity?.color }}
-    />
+    <div
+      onClick={props.onClick}
+      style={props.style}
+      class={[props.class, styles.frame]}
+      data-path={props["data-path"]}
+    >
+      <Show when={!context.isAnimating()}>
+        <For each={props.handles}>
+          {h => (
+            <ArrowNotch
+              direction={h().dir}
+              style={handleStyle(h().dir)}
+              onClick={() => props.onAddFrame(h().dir, h().op)}
+            />
+          )}
+        </For>
+      </Show>
+      {props.children}
+    </div>
   )
 }
 
@@ -35,16 +78,23 @@ export function NodeComponent(props: {
   const pathKey = createMemo(() => props.path.join("."))
 
   const handles = createMemo<HandleSpec[]>(() => {
-    if (context.app.view.type !== "layout") return []
-    const s = context.selection
-    const targetedPath = s.path.slice(0, s.path.length - s.depth)
-    if (!pathEquals(props.path, targetedPath)) return []
+    if (context.app.view.type !== "layout") {
+      return []
+    }
+
+    const selection = context.selection
+    const targetedPath = selection.path.slice(0, selection.path.length - selection.depth)
+
+    if (!pathEquals(props.path, targetedPath)) {
+      return []
+    }
 
     // Mode-driven op: in append mode all 4 arrows are `+`, in split mode all
     // are split. The actual semantics of "append" on a cross-axis arrow
     // (which wraps) is resolved in app.tsx's handleAddFrame.
     const op: HandleOp = context.app.view.mode
     const directions: Direction[] = ["top", "bottom", "left", "right"]
+
     return directions.map(dir => ({ dir, op }))
   })
 
@@ -85,8 +135,7 @@ export function NodeComponent(props: {
       </Match>
       <Match when={props.layout?.type === "entity" && props.layout}>
         {entity => (
-          <EntityFrame
-            entity={entity()}
+          <Frame
             data-path={pathKey()}
             handles={handles()}
             class={inLayoutView() ? styles.layoutEntity : undefined}
@@ -99,6 +148,7 @@ export function NodeComponent(props: {
               logAction("tap-frame", { path: props.path })
               context.setSelection(() => ({ path: props.path, depth: 0 }))
             }}
+            style={{ background: entity().color }}
           />
         )}
       </Match>

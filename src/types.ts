@@ -47,4 +47,7 @@ export type AppContext = {
   setIsAnimating: (animating: boolean) => void
   selectedHandlesState: Accessor<SelectedHandlesState>
   setSelectedHandlesState: (state: SelectedHandlesState) => void
+
+  setView(view: AppView): void
+  handleAddFrame: (path: number[], direction: Direction, op: HandleOp) => void
 }

@@ -1,12 +1,14 @@
 import { JSX } from "solid-js/jsx-runtime"
 
+const ICON_SIZE = 32
+
 export function ArrowIcon(props: { style?: JSX.CSSProperties; class?: string }) {
   return (
     <svg
       style={props.style}
       class={props.class}
-      width="28"
-      height="35"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
       viewBox="0 0 28 35"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -23,8 +25,8 @@ export function PlusIcon(props: { class?: string }) {
   return (
     <svg
       class={props.class}
-      width="35"
-      height="35"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
       viewBox="0 0 35 35"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -41,8 +43,8 @@ export function SplitIcon(props: { class?: string }) {
   return (
     <svg
       class={props.class}
-      width="35"
-      height="27"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
       viewBox="0 0 35 27"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -59,7 +61,13 @@ export function SplitIcon(props: { class?: string }) {
 
 export function CloseIcon() {
   return (
-    <svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox="0 0 27 27"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M25.3346 3.41421L15.7886 12.9602L25.6881 22.8596C26.4692 23.6407 26.4692 24.907 25.6881 25.6881C24.9071 26.4691 23.6408 26.4691 22.8597 25.6881L12.9602 15.7886L3.41428 25.3345C2.63323 26.1156 1.3669 26.1156 0.58585 25.3345C-0.195197 24.5535 -0.195199 23.2871 0.585849 22.5061L10.1318 12.9602L0.939403 3.76776C0.158356 2.98672 0.158356 1.72039 0.939403 0.939338C1.72045 0.15829 2.98678 0.158291 3.76783 0.939339L12.9602 10.1317L22.5062 0.585786C23.2872 -0.195262 24.5535 -0.195262 25.3346 0.585786C26.1156 1.36684 26.1156 2.63317 25.3346 3.41421Z"
         fill="currentColor"
@@ -70,7 +78,13 @@ export function CloseIcon() {
 
 export function RecordIcon() {
   return (
-    <svg width="38" height="37" viewBox="0 0 38 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox="0 0 38 37"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M34 18.5C34 10.5918 27.3855 4 19 4C10.6145 4 4 10.5918 4 18.5C4 26.4082 10.6145 33 19 33V37C8.50659 37 0 28.7173 0 18.5C0 8.28273 8.50659 0 19 0C29.4934 0 38 8.28273 38 18.5C38 28.7173 29.4934 37 19 37V33C27.3855 33 34 26.4082 34 18.5Z"
         fill="#E94949"
@@ -81,7 +95,13 @@ export function RecordIcon() {
 
 export function PlayIcon() {
   return (
-    <svg width="31" height="35" viewBox="0 0 31 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox="0 0 31 35"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M0 1.40616C0.0001188 0.320836 1.20893 -0.353989 2.16895 0.195213L30.2891 16.2891C31.237 16.8318 31.237 18.1682 30.2891 18.7109L2.16895 34.8048L1.98633 34.8937C1.12401 35.2431 0.140842 34.6942 0.0136719 33.7921L0 33.5938V1.40616ZM3 30.8721L26.3652 17.5L3 4.12688V30.8721Z"
         fill="currentColor"
@@ -94,8 +114,8 @@ export function BackIcon(props: { class?: string }) {
   return (
     <svg
       class={props.class}
-      width="41"
-      height="23"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
       viewBox="0 0 41 23"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -107,4 +127,3 @@ export function BackIcon(props: { class?: string }) {
     </svg>
   )
 }
-
