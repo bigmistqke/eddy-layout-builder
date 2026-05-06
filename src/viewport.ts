@@ -44,11 +44,17 @@ export function selectedPathKey(selection: Selection): string {
  * identity — preserves "no pan when not needed" UX.
  */
 export function computeViewportTransform(
-  baseRect: Rect,
+  layout: Container,
+  path: number[],
   canvas: { w: number; h: number },
   minScale = 1,
   hudRects: Rect[] = [],
 ): ViewportTransform {
+  // Base rect at scale=1 — used for handle-fit constraint and natural-fit
+  // check. CSS `padding` and `gap` are *fixed pixels*, so the rect at
+  // scale s is NOT just the base rect × s; we recompute via flex math at
+  // the scaled canvasInner size below for accurate centering.
+  const baseRect = frameRect(layout, path, canvas)
   if (baseRect.w === 0 || baseRect.h === 0) return IDENTITY_VIEWPORT
 
   const handleScale = Math.max(
@@ -70,11 +76,13 @@ export function computeViewportTransform(
     if (verticalFits && horizontalFits) return IDENTITY_VIEWPORT
   }
 
-  // Pan the frame's center to canvas center.
-  const nodeCenterX = (baseRect.x + baseRect.w / 2) * scale
-  const nodeCenterY = (baseRect.y + baseRect.h / 2) * scale
-  const x = canvas.w / 2 - nodeCenterX
-  const y = canvas.h / 2 - nodeCenterY
+  // Pan to canvas center using REAL flex-math at the scaled canvasInner.
+  // Without this, fixed-pixel padding/gap cause the analytical
+  // (baseRect × scale) center to drift from where the DOM actually places
+  // the frame — by tens of pixels at deep nesting.
+  const realRect = frameRect(layout, path, { w: canvas.w * scale, h: canvas.h * scale })
+  const x = canvas.w / 2 - (realRect.x + realRect.w / 2)
+  const y = canvas.h / 2 - (realRect.y + realRect.h / 2)
   return { scale, x, y }
 }
 

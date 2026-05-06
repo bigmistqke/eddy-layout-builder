@@ -12,7 +12,6 @@ import { Contextual } from "./hud/contextual"
 import styles from "./layout-builder.module.css"
 import type { Container, Node, Selection } from "./types"
 import {
-  applyTransform,
   computeExtends,
   computeSticks,
   computeViewportTransform,
@@ -120,15 +119,27 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     // any frame that fits naturally, so the canvas pan/zoom stays zero.
     const len = sel.path.length - sel.depth
     const selectedPath = sel.path.slice(0, Math.max(0, len))
-    const baseRect = untrack(() => frameRect(context.app.layout, selectedPath, canvas))
 
     const hudRects = computeHudRects(canvasRect)
-    const transform = computeViewportTransform(baseRect, canvas, 1, hudRects)
+    const transform = untrack(() =>
+      computeViewportTransform(context.app.layout, selectedPath, canvas, 1, hudRects),
+    )
 
-    const postRect = applyTransform(baseRect, transform.scale, {
-      x: transform.x,
-      y: transform.y,
-    })
+    // Real frame rect at the chosen scale — fixed-pixel padding/gap mean
+    // the DOM rect at scale s is NOT baseRect × s. Recompute via flex math
+    // at the scaled canvasInner size for accurate extend/stick checks.
+    const realRect = untrack(() =>
+      frameRect(context.app.layout, selectedPath, {
+        w: canvas.w * transform.scale,
+        h: canvas.h * transform.scale,
+      }),
+    )
+    const postRect: Rect = {
+      x: realRect.x + transform.x,
+      y: realRect.y + transform.y,
+      w: realRect.w,
+      h: realRect.h,
+    }
     const extend = computeExtends(postRect, hudRects)
     const stick = computeSticks(postRect, canvas)
 

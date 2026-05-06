@@ -20,6 +20,13 @@ import { clickAction, clickFrame, clickHandle } from "./helpers"
  *   add-frame [1,0,1,0,2,0,1,0,1,0] right append
  */
 test("deep selected frame is centered after right/top action chain", async ({ page }) => {
+  page.on("console", msg => {
+    const t = msg.text()
+    if (t.startsWith("[layoutPass]") || t.startsWith("[action]")) {
+      // eslint-disable-next-line no-console
+      console.log(t)
+    }
+  })
   await page.goto("/")
   await clickAction(page, "enter-layout")
   await page.waitForTimeout(100)
