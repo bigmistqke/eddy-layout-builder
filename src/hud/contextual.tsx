@@ -1,5 +1,5 @@
 import { Show, useContext } from "solid-js"
-import { BackIcon } from "../components/icons"
+import { CloseIcon } from "../components/icons"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
 import { logAction } from "../utils"
@@ -7,24 +7,26 @@ import styles from "./contextual.module.css"
 
 export function Contextual() {
   const context = useContext(Context)
-  // Back button only makes sense when the canvas is actually zoomed in.
-  // Future buttons would OR their own conditions in here.
-  const hasAnyButton = () => context.isCanvasZoomed()
+  // Deselect button shows when a tool is active and a frame is selected.
+  // Without an active tool the contextual HUD has nothing to offer.
+  const hasSelection = () =>
+    context.app.tool !== null && context.app.selection !== null
+  const hasAnyButton = () => hasSelection()
 
   return (
     <Show when={hasAnyButton()}>
       <Notch ref={context.setHudElement("contextual")} class={styles.notch} orientation="right">
         <div class={styles.content}>
-          <Show when={context.isCanvasZoomed()}>
+          <Show when={hasSelection()}>
             <button
               class={styles.button}
-              data-action="back"
+              data-action="deselect"
               onClick={() => {
-                logAction("back")
-                context.setSelection(() => ({ path: [], depth: 0 }))
+                logAction("deselect")
+                context.setSelection(null)
               }}
             >
-              <BackIcon />
+              <CloseIcon />
             </button>
           </Show>
         </div>

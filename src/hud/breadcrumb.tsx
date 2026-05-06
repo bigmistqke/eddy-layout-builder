@@ -5,6 +5,7 @@ import {
   createSignal,
   For,
   onSettled,
+  Show,
   untrack,
   useContext,
 } from "solid-js"
@@ -141,7 +142,11 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   // node-in-scope at that segment's depth. `depth` is the value
   // `selection.depth` should take when this segment is tapped.
   const segments = createMemo(() => {
-    const { path } = context.app.selection
+    const selection = context.app.selection
+    if (selection === null) {
+      return []
+    }
+    const { path } = selection
     const result: Array<{ highlightPath: number[]; depth: number }> = []
 
     // Segment 0: root scope — empty highlight path means "this node (root)
@@ -184,35 +189,37 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   )
 
   return (
-    <Notch ref={context.setHudElement("breadcrumb")} class={styles.notch} orientation="top">
-      <div
-        ref={contentElement}
-        class={styles.content}
-        style={{ "--breadcrumb-button-width": buttonWidth() }}
-      >
-        <For each={segments()}>
-          {(segment, index) => (
-            <button
-              class={[
-                styles.button,
-                segment().depth === context.app.selection.depth ? styles.active : "",
-              ].join(" ")}
-              onClick={() => {
-                logAction("tap-breadcrumb", { depth: segment().depth, segmentIndex: index() })
-                context.setSelection(selection => {
-                  selection.depth = segment().depth
-                })
-              }}
-            >
-              <Minimap
-                layout={context.app.layout}
-                highlightPath={segment().highlightPath}
-                aspect={props.canvasAspect()}
-              />
-            </button>
-          )}
-        </For>
-      </div>
-    </Notch>
+    <Show when={context.app.tool !== null && context.app.selection}>
+      {selection => (
+        <Notch ref={context.setHudElement("breadcrumb")} class={styles.notch} orientation="top">
+          <div
+            ref={contentElement}
+            class={styles.content}
+            style={{ "--breadcrumb-button-width": buttonWidth() }}
+          >
+            <For each={segments()}>
+              {(segment, index) => (
+                <button
+                  class={[
+                    styles.button,
+                    segment().depth === selection().depth ? styles.active : "",
+                  ].join(" ")}
+                  onClick={() => {
+                    logAction("tap-breadcrumb", { depth: segment().depth, segmentIndex: index() })
+                    context.setSelection({ path: selection().path, depth: segment().depth })
+                  }}
+                >
+                  <Minimap
+                    layout={context.app.layout}
+                    highlightPath={segment().highlightPath}
+                    aspect={props.canvasAspect()}
+                  />
+                </button>
+              )}
+            </For>
+          </div>
+        </Notch>
+      )}
+    </Show>
   )
 }

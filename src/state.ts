@@ -1,9 +1,7 @@
-import { StoreSetter } from "@solidjs/signals"
 import { createSignal, createStore, untrack } from "solid-js"
 import type {
   AppContext,
   AppState,
-  AppView,
   Container,
   Direction,
   Entity,
@@ -12,6 +10,7 @@ import type {
   Node,
   SelectedHandlesState,
   Selection,
+  Tool,
 } from "./types"
 import { resolveNode } from "./utils"
 import type { Rect } from "./viewport"
@@ -40,13 +39,13 @@ const ZERO_BY_DIR: Record<Direction, number> = { top: 0, bottom: 0, left: 0, rig
  */
 export function createAppState(): AppContext {
   const [app, setApp] = createStore<AppState>({
-    view: { type: "recording" },
     layout: {
       type: "container",
       direction: "horizontal",
       children: [createEntity()],
     },
-    selection: { path: [0] as Array<number>, depth: 0 },
+    tool: null,
+    selection: null,
   })
 
   // HUD element refs — kept internal. Consumers register a ref via
@@ -97,13 +96,9 @@ export function createAppState(): AppContext {
     { ownedWrite: true },
   )
 
-  const setSelection: StoreSetter<Selection> = function (update) {
+  function setSelection(next: Selection | null) {
     setApp(app => {
-      const nextSelection = update(app.selection)
-      if (nextSelection) {
-        app.selection = nextSelection
-        return app
-      }
+      app.selection = next
     })
   }
 
@@ -113,7 +108,7 @@ export function createAppState(): AppContext {
       const container = resolveNode(app.layout, containerPath) as Container
       container.children.splice(insertIndex, 0, newEntity)
     })
-    setSelection(() => ({ path: [...containerPath, insertIndex], depth: 0 }))
+    setSelection({ path: [...containerPath, insertIndex], depth: 0 })
   }
 
   function splitNode(nodePath: number[], direction: Direction) {
@@ -171,7 +166,7 @@ export function createAppState(): AppContext {
       const parent = resolveNode(app.layout, parentPath) as Container
       parent.children.splice(nodeIndex, 1, newContainer)
     })
-    setSelection(() => ({ path: [...nodePath, newEntityIndex], depth: 0 }))
+    setSelection({ path: [...nodePath, newEntityIndex], depth: 0 })
   }
 
   function handleAppend(path: number[], direction: Direction) {
@@ -181,9 +176,15 @@ export function createAppState(): AppContext {
     appendToContainer(containerPath, insertAfter ? childIndex + 1 : childIndex)
   }
 
-  function setView(view: AppView) {
+  function setTool(tool: Tool) {
     setApp(app => {
-      app.view = view
+      app.tool = tool
+      // Toggling the tool off exits edit mode entirely — clear the
+      // selection so the viewport zooms back to identity. Switching
+      // between append and split keeps the selection intact.
+      if (tool === null) {
+        app.selection = null
+      }
     })
   }
 
@@ -225,7 +226,7 @@ export function createAppState(): AppContext {
     setIsAnimating,
     selectedHandlesState,
     setSelectedHandlesState,
-    setView,
+    setTool,
     handleAddFrame,
   }
 }

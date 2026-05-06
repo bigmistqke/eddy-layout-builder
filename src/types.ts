@@ -1,4 +1,3 @@
-import type { StoreSetter } from "@solidjs/signals"
 import type { Accessor } from "solid-js"
 import type { Rect } from "./viewport"
 
@@ -10,11 +9,15 @@ export type Container = {
 export type Entity = { type: "entity"; color: string }
 export type Node = Container | Entity
 
-export type AppView = { type: "recording" } | { type: "layout"; mode: "append" | "split" }
+/** Layout-editing tool. When `null`, frames are read-only — no handles
+ *  render and tapping a frame is a no-op. */
+export type Tool = "append" | "split" | null
 export type AppState = {
-  view: AppView
   layout: Container
-  selection: Selection
+  tool: Tool
+  /** `null` means no frame is selected — no handles render and the
+   *  canvas sits at identity. Cleared by the contextual close button. */
+  selection: Selection | null
 }
 
 export type Direction = "top" | "bottom" | "left" | "right"
@@ -35,7 +38,7 @@ export type SelectedHandlesState = {
 
 export type AppContext = {
   app: AppState
-  setSelection: StoreSetter<Selection>
+  setSelection: (next: Selection | null) => void
 
   isCanvasZoomed: Accessor<boolean>
   setIsCanvasZoomed: (zoomed: boolean) => void
@@ -56,6 +59,6 @@ export type AppContext = {
   selectedHandlesState: Accessor<SelectedHandlesState>
   setSelectedHandlesState: (state: SelectedHandlesState) => void
 
-  setView(view: AppView): void
+  setTool: (tool: Tool) => void
   handleAddFrame: (path: number[], direction: Direction, op: HandleOp) => void
 }

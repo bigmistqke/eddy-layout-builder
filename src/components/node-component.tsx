@@ -86,27 +86,30 @@ export function NodeComponent(props: {
   const pathKey = createMemo(() => props.path.join("."))
 
   const handles = createMemo<HandleSpec[]>(() => {
-    if (context.app.view.type !== "layout") {
+    const tool = context.app.tool
+    if (tool === null) {
       return []
     }
 
     const selection = context.app.selection
+    if (selection === null) {
+      return []
+    }
     const targetedPath = selection.path.slice(0, selection.path.length - selection.depth)
 
     if (!pathEquals(props.path, targetedPath)) {
       return []
     }
 
-    // Mode-driven op: in append mode all 4 arrows are `+`, in split mode all
-    // are split. The actual semantics of "append" on a cross-axis arrow
-    // (which wraps) is resolved in app.tsx's handleAddFrame.
-    const operation: HandleOp = context.app.view.mode
+    // Tool-driven op: in append all 4 arrows are `+`, in split all are
+    // split. The actual semantics of "append" on a cross-axis arrow
+    // (which wraps) is resolved in state.ts's handleAddFrame.
     const directions: Direction[] = ["top", "bottom", "left", "right"]
 
-    return directions.map(direction => ({ dir: direction, op: operation }))
+    return directions.map(direction => ({ dir: direction, op: tool }))
   })
 
-  const inLayoutView = () => context.app.view.type === "layout"
+  const isEditing = () => context.app.tool !== null
 
   return (
     <Switch>
@@ -121,7 +124,7 @@ export function NodeComponent(props: {
             }}
             class={[
               styles.container,
-              inLayoutView()
+              isEditing()
                 ? props.path.length === 0
                   ? styles.layoutContainerRoot
                   : styles.layoutContainer
@@ -146,17 +149,17 @@ export function NodeComponent(props: {
           <Frame
             data-path={pathKey()}
             handles={handles()}
-            class={inLayoutView() ? styles.layoutEntity : undefined}
+            class={isEditing() ? styles.layoutEntity : undefined}
             onAddFrame={(direction, op) => {
               logAction("add-frame", { path: props.path, direction, op })
               props.onAddFrame(props.path, direction, op)
             }}
             onClick={() => {
-              if (!inLayoutView()) {
+              if (!isEditing()) {
                 return
               }
               logAction("tap-frame", { path: props.path })
-              context.setSelection(() => ({ path: props.path, depth: 0 }))
+              context.setSelection({ path: props.path, depth: 0 })
             }}
             style={{ background: entity().color }}
           />

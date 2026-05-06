@@ -25,14 +25,15 @@ import {
  *  in a createEffect compute makes the effect re-fire whenever any
  *  container's children list, any container's direction, or the selection
  *  path/depth changes. */
-function layoutSignature(layout: Container, selection: Selection): string {
+function layoutSignature(layout: Container, selection: Selection | null): string {
   function nodeSignature(node: Node): string {
     if (node.type === "entity") {
       return "e"
     }
     return `${node.direction[0]}(${node.children.map(nodeSignature).join(",")})`
   }
-  return `${nodeSignature(layout)}|${selection.path.join(".")}/${selection.depth}`
+  const selectionPart = selection === null ? "_" : `${selection.path.join(".")}/${selection.depth}`
+  return `${nodeSignature(layout)}|${selectionPart}`
 }
 
 type ViewportState = ReturnType<typeof computeViewportTransform> & {
@@ -91,15 +92,25 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
     // callback (non-tracking by default in Solid 2.x), but the store-proxy
     // reads still warn STRICT_READ_UNTRACKED. Re-firing is driven by the
     // compute via layoutSignature, so untrack is correct here.
-    const selection = untrack(() => ({
-      path: context.app.selection.path.slice(),
-      depth: context.app.selection.depth,
-    }))
-    // Empty selection (back button cleared) is treated as "root scope" —
-    // root frame still renders handles via NodeComponent.handles() because
-    // its path matches the empty targetedPath. So compute handle state
-    // for the root rect; computeViewportTransform returns identity for
-    // any frame that fits naturally, so the canvas pan/zoom stays zero.
+    const selection = untrack(() => {
+      const current = context.app.selection
+      return current === null ? null : { path: current.path.slice(), depth: current.depth }
+    })
+
+    // No selection — sit at identity, no handles to extend or stick.
+    if (selection === null) {
+      setViewport({
+        ...IDENTITY_VIEWPORT,
+        baseWidth: canvas.width,
+        baseHeight: canvas.height,
+      })
+      context.setSelectedHandlesState({
+        extend: { top: 0, bottom: 0, left: 0, right: 0 },
+        stick: { top: 0, bottom: 0, left: 0, right: 0 },
+      })
+      return
+    }
+
     const targetedDepth = selection.path.length - selection.depth
     const selectedPath = selection.path.slice(0, Math.max(0, targetedDepth))
 

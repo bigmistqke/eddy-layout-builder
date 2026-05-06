@@ -12,9 +12,18 @@
 
 .content {
   padding-inline: var(--radius);
-  display: grid;
-  grid-template-columns: repeat(3, 60px);
+  display: flex;
+  align-items: center;
   height: 100%;
+}
+
+.divider {
+  display: block;
+  width: 1px;
+  align-self: stretch;
+  background: var(--color-front);
+  margin-inline: var(--radius);
+  margin-block: calc(var(--radius) / 2);
 }
 
 .button {
@@ -22,6 +31,8 @@
   border: none;
   margin: var(--padding);
   padding: 4px 10px;
+  width: 60px;
+  box-sizing: border-box;
   cursor: pointer;
   display: flex;
   align-items: center;
