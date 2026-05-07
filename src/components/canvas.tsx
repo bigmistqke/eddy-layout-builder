@@ -134,12 +134,20 @@ export function Canvas() {
       })
 
       // Drive handle overlay CSS vars from selectedRect (translation
-      // only — leaf coords are already in scaled space).
+      // only — leaf coords are already in scaled space). Round to
+      // integer pixels so the DOM overlay aligns exactly with the
+      // GL-rendered frame edge: float CSS positions get rasterized at
+      // a different rounding boundary than the GL frame, leaving a 1px
+      // seam between the handle and the frame edge.
       if (lastSelectedRect) {
-        wrapperElement.style.setProperty("--selected-x", `${lastSelectedRect.x + viewport.x}px`)
-        wrapperElement.style.setProperty("--selected-y", `${lastSelectedRect.y + viewport.y}px`)
-        wrapperElement.style.setProperty("--selected-width", `${lastSelectedRect.width}px`)
-        wrapperElement.style.setProperty("--selected-height", `${lastSelectedRect.height}px`)
+        const x = Math.round(lastSelectedRect.x + viewport.x)
+        const y = Math.round(lastSelectedRect.y + viewport.y)
+        const right = Math.round(lastSelectedRect.x + viewport.x + lastSelectedRect.width)
+        const bottom = Math.round(lastSelectedRect.y + viewport.y + lastSelectedRect.height)
+        wrapperElement.style.setProperty("--selected-x", `${x}px`)
+        wrapperElement.style.setProperty("--selected-y", `${y}px`)
+        wrapperElement.style.setProperty("--selected-width", `${right - x}px`)
+        wrapperElement.style.setProperty("--selected-height", `${bottom - y}px`)
       }
     }
 
@@ -189,6 +197,20 @@ export function Canvas() {
     function startAnimation(target: ViewportState) {
       cancelTween?.()
       const fromViewport = lastViewport
+      // Skip the tween entirely when nothing visible changes — selecting
+      // a sibling at the same zoom level is a viewport no-op, and we
+      // don't want to flag isAnimating (which hides the handle overlay)
+      // for 220ms of pointless lerp. drawAt still runs once so the
+      // handle overlay's CSS vars catch up to the new selectedRect.
+      const epsilon = 0.5
+      if (
+        Math.abs(fromViewport.x - target.x) < epsilon &&
+        Math.abs(fromViewport.y - target.y) < epsilon &&
+        Math.abs(fromViewport.scale - target.scale) < 0.001
+      ) {
+        drawAt(target)
+        return
+      }
       context.setIsAnimating(true)
       cancelTween = animateViewport(
         fromViewport,
