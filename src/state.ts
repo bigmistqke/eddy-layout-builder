@@ -23,6 +23,43 @@ function cloneNode(node: Node): Node {
   return { type: "container", direction: node.direction, children: node.children.map(cloneNode) }
 }
 
+/**
+ * Remove the node at `path` from `node`. Returns the new tree, or
+ * `null` if the entire node should be removed from its parent.
+ *
+ * Collapses on the way up: any container that ends up with a single
+ * child is replaced by that child; any container with no children
+ * returns `null` so its parent strips it as well. The caller decides
+ * what to do with a `null` root (typically: spawn a fresh Entity).
+ */
+function removeAt(node: Node, path: number[]): Node | null {
+  if (path.length === 0) {
+    return null
+  }
+  if (node.type !== "container") {
+    return node
+  }
+  const [head, ...rest] = path
+  const child = node.children[head]
+  if (!child) {
+    return node
+  }
+  const replacement = rest.length === 0 ? null : removeAt(child, rest)
+  const nextChildren: Array<Entity | Container> =
+    replacement === null
+      ? node.children.filter((_, index) => index !== head)
+      : node.children.map((existing, index) =>
+          index === head ? (replacement as Entity | Container) : existing,
+        )
+  if (nextChildren.length === 0) {
+    return null
+  }
+  if (nextChildren.length === 1) {
+    return nextChildren[0]
+  }
+  return { type: "container", direction: node.direction, children: nextChildren }
+}
+
 function createEntity(): Entity {
   return {
     type: "entity",
@@ -177,6 +214,21 @@ export function createAppState(): AppContext {
     appendToContainer(containerPath, insertAfter ? childIndex + 1 : childIndex)
   }
 
+  function deleteSelection() {
+    const selection = app.selection
+    if (selection === null) {
+      return
+    }
+    // Delete the targeted node — the selection's `depth` collapses some
+    // tail of `path`, so the actual target is path[..-depth].
+    const targetedPath = selection.path.slice(0, selection.path.length - selection.depth)
+    setApp(app => {
+      const next = removeAt(app.layout, targetedPath)
+      app.layout = next ?? createEntity()
+      app.selection = null
+    })
+  }
+
   function setTool(tool: Tool) {
     setApp(app => {
       app.tool = tool
@@ -234,6 +286,7 @@ export function createAppState(): AppContext {
     selectedHandlesState,
     setSelectedHandlesState,
     setTool,
+    deleteSelection,
     handleAddFrame,
   }
 }

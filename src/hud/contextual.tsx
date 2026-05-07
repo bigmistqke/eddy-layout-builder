@@ -1,5 +1,5 @@
 import { Show, useContext } from "solid-js"
-import { CloseIcon } from "../components/icons"
+import { CloseIcon, TrashIcon } from "../components/icons"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
 import { logAction } from "../utils"
@@ -18,6 +18,16 @@ export function Contextual() {
       <Notch ref={context.setHudElement("contextual")} class={styles.notch} orientation="right">
         <div class={styles.content}>
           <Show when={hasSelection()}>
+            <button
+              class={styles.button}
+              data-action="delete"
+              onClick={() => {
+                logAction("delete")
+                context.deleteSelection()
+              }}
+            >
+              <TrashIcon />
+            </button>
             <button
               class={styles.button}
               data-action="deselect"

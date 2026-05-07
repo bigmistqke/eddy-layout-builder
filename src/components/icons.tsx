@@ -110,6 +110,26 @@ export function PlayIcon() {
   )
 }
 
+export function TrashIcon(props: { class?: string }) {
+  return (
+    <svg
+      class={props.class}
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M12 2C11.4477 2 11 2.4477 11 3V4H5C4.4477 4 4 4.4477 4 5C4 5.5523 4.4477 6 5 6H6.106L7.485 26.142C7.591 27.748 8.928 29 10.541 29H21.459C23.072 29 24.409 27.748 24.515 26.142L25.894 6H27C27.5523 6 28 5.5523 28 5C28 4.4477 27.5523 4 27 4H21V3C21 2.4477 20.5523 2 20 2H12ZM19 4H13V6H19V4ZM23.889 6H8.111L9.481 26.011C9.516 26.547 9.961 26.965 10.498 26.965H21.502C22.039 26.965 22.484 26.547 22.519 26.011L23.889 6ZM12.5 10C13.0523 10 13.5 10.4477 13.5 11V22C13.5 22.5523 13.0523 23 12.5 23C11.9477 23 11.5 22.5523 11.5 22V11C11.5 10.4477 11.9477 10 12.5 10ZM19.5 10C20.0523 10 20.5 10.4477 20.5 11V22C20.5 22.5523 20.0523 23 19.5 23C18.9477 23 18.5 22.5523 18.5 22V11C18.5 10.4477 18.9477 10 19.5 10Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
 export function BackIcon(props: { class?: string }) {
   return (
     <svg

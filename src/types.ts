@@ -62,5 +62,9 @@ export type AppContext = {
   setSelectedHandlesState: (state: SelectedHandlesState) => void
 
   setTool: (tool: Tool) => void
+  /** Remove the currently selected node. Containers with one child
+   *  collapse to that child on the way up; an empty root becomes a
+   *  fresh Entity. No-op when nothing is selected. */
+  deleteSelection: () => void
   handleAddFrame: (path: number[], direction: Direction, op: HandleOp) => void
 }
