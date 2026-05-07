@@ -1,0 +1,19 @@
+.canvasWrapper {
+  position: absolute;
+  inset: 0;
+}
+
+.glCanvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.handleOverlay {
+  position: absolute;
+  left: var(--selected-x, 0px);
+  top: var(--selected-y, 0px);
+  width: var(--selected-width, 0px);
+  height: var(--selected-height, 0px);
+  pointer-events: none; /* notch children re-enable */
+}
