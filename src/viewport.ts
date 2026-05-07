@@ -54,12 +54,10 @@ export function selectedPathKey(selection: Selection): string {
  *  Iterative in both cases because CSS padding/gap are fixed pixels —
  *  rect dims at scale s are NOT (rect at 1) × s. Converges in 1–3
  *  iterations typically, capped to avoid runaway. */
-// Empirical: deep nesting (14+ levels) at canvas 1280×800 needs scale
-// in the 10–15k range to land the binding axis on target. Keep this
-// well above any plausible legitimate scale so the cap only triggers
-// for runaway pathological inputs (which the MAX_FIT_ITER cap also
-// catches independently).
-const MAX_SCALE = 1_000_000
+// MAX_FIT_ITER alone bounds the loop — there's no need for a separate
+// scale cap. The dim-positivity check (rect.w/h <= 0 doubles scale and
+// continues) ensures we never compute factors against zero/negative
+// dims, so factor is always finite.
 const MAX_FIT_ITER = 20
 function findFitInsideScale(
   layout: Node,
@@ -79,27 +77,19 @@ function findFitInsideScale(
     })
     if (rect.width <= 0 || rect.height <= 0) {
       scale *= 2
-      if (scale >= MAX_SCALE) {
-        return MAX_SCALE
-      }
       continue
     }
     const widthFactor = targetWidth / rect.width
     const heightFactor = targetHeight / rect.height
     const factor = Math.min(widthFactor, heightFactor)
-    // Converged: binding axis is at target. Note this is `abs(factor-1)`,
-    // NOT `factor <= 1.001` — flex-math non-linearity can overshoot at
-    // high scale, putting both axes past target. We must shrink back
-    // down to land the binding axis exactly on target.
+    // Converged: binding axis is at target. Use abs(factor-1) — NOT
+    // factor<=1.001 — because flex-math non-linearity can overshoot at
+    // high scale, putting both axes past target. We must allow shrink
+    // back down to land the binding axis exactly on target.
     if (Math.abs(factor - 1) < 0.001) {
       return scale
     }
-    // Clamp at MAX_SCALE but DON'T early-return — at very deep nesting
-    // the first growth iteration can overshoot far past MAX_SCALE, after
-    // which subsequent iterations shrink back toward target. Returning
-    // here would freeze us at MAX_SCALE before convergence. The
-    // MAX_FIT_ITER cap is what prevents real runaway.
-    scale = Math.min(scale * factor, MAX_SCALE)
+    scale *= factor
   }
   return scale
 }
@@ -122,9 +112,6 @@ function findClampOverflowScale(
     })
     if (rect.width <= 0 || rect.height <= 0) {
       scale *= 2
-      if (scale >= MAX_SCALE) {
-        return MAX_SCALE
-      }
       continue
     }
     const widthFactor = targetWidth / rect.width
@@ -137,12 +124,7 @@ function findClampOverflowScale(
     if (Math.abs(factor - 1) < 0.001) {
       return scale
     }
-    // Clamp at MAX_SCALE but DON'T early-return — at very deep nesting
-    // the first growth iteration can overshoot far past MAX_SCALE, after
-    // which subsequent iterations shrink back toward target. Returning
-    // here would freeze us at MAX_SCALE before convergence. The
-    // MAX_FIT_ITER cap is what prevents real runaway.
-    scale = Math.min(scale * factor, MAX_SCALE)
+    scale *= factor
   }
   return scale
 }
