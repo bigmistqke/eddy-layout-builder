@@ -10,19 +10,3 @@
   position: relative;
   overflow: hidden;
 }
-
-.canvasInner {
-  --hud-height: 48px;
-
-  position: absolute;
-  inset: 0;
-  display: flex;
-  transform-origin: 0 0;
-  will-change: transform, width, height;
-  /* No CSS transition — animation is driven by WAAPI in layout-builder.tsx
-     with all three properties in a single Animation. CSS transitions
-     interpolate properties independently, which lets layout-bound width
-     fall behind the compositor-driven transform during big zooms; one
-     WAAPI animation applies a single time-fraction to all keyframe
-     properties. */
-}

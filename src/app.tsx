@@ -1,4 +1,3 @@
-import { NodeComponent } from "./components/node-component"
 import { Context } from "./context"
 import { Main } from "./hud/main"
 import { LayoutBuilder } from "./layout-builder"
@@ -12,9 +11,7 @@ export function App() {
   return (
     <Context value={state}>
       <div style={{ display: "flex", width: "100vw", height: "100%", position: "relative" }}>
-        <LayoutBuilder>
-          <NodeComponent layout={state.app.layout} path={[]} onAddFrame={state.handleAddFrame} />
-        </LayoutBuilder>
+        <LayoutBuilder />
         <Main />
       </div>
     </Context>
