@@ -134,16 +134,20 @@ export function Canvas() {
       })
 
       // Drive handle overlay CSS vars from selectedRect (translation
-      // only — leaf coords are already in scaled space). Round to
-      // integer pixels so the DOM overlay aligns exactly with the
-      // GL-rendered frame edge: float CSS positions get rasterized at
-      // a different rounding boundary than the GL frame, leaving a 1px
-      // seam between the handle and the frame edge.
+      // only — leaf coords are already in scaled space). Snap to
+      // device-pixel boundaries (CSS px / dpr) so the DOM overlay
+      // aligns with the WebGL-rendered frame edge. On HiDPI (dpr=2) a
+      // half CSS pixel is a whole device pixel — without this snap
+      // the browser rasterizes the overlay at a different sub-CSS-px
+      // boundary than the GL fragment shader picks, leaving a
+      // half-pixel seam between handle and frame.
       if (lastSelectedRect) {
-        const x = Math.round(lastSelectedRect.x + viewport.x)
-        const y = Math.round(lastSelectedRect.y + viewport.y)
-        const right = Math.round(lastSelectedRect.x + viewport.x + lastSelectedRect.width)
-        const bottom = Math.round(lastSelectedRect.y + viewport.y + lastSelectedRect.height)
+        const dpr = window.devicePixelRatio || 1
+        const snap = (value: number) => Math.round(value * dpr) / dpr
+        const x = snap(lastSelectedRect.x + viewport.x)
+        const y = snap(lastSelectedRect.y + viewport.y)
+        const right = snap(lastSelectedRect.x + viewport.x + lastSelectedRect.width)
+        const bottom = snap(lastSelectedRect.y + viewport.y + lastSelectedRect.height)
         wrapperElement.style.setProperty("--selected-x", `${x}px`)
         wrapperElement.style.setProperty("--selected-y", `${y}px`)
         wrapperElement.style.setProperty("--selected-width", `${right - x}px`)
