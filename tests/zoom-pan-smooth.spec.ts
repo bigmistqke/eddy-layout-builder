@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { clickAction, clickFrame, clickHandle } from "./helpers"
+import { activateTool, clickFrame, clickHandle } from "./helpers"
 
 /**
  * Big zoom: build a deeply nested layout and tap a small frame so the
@@ -10,21 +10,22 @@ import { clickAction, clickFrame, clickHandle } from "./helpers"
  */
 test("big-zoom pan trajectory is monotonic", async ({ page }) => {
   await page.goto("/")
-  await clickAction(page, "enter-layout")
+  await activateTool(page, "append")
   await page.waitForTimeout(100)
 
   // Build a deep layout so the next click triggers a big zoom.
-  await clickFrame(page, [0])
+  await clickFrame(page, [])
   await page.waitForTimeout(200)
-  await clickHandle(page, [0], "right")
+  await clickHandle(page, [], "right")
   await page.waitForTimeout(300)
   await clickHandle(page, [1], "bottom")
   await page.waitForTimeout(300)
   await clickHandle(page, [1, 1], "right")
   await page.waitForTimeout(300)
   // selection is now somewhere small. Tap a different small frame to
-  // trigger a fresh animation we can sample.
-  await clickFrame(page, [0])
+  // trigger a fresh animation we can sample. Use `force` because the
+  // current zoom may have panned [0] outside the browser viewport.
+  await clickFrame(page, [0], { force: true })
   await page.waitForTimeout(300)
   // Trigger the big zoom: select a small target.
   // Now click a deeply nested cell.

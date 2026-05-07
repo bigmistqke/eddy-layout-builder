@@ -9,8 +9,7 @@ export function Contextual() {
   const context = useContext(Context)
   // Deselect button shows when a tool is active and a frame is selected.
   // Without an active tool the contextual HUD has nothing to offer.
-  const hasSelection = () =>
-    context.app.tool !== null && context.app.selection !== null
+  const hasSelection = () => context.app.tool !== null && context.app.selection !== null
   const hasAnyButton = () => hasSelection()
 
   return (
@@ -20,16 +19,6 @@ export function Contextual() {
           <Show when={hasSelection()}>
             <button
               class={styles.button}
-              data-action="delete"
-              onClick={() => {
-                logAction("delete")
-                context.deleteSelection()
-              }}
-            >
-              <TrashIcon />
-            </button>
-            <button
-              class={styles.button}
               data-action="deselect"
               onClick={() => {
                 logAction("deselect")
@@ -37,6 +26,16 @@ export function Contextual() {
               }}
             >
               <CloseIcon />
+            </button>
+            <button
+              class={styles.button}
+              data-action="delete"
+              onClick={() => {
+                logAction("delete")
+                context.deleteSelection()
+              }}
+            >
+              <TrashIcon />
             </button>
           </Show>
         </div>

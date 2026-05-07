@@ -3,8 +3,15 @@ import type { Page } from "@playwright/test"
 /** Click a frame by its layout path (e.g., [0, 1] → `[data-path="0.1"]`).
  *  Picks the leaf-most matching node (data-path is also set on container
  *  Frames; we want the rendered leaf for click hit-testing). */
-export async function clickFrame(page: Page, path: number[]) {
+export async function clickFrame(page: Page, path: number[], options?: { force?: boolean }) {
   const key = path.join(".")
+  // `force` here means "dispatch a click event programmatically" — bypasses
+  // Playwright's scroll-into-view requirement, which fails when the target
+  // is panned outside the browser viewport by the canvas's CSS transform.
+  if (options?.force) {
+    await page.locator(`[data-path="${key}"]`).last().dispatchEvent("click")
+    return
+  }
   await page.locator(`[data-path="${key}"]`).last().click()
 }
 
@@ -14,8 +21,10 @@ export async function clickFrame(page: Page, path: number[]) {
  *  position, not depth, since the test author can read the button index
  *  directly from the DOM. */
 export async function clickBreadcrumb(page: Page, segmentIndex: number) {
+  // The breadcrumb is the only top-oriented Notch (`hudTop` modifier),
+  // so scope button-nth lookup to that subtree.
   await page
-    .locator('[class*="breadcrumbContent"] button')
+    .locator('[class*="hudTop"] button')
     .nth(segmentIndex)
     .click()
 }
@@ -40,6 +49,14 @@ export async function clickHandle(
 /** Click a UI action button by its data-action attribute. */
 export async function clickAction(page: Page, action: string) {
   await page.locator(`[data-action="${action}"]`).first().click()
+}
+
+/** Activate an editing tool (`append` or `split`) — replaces the old
+ *  "enter-layout" affordance. Tools toggle via the same button, so this
+ *  also no-ops if the tool is already active (caller's responsibility to
+ *  not call twice without intending a toggle). */
+export async function activateTool(page: Page, tool: "append" | "split") {
+  await clickAction(page, `set-tool-${tool}`)
 }
 
 /** Read the bounding box of a frame at a given path. Returns canvas-relative

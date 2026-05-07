@@ -1,11 +1,4 @@
-import {
-  CROSS_PAIR_MIN,
-  HANDLE_H,
-  HANDLE_W,
-  ROOT_PADDING,
-  SAME_AXIS_MIN,
-  SIBLING_GAP,
-} from "./constants"
+import { HANDLE_H, HANDLE_W, ROOT_PADDING, SIBLING_GAP } from "./constants"
 import type { Direction, Node, Selection } from "./types"
 
 /**
@@ -45,41 +38,45 @@ export function selectedPathKey(selection: Selection): string {
  * induced same-axis-pair overlap occurs, pan to canvas center. Otherwise
  * identity — preserves "no pan when not needed" UX.
  */
-/** Find the smallest scale s such that frameRect at scale s satisfies the
- *  handle-fit constraints. Iterative because CSS padding/gap are fixed
- *  pixels: at deep nesting they consume most of the parent's space, and
- *  baseRect.width can go *negative* — making an analytical (SAME_AXIS_MIN /
- *  baseRect.width) calculation either wrong or undefined. Each step grows
- *  scale by the current deficit ratio; converges in 1–3 iterations
- *  typically, capped to avoid runaway. */
+/** Find scale s such that the selected frame, at scale s, fits the target
+ *  box (canvas inset by one HUD height on each side) with one axis exactly
+ *  filling the target. Iterative because CSS padding/gap are fixed pixels —
+ *  flex math means rect dims at scale s are NOT (rect at 1) × s. Each step
+ *  multiplies scale by the binding axis's deficit ratio; converges in 1–3
+ *  iterations typically, capped to avoid runaway. */
 const MAX_SCALE = 10000
 const MAX_FIT_ITER = 20
-function findHandleFitScale(
+const FRAME_PADDING = HANDLE_H
+function findFitToTargetScale(
   layout: Node,
   path: number[],
   canvas: { width: number; height: number },
 ): number {
+  const targetWidth = canvas.width - 2 * FRAME_PADDING
+  const targetHeight = canvas.height - 2 * FRAME_PADDING
+  if (targetWidth <= 0 || targetHeight <= 0) {
+    return 1
+  }
   let scale = 1
   for (let iteration = 0; iteration < MAX_FIT_ITER; iteration++) {
     const rect = frameRect(layout, path, {
       width: canvas.width * scale,
       height: canvas.height * scale,
     })
-    const minDim = Math.min(rect.width, rect.height)
-    const maxDim = Math.max(rect.width, rect.height)
-    const sameAxisOk = minDim >= SAME_AXIS_MIN
-    const crossPairOk = maxDim >= CROSS_PAIR_MIN
-    if (sameAxisOk && crossPairOk) {
+    if (rect.width <= 0 || rect.height <= 0) {
+      scale *= 2
+      if (scale >= MAX_SCALE) {
+        return MAX_SCALE
+      }
+      continue
+    }
+    const widthFactor = targetWidth / rect.width
+    const heightFactor = targetHeight / rect.height
+    const factor = Math.min(widthFactor, heightFactor)
+    if (Math.abs(factor - 1) < 0.001) {
       return scale
     }
-    let needed = 1
-    if (!sameAxisOk) {
-      needed = Math.max(needed, minDim > 0 ? SAME_AXIS_MIN / minDim : 4)
-    }
-    if (!crossPairOk) {
-      needed = Math.max(needed, maxDim > 0 ? CROSS_PAIR_MIN / maxDim : 4)
-    }
-    scale *= needed
+    scale *= factor
     if (scale >= MAX_SCALE) {
       return MAX_SCALE
     }
@@ -103,18 +100,20 @@ export function computeViewportTransform(
     return IDENTITY_VIEWPORT
   }
 
-  const handleScale = findHandleFitScale(layout, path, canvas)
-  const scale = Math.max(handleScale, minScale)
+  const fitScale = findFitToTargetScale(layout, path, canvas)
+  const scale = Math.max(fitScale, minScale)
 
-  // Identity-eligible (no zoom needed) — but check whether the frame's
-  // handles at their natural positions overlap any HUDs in a way that
-  // makes a same-axis handle pair overlap each other. If yes, pan to
-  // canvas center; otherwise identity.
+  // Identity-eligible (no zoom needed) — frame is already at-or-larger-than
+  // the target box. Skip the pan-to-center if handles clear HUDs naturally;
+  // otherwise pan so the stick/extend logic can keep them visible.
   if (scale <= 1) {
     const naturalExt = computeExtends(baseRect, hudRects)
-    const verticalFits = baseRect.height >= SAME_AXIS_MIN + naturalExt.top + naturalExt.bottom
-    const horizontalFits = baseRect.width >= SAME_AXIS_MIN + naturalExt.left + naturalExt.right
-    if (verticalFits && horizontalFits) {
+    const noHudOverlap =
+      naturalExt.top === 0 &&
+      naturalExt.bottom === 0 &&
+      naturalExt.left === 0 &&
+      naturalExt.right === 0
+    if (noHudOverlap) {
       return IDENTITY_VIEWPORT
     }
   }

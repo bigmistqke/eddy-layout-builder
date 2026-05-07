@@ -134,8 +134,19 @@ export function LayoutBuilder(props: { children: ComponentProps<"div">["children
       width: realRect.width,
       height: realRect.height,
     }
-    const extend = computeExtends(postRect, hudRects)
+    // Stick pulls handles inward to the canvas edge when the frame
+    // overflows the viewport. After sticking, the handle may sit underneath
+    // a HUD — so compute extends against a "stuck rect" (postRect shrunk by
+    // the stick amounts) so the notch grows past the HUD instead of being
+    // hidden by it.
     const stick = computeSticks(postRect, canvas)
+    const stuckRect: Rect = {
+      x: postRect.x + stick.left,
+      y: postRect.y + stick.top,
+      width: postRect.width - stick.left - stick.right,
+      height: postRect.height - stick.top - stick.bottom,
+    }
+    const extend = computeExtends(stuckRect, hudRects)
 
     setViewport({ ...transform, baseWidth: canvas.width, baseHeight: canvas.height })
     context.setSelectedHandlesState({ extend, stick })

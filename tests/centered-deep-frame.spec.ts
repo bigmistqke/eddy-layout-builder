@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { clickAction, clickFrame, clickHandle } from "./helpers"
+import { activateTool, clickFrame, clickHandle } from "./helpers"
 
 /**
  * After this sequence of right/top splits, the final selected frame
@@ -28,16 +28,15 @@ test("deep selected frame is centered after right/top action chain", async ({ pa
     }
   })
   await page.goto("/")
-  await clickAction(page, "enter-layout")
+  await activateTool(page, "append")
   await page.waitForTimeout(100)
 
-  // First click selects the only frame; subsequent clicks act on the
-  // currently selected frame's handle, which auto-selects the new entity.
-  await clickFrame(page, [0])
+  // Initial layout is a single Entity at root (path = []).
+  await clickFrame(page, [])
   await page.waitForTimeout(200)
 
   const sequence: Array<[number[], "top" | "right"]> = [
-    [[0], "right"],
+    [[], "right"],
     [[1], "top"],
     [[1, 0], "right"],
     [[1, 0, 1], "top"],

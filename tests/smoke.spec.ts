@@ -1,24 +1,25 @@
 import { expect, test } from "@playwright/test"
-import { clickAction, clickFrame, frameRect, readViewport } from "./helpers"
+import { activateTool, clickFrame, frameRect, readViewport } from "./helpers"
 
-test("dev server boots and recording view renders", async ({ page }) => {
+test("dev server boots and tool buttons render", async ({ page }) => {
   await page.goto("/")
-  await expect(page.locator('[data-action="enter-layout"]')).toBeVisible()
+  await expect(page.locator('[data-action="set-tool-append"]')).toBeVisible()
 })
 
-test("entering layout mode shows the canvas inner", async ({ page }) => {
+test("activating a tool shows the canvas inner", async ({ page }) => {
   await page.goto("/")
-  await clickAction(page, "enter-layout")
+  await activateTool(page, "append")
   const inner = await readViewport(page)
   expect(inner).not.toBeNull()
 })
 
-test("clicking a frame keeps it inside the canvas", async ({ page }) => {
+test("clicking the root frame keeps it inside the canvas", async ({ page }) => {
   await page.goto("/")
-  await clickAction(page, "enter-layout")
-  await clickFrame(page, [0])
+  await activateTool(page, "append")
+  // Initial layout is a single Entity at root (path = []).
+  await clickFrame(page, [])
   await page.waitForTimeout(300)
-  const rect = await frameRect(page, [0])
+  const rect = await frameRect(page, [])
   expect(rect).not.toBeNull()
   expect(rect!.x).toBeGreaterThanOrEqual(-1)
 })

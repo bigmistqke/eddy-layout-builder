@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { clickAction, clickFrame, clickHandle, frameRect, readViewport } from "./helpers"
+import { activateTool, clickFrame, clickHandle, frameRect } from "./helpers"
 
 /**
  * Repro: after this sequence, frame [0,1,0,1] is half-out on the left side.
@@ -18,42 +18,30 @@ test("[0,1,0,1] is centered, not half-out on the left", async ({ page }) => {
 
   await page.goto("/")
 
-  // Step 1: enter-layout
-  await clickAction(page, "enter-layout")
+  await activateTool(page, "append")
   await page.waitForTimeout(50)
 
-  // Step 2: tap-frame [0]
-  await clickFrame(page, [0])
+  // Initial layout is a single Entity at root.
+  await clickFrame(page, [])
   await page.waitForTimeout(300)
 
-  // Step 3: add-frame [0] left append
-  await clickHandle(page, [0], "left")
+  // Build the layout via append handles. First split happens at root.
+  await clickHandle(page, [], "left")
   await page.waitForTimeout(300)
 
-  // Step 4: add-frame [0] bottom append
   await clickHandle(page, [0], "bottom")
   await page.waitForTimeout(300)
 
-  // Step 5: add-frame [0,1] left append
   await clickHandle(page, [0, 1], "left")
   await page.waitForTimeout(300)
 
-  // Step 6: add-frame [0,1,0] bottom append
   await clickHandle(page, [0, 1, 0], "bottom")
   await page.waitForTimeout(300)
 
-  // Step 7: back (only fires if zoom actually triggered along the way).
-  const backBtn = page.locator('[data-action="back"]')
-  if (await backBtn.isVisible()) {
-    await clickAction(page, "back")
-    await page.waitForTimeout(300)
-  }
-
-  // Step 8: tap-frame [0,1,0,1]
+  // Tap the target frame to select and animate to it.
   await clickFrame(page, [0, 1, 0, 1])
   await page.waitForTimeout(400)
 
-  // Capture state.
   const rect = await frameRect(page, [0, 1, 0, 1])
   const canvasSize = await page.evaluate(() => {
     const c = document.querySelector<HTMLElement>('[data-canvas="true"]')
@@ -62,7 +50,6 @@ test("[0,1,0,1] is centered, not half-out on the left", async ({ page }) => {
     return { w: r.width, h: r.height }
   })
 
-  // Frame must be inside the canvas (no half-out-of-viewport — original bug).
   expect(rect).not.toBeNull()
   expect(rect!.x).toBeGreaterThanOrEqual(-1)
   expect(rect!.x + rect!.w).toBeLessThanOrEqual(canvasSize!.w + 1)
