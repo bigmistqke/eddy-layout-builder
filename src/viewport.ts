@@ -1,5 +1,6 @@
 import { FRAME_PADDING, HANDLE_H, HANDLE_W, ROOT_PADDING, SIBLING_GAP } from "./constants"
 import type { Direction, Node, Selection } from "./types"
+import { pathEquals } from "./utils"
 
 /**
  * `scale` is the *size multiplier* applied to the canvas by setting
@@ -265,6 +266,91 @@ export function frameRect(
     current = current.children[childIndex]
   }
   return rect
+}
+
+/** A rendered leaf entity in canvas-local coordinates. `path` is the
+ *  full path to the leaf; `color` is its stable per-entity rgb.
+ *  Returned by `layoutFrames` and consumed by both the WebGL renderer
+ *  and the JS click hit-test. */
+export type LeafFrame = {
+  path: number[]
+  rect: Rect
+  color: string
+}
+
+/** Walk the layout tree once at the given canvas dims and produce:
+ *
+ *  - `leaves`: every Entity with its rect and color, in tree-traversal
+ *    order. Siblings are non-overlapping (flex tiling), so click
+ *    hit-test order doesn't matter.
+ *  - `selectedRect`: the rect of the node at `selection.path[..-depth]`
+ *    if a selection exists, else null. May be a container, not just an
+ *    entity. Used by the handle overlay.
+ *
+ *  Pure function — no DOM reads. Caller passes scaled canvas dims for
+ *  the desired output (e.g. `canvas.width * scale` to render at zoom).
+ */
+export function layoutFrames(
+  layout: Node,
+  canvas: { width: number; height: number },
+  selection: Selection | null = null,
+): { leaves: LeafFrame[]; selectedRect: Rect | null } {
+  const leaves: LeafFrame[] = []
+  let selectedRect: Rect | null = null
+
+  const targetedPath =
+    selection === null
+      ? null
+      : selection.path.slice(0, selection.path.length - selection.depth)
+
+  function walk(node: Node, path: number[], rect: Rect) {
+    if (targetedPath !== null && pathEquals(path, targetedPath)) {
+      selectedRect = rect
+    }
+    if (node.type === "entity") {
+      leaves.push({ path: path.slice(), rect, color: node.color })
+      return
+    }
+    const childCount = node.children.length
+    const totalGap = SIBLING_GAP * (childCount - 1)
+    if (node.direction === "horizontal") {
+      const childWidth = (rect.width - totalGap) / childCount
+      for (let index = 0; index < childCount; index++) {
+        const childRect: Rect = {
+          x: rect.x + index * (childWidth + SIBLING_GAP),
+          y: rect.y,
+          width: childWidth,
+          height: rect.height,
+        }
+        path.push(index)
+        walk(node.children[index], path, childRect)
+        path.pop()
+      }
+    } else {
+      const childHeight = (rect.height - totalGap) / childCount
+      for (let index = 0; index < childCount; index++) {
+        const childRect: Rect = {
+          x: rect.x,
+          y: rect.y + index * (childHeight + SIBLING_GAP),
+          width: rect.width,
+          height: childHeight,
+        }
+        path.push(index)
+        walk(node.children[index], path, childRect)
+        path.pop()
+      }
+    }
+  }
+
+  const rootRect: Rect = {
+    x: ROOT_PADDING,
+    y: ROOT_PADDING,
+    width: canvas.width - 2 * ROOT_PADDING,
+    height: canvas.height - 2 * ROOT_PADDING,
+  }
+  walk(layout, [], rootRect)
+
+  return { leaves, selectedRect }
 }
 
 /** Apply scale + translation to a rect. The scale multiplies width/height
