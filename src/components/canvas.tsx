@@ -151,6 +151,7 @@ export function Canvas() {
     }
 
     function recomputeViewport(): ViewportState {
+      const t0 = performance.now()
       const wrapperRect = wrapperElement.getBoundingClientRect()
       const canvas = { width: wrapperRect.width, height: wrapperRect.height }
       const selection = context.app.selection
@@ -163,12 +164,18 @@ export function Canvas() {
       const targetedDepth = selection.path.length - selection.depth
       const selectedPath = selection.path.slice(0, Math.max(0, targetedDepth))
       const hudRects = context.computeHudRects(wrapperRect)
+      const tComputeStart = performance.now()
       const transform = computeViewportTransform(
         context.app.layout,
         selectedPath,
         canvas,
         1,
         hudRects,
+      )
+      const tComputeEnd = performance.now()
+      // eslint-disable-next-line no-console
+      console.log(
+        `[recomputeViewport] depth=${selectedPath.length} compute=${(tComputeEnd - tComputeStart).toFixed(2)}ms total=${(tComputeEnd - t0).toFixed(2)}ms scale=${transform.scale.toFixed(2)}`,
       )
       const realRect = frameRect(context.app.layout, selectedPath, {
         width: canvas.width * transform.scale,
