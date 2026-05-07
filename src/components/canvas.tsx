@@ -149,51 +149,54 @@ export function Canvas() {
     }
 
     function recomputeViewport(): ViewportState {
-      // Reads happen inside the effect's untracked callback (the
-      // creator already tracks via layoutSignature). Wrap store reads
-      // in untrack to silence STRICT_READ_UNTRACKED warnings.
-      const t0 = performance.now()
-      const wrapperRect = wrapperElement.getBoundingClientRect()
-      const canvas = { width: wrapperRect.width, height: wrapperRect.height }
-      const selection = untrack(() => context.app.selection)
-      if (selection === null) {
-        const identity: ViewportState = { x: 0, y: 0, scale: 1 }
-        context.setViewport(identity)
-        context.setSelectedHandlesState({ extend: ZERO_BY_DIRECTION, stick: ZERO_BY_DIRECTION })
-        return identity
-      }
-      const targetedDepth = selection.path.length - selection.depth
-      const selectedPath = selection.path.slice(0, Math.max(0, targetedDepth))
-      const hudRects = context.computeHudRects(wrapperRect)
-      const layout = untrack(() => context.app.layout)
-      const tComputeStart = performance.now()
-      const transform = computeViewportTransform(layout, selectedPath, canvas, 1, hudRects)
-      const tComputeEnd = performance.now()
-      // eslint-disable-next-line no-console
-      console.log(
-        `[recomputeViewport] depth=${selectedPath.length} compute=${(tComputeEnd - tComputeStart).toFixed(2)}ms total=${(tComputeEnd - t0).toFixed(2)}ms scale=${transform.scale.toFixed(2)}`,
-      )
-      const realRect = frameRect(layout, selectedPath, {
-        width: canvas.width * transform.scale,
-        height: canvas.height * transform.scale,
+      // Solid store proxies track on EVERY property access, so a single
+      // outer untrack(() => context.app.selection) doesn't help — reading
+      // `.path`/`.depth` on the captured object retracks. Wrap the whole
+      // function body in one untrack scope.
+      return untrack(() => {
+        const t0 = performance.now()
+        const wrapperRect = wrapperElement.getBoundingClientRect()
+        const canvas = { width: wrapperRect.width, height: wrapperRect.height }
+        const selection = context.app.selection
+        if (selection === null) {
+          const identity: ViewportState = { x: 0, y: 0, scale: 1 }
+          context.setViewport(identity)
+          context.setSelectedHandlesState({ extend: ZERO_BY_DIRECTION, stick: ZERO_BY_DIRECTION })
+          return identity
+        }
+        const targetedDepth = selection.path.length - selection.depth
+        const selectedPath = selection.path.slice(0, Math.max(0, targetedDepth))
+        const hudRects = context.computeHudRects(wrapperRect)
+        const layout = context.app.layout
+        const tComputeStart = performance.now()
+        const transform = computeViewportTransform(layout, selectedPath, canvas, 1, hudRects)
+        const tComputeEnd = performance.now()
+        // eslint-disable-next-line no-console
+        console.log(
+          `[recomputeViewport] depth=${selectedPath.length} compute=${(tComputeEnd - tComputeStart).toFixed(2)}ms total=${(tComputeEnd - t0).toFixed(2)}ms scale=${transform.scale.toFixed(2)}`,
+        )
+        const realRect = frameRect(layout, selectedPath, {
+          width: canvas.width * transform.scale,
+          height: canvas.height * transform.scale,
+        })
+        const postRect: Rect = {
+          x: realRect.x + transform.x,
+          y: realRect.y + transform.y,
+          width: realRect.width,
+          height: realRect.height,
+        }
+        const stick = computeSticks(postRect, canvas)
+        const stuckRect: Rect = {
+          x: postRect.x + stick.left,
+          y: postRect.y + stick.top,
+          width: postRect.width - stick.left - stick.right,
+          height: postRect.height - stick.top - stick.bottom,
+        }
+        const extend = computeExtends(stuckRect, hudRects)
+        context.setSelectedHandlesState({ extend, stick })
+        context.setViewport(transform)
+        return transform
       })
-      const postRect: Rect = {
-        x: realRect.x + transform.x,
-        y: realRect.y + transform.y,
-        width: realRect.width,
-        height: realRect.height,
-      }
-      const stick = computeSticks(postRect, canvas)
-      const stuckRect: Rect = {
-        x: postRect.x + stick.left,
-        y: postRect.y + stick.top,
-        width: postRect.width - stick.left - stick.right,
-        height: postRect.height - stick.top - stick.bottom,
-      }
-      const extend = computeExtends(stuckRect, hudRects)
-      context.setSelectedHandlesState({ extend, stick })
-      context.setViewport(transform)
-      return transform
     }
 
     function startAnimation(target: ViewportState) {
