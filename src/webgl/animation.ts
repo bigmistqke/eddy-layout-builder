@@ -2,8 +2,11 @@ import type { ViewportState } from "./renderer"
 
 const ANIMATION_MS = 220
 
-/** Smoothstep easing — visually close to cubic-bezier(0.4, 0, 0.2, 1)
- *  without needing a full bezier evaluator. */
+/** Ease-out cubic — fast start, slow finish. Beats smoothstep here:
+ *  the symmetric curve had zero velocity at t=0, which reads as a
+ *  "delay before motion starts" especially on zoom-in (where the eye
+ *  expects the frame to begin growing immediately). With ease-out,
+ *  the first paint after the click already shows ~25% of the motion. */
 function ease(t: number): number {
   if (t <= 0) {
     return 0
@@ -11,7 +14,8 @@ function ease(t: number): number {
   if (t >= 1) {
     return 1
   }
-  return t * t * (3 - 2 * t)
+  const inverted = 1 - t
+  return 1 - inverted * inverted * inverted
 }
 
 function lerp(a: number, b: number, t: number): number {
