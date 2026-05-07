@@ -277,6 +277,50 @@ export async function expectFrameRespectsMargin(
   return { rule: detected, ...result }
 }
 
+/** Assert that all four selected-frame handles are visible inside the
+ *  canvas viewport. A handle whose bounding rect lies entirely past a
+ *  canvas edge isn't clickable by the user. Sticking and centering
+ *  should keep handles within the canvas regardless of how far the
+ *  selected frame overflows. */
+export async function expectHandlesInViewport(page: Page) {
+  const dump = await page.evaluate(() => {
+    const rect = (element: Element | null | undefined) => {
+      if (!element) {
+        return null
+      }
+      const r = element.getBoundingClientRect()
+      return { x: r.left, y: r.top, w: r.width, h: r.height }
+    }
+    const handles: Record<string, { x: number; y: number; w: number; h: number } | null> = {}
+    for (const direction of ["top", "bottom", "left", "right"]) {
+      const wrapper = document.querySelector(`[data-direction='${direction}']`)
+      handles[direction] = rect(wrapper?.firstElementChild)
+    }
+    return {
+      canvas: rect(document.querySelector("[data-canvas='true']")),
+      handles,
+    }
+  })
+
+  if (!dump.canvas) {
+    throw new Error("expectHandlesInViewport: no [data-canvas='true'] element")
+  }
+  for (const [direction, r] of Object.entries(dump.handles)) {
+    if (!r) {
+      throw new Error(`expectHandlesInViewport: ${direction} handle missing`)
+    }
+    const offLeft = r.x + r.w < dump.canvas.x - 1
+    const offRight = r.x > dump.canvas.x + dump.canvas.w + 1
+    const offTop = r.y + r.h < dump.canvas.y - 1
+    const offBottom = r.y > dump.canvas.y + dump.canvas.h + 1
+    if (offLeft || offRight || offTop || offBottom) {
+      throw new Error(
+        `expectHandlesInViewport: ${direction} handle is outside the canvas viewport: ${JSON.stringify({ handle: r, canvas: dump.canvas })}`,
+      )
+    }
+  }
+}
+
 /** Assert that the four selected-frame handles don't overlap each
  *  other and don't sit entirely behind any HUD. The "tip past HUD"
  *  check uses the canvas-center-facing edge of each handle: if a HUD

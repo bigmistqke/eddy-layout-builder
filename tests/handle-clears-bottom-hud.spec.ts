@@ -1,5 +1,10 @@
 import { test } from "@playwright/test"
-import { type Action, expectHandlesDontOverlap, runActions } from "./helpers"
+import {
+  type Action,
+  expectHandlesDontOverlap,
+  expectHandlesInViewport,
+  runActions,
+} from "./helpers"
 
 /**
  * Repro: split-right four times. The selected frame is so narrow at scale=1
@@ -25,6 +30,27 @@ test("deep right-split chain: handles don't overlap each other or HUDs", async (
  * Five alternating right/top splits followed by three deepening right
  * splits — selected frame ends up extremely narrow.
  */
+/**
+ * 15 cascading top splits — same shape as the deep-top margin test
+ * but here we verify all four handles are still rendered with positive
+ * hit area. User repro: at this depth some handles weren't visible.
+ */
+test("15-deep top-split chain: all four handles still visible", async ({ page }) => {
+  await page.goto("/")
+  const path: number[] = []
+  const actions: Action[] = [
+    { type: "set-tool", tool: "split" },
+    { type: "tap-frame", path: [] },
+  ]
+  for (let i = 0; i < 15; i++) {
+    actions.push({ type: "add-frame", path: [...path], direction: "top", op: "split" })
+    path.push(0)
+  }
+  await runActions(page, actions)
+  await expectHandlesInViewport(page)
+  await expectHandlesDontOverlap(page)
+})
+
 test("zigzag right/top splits + deep rights: no overlapping handles", async ({ page }) => {
   await page.goto("/")
   const actions: Action[] = [
