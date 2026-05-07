@@ -3,6 +3,7 @@
   position: absolute;
   z-index: var(--z-notch);
   color: var(--color-front);
+  pointer-events: auto;
 
   &.bottom {
     left: 50%;
