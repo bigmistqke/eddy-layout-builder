@@ -22,6 +22,13 @@ export const SAME_AXIS_MIN = 2 * HANDLE_H + HANDLE_BUFFER
 // width ≥ HANDLE_W + 2·HANDLE_H (or the same on height).
 export const CROSS_PAIR_MIN = HANDLE_W + 2 * HANDLE_H + HANDLE_BUFFER
 
+// Per-side inset of the "target box" used by viewport zoom-to-fit. The
+// selected frame is scaled (aspect-preserved) so it fits inside
+// `canvas - 2*FRAME_PADDING` on each axis. Tweakable independently of
+// HANDLE_H so the visual breathing room can be tuned without affecting
+// handle dimensions.
+export const FRAME_PADDING = 2 * HANDLE_H
+
 // Layout — must stay in sync with --padding in index.css and the
 // .layoutContainerRoot/.layoutContainer rules in node-component.module.css.
 // Root container has padding on all sides plus gap between children.

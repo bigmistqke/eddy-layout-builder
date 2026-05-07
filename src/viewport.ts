@@ -1,4 +1,4 @@
-import { HANDLE_H, HANDLE_W, ROOT_PADDING, SIBLING_GAP } from "./constants"
+import { FRAME_PADDING, HANDLE_H, HANDLE_W, ROOT_PADDING, SIBLING_GAP } from "./constants"
 import type { Direction, Node, Selection } from "./types"
 
 /**
@@ -38,16 +38,25 @@ export function selectedPathKey(selection: Selection): string {
  * induced same-axis-pair overlap occurs, pan to canvas center. Otherwise
  * identity — preserves "no pan when not needed" UX.
  */
-/** Find scale s such that the selected frame, at scale s, fits the target
- *  box (canvas inset by one HUD height on each side) with one axis exactly
- *  filling the target. Iterative because CSS padding/gap are fixed pixels —
- *  flex math means rect dims at scale s are NOT (rect at 1) × s. Each step
- *  multiplies scale by the binding axis's deficit ratio; converges in 1–3
+/** Two-stage zoom search:
+ *
+ *  Rule 2 — `findFitInsideScale` iterates by `min(widthFactor, heightFactor)`
+ *  so the frame fits ENTIRELY inside the target box (canvas inset by
+ *  FRAME_PADDING per side). The binding axis hits target exactly; the
+ *  other axis is smaller. Aspect ratio preserved.
+ *
+ *  Rule 3 — `findClampOverflowScale` iterates by `max(...)`. Used only
+ *  when fit-inside can't grow the frame (extreme aspect ratios where
+ *  one axis already exceeds target while the other is far smaller).
+ *  The smaller-by-ratio dim fills target; the larger overflows the
+ *  canvas. Stick + extend keep the off-canvas handles visible.
+ *
+ *  Iterative in both cases because CSS padding/gap are fixed pixels —
+ *  rect dims at scale s are NOT (rect at 1) × s. Converges in 1–3
  *  iterations typically, capped to avoid runaway. */
 const MAX_SCALE = 10000
 const MAX_FIT_ITER = 20
-const FRAME_PADDING = HANDLE_H
-function findFitToTargetScale(
+function findFitInsideScale(
   layout: Node,
   path: number[],
   canvas: { width: number; height: number },
@@ -73,7 +82,7 @@ function findFitToTargetScale(
     const widthFactor = targetWidth / rect.width
     const heightFactor = targetHeight / rect.height
     const factor = Math.min(widthFactor, heightFactor)
-    if (Math.abs(factor - 1) < 0.001) {
+    if (factor <= 1.001) {
       return scale
     }
     scale *= factor
@@ -82,6 +91,55 @@ function findFitToTargetScale(
     }
   }
   return Math.min(scale, MAX_SCALE)
+}
+
+function findClampOverflowScale(
+  layout: Node,
+  path: number[],
+  canvas: { width: number; height: number },
+): number {
+  const targetWidth = canvas.width - 2 * FRAME_PADDING
+  const targetHeight = canvas.height - 2 * FRAME_PADDING
+  if (targetWidth <= 0 || targetHeight <= 0) {
+    return 1
+  }
+  let scale = 1
+  for (let iteration = 0; iteration < MAX_FIT_ITER; iteration++) {
+    const rect = frameRect(layout, path, {
+      width: canvas.width * scale,
+      height: canvas.height * scale,
+    })
+    if (rect.width <= 0 || rect.height <= 0) {
+      scale *= 2
+      if (scale >= MAX_SCALE) {
+        return MAX_SCALE
+      }
+      continue
+    }
+    const widthFactor = targetWidth / rect.width
+    const heightFactor = targetHeight / rect.height
+    const factor = Math.max(widthFactor, heightFactor)
+    if (factor <= 1.001) {
+      return scale
+    }
+    scale *= factor
+    if (scale >= MAX_SCALE) {
+      return MAX_SCALE
+    }
+  }
+  return Math.min(scale, MAX_SCALE)
+}
+
+function findFitScale(
+  layout: Node,
+  path: number[],
+  canvas: { width: number; height: number },
+): number {
+  const inside = findFitInsideScale(layout, path, canvas)
+  if (inside > 1.001) {
+    return inside
+  }
+  return findClampOverflowScale(layout, path, canvas)
 }
 
 export function computeViewportTransform(
@@ -100,23 +158,27 @@ export function computeViewportTransform(
     return IDENTITY_VIEWPORT
   }
 
-  const fitScale = findFitToTargetScale(layout, path, canvas)
-  const scale = Math.max(fitScale, minScale)
-
-  // Identity-eligible (no zoom needed) — frame is already at-or-larger-than
-  // the target box. Skip the pan-to-center if handles clear HUDs naturally;
-  // otherwise pan so the stick/extend logic can keep them visible.
-  if (scale <= 1) {
-    const naturalExt = computeExtends(baseRect, hudRects)
-    const noHudOverlap =
-      naturalExt.top === 0 &&
-      naturalExt.bottom === 0 &&
-      naturalExt.left === 0 &&
-      naturalExt.right === 0
-    if (noHudOverlap) {
-      return IDENTITY_VIEWPORT
-    }
+  // Natural-fit short-circuit: at scale=1, do all 4 handles fit
+  // non-overlapping (after the natural extends pushed by HUDs)? If yes,
+  // don't zoom at all — preserves "no zoom when not needed" UX. The four
+  // checks mirror the geometry of the rendered handles:
+  //   * vertical-pair non-overlap: frame.height ≥ 2·HANDLE_H + ext.top + ext.bottom
+  //   * horizontal-pair non-overlap: frame.width ≥ 2·HANDLE_H + ext.left + ext.right
+  //   * cross-pair non-overlap (top ↔ left/right): frame.width ≥ HANDLE_W + 2·HANDLE_H
+  //   * cross-pair non-overlap on vertical: frame.height ≥ HANDLE_W + 2·HANDLE_H
+  const naturalExt = computeExtends(baseRect, hudRects)
+  const sameAxisH = 2 * HANDLE_H
+  const crossPair = HANDLE_W + 2 * HANDLE_H
+  const verticalFits = baseRect.height >= sameAxisH + naturalExt.top + naturalExt.bottom
+  const horizontalFits = baseRect.width >= sameAxisH + naturalExt.left + naturalExt.right
+  const crossWidthFits = baseRect.width >= crossPair
+  const crossHeightFits = baseRect.height >= crossPair
+  if (verticalFits && horizontalFits && crossWidthFits && crossHeightFits) {
+    return IDENTITY_VIEWPORT
   }
+
+  const fitScale = findFitScale(layout, path, canvas)
+  const scale = Math.max(fitScale, minScale)
 
   // Pan to canvas center using REAL flex-math at the scaled canvasInner.
   const realRect = frameRect(layout, path, {
