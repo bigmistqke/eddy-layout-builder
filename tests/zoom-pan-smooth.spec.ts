@@ -30,20 +30,30 @@ test("big-zoom pan trajectory is monotonic", async ({ page }) => {
   // Trigger the big zoom: select a small target.
   // Now click a deeply nested cell.
   const targetPathStr = await page.evaluate(() => {
-    // Find the smallest (lowest area) frame element in the canvas and
-    // return its data-path.
-    const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-path]"))
-    let best = nodes[0]
+    // Find the smallest (lowest area) leaf in the layout via the test hook.
+    const fn = (window as unknown as { __layoutFrames?: () => unknown }).__layoutFrames
+    if (!fn) {
+      return ""
+    }
+    const data = fn() as {
+      leaves: Array<{
+        path: number[]
+        rect: { x: number; y: number; width: number; height: number }
+      }>
+      viewport: { x: number; y: number; scale: number }
+    }
+    let bestPath = ""
     let bestArea = Infinity
-    for (const n of nodes) {
-      const r = n.getBoundingClientRect()
-      const a = r.width * r.height
-      if (a > 0 && a < bestArea) {
-        bestArea = a
-        best = n
+    for (const leaf of data.leaves) {
+      const w = leaf.rect.width * data.viewport.scale
+      const h = leaf.rect.height * data.viewport.scale
+      const area = w * h
+      if (area > 0 && area < bestArea) {
+        bestArea = area
+        bestPath = leaf.path.join(".")
       }
     }
-    return best?.getAttribute("data-path") ?? ""
+    return bestPath
   })
   expect(targetPathStr).not.toBe("")
   const targetPath = targetPathStr.split(".").map(Number)
@@ -56,10 +66,25 @@ test("big-zoom pan trajectory is monotonic", async ({ page }) => {
   const start = Date.now()
   for (let i = 0; i < 12; i++) {
     const sample = await page.evaluate(p => {
-      const n = document.querySelector<HTMLElement>(`[data-path="${p}"]`)
-      if (!n) return null
-      const r = n.getBoundingClientRect()
-      return { x: r.left + r.width / 2, w: r.width }
+      const fn = (window as unknown as { __layoutFrames?: () => unknown }).__layoutFrames
+      if (!fn) {
+        return null
+      }
+      const data = fn() as {
+        leaves: Array<{
+          path: number[]
+          rect: { x: number; y: number; width: number; height: number }
+        }>
+        viewport: { x: number; y: number; scale: number }
+        canvas: { left: number }
+      }
+      const leaf = data.leaves.find(l => l.path.join(".") === p)
+      if (!leaf) {
+        return null
+      }
+      const screenX = leaf.rect.x * data.viewport.scale + data.viewport.x
+      const screenW = leaf.rect.width * data.viewport.scale
+      return { x: data.canvas.left + screenX + screenW / 2, w: screenW }
     }, targetPathStr)
     if (sample) samples.push({ t: Date.now() - start, ...sample })
     await page.waitForTimeout(20)

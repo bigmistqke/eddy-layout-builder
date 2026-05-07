@@ -1,4 +1,12 @@
-import { createEffect, createMemo, For, onSettled, Show, useContext } from "solid-js"
+import {
+  createEffect,
+  createMemo,
+  For,
+  onSettled,
+  Show,
+  untrack,
+  useContext,
+} from "solid-js"
 import { Context } from "../context"
 import type { Direction, Node, Selection } from "../types"
 import { logAction } from "../utils"
@@ -18,15 +26,6 @@ import styles from "./canvas.module.css"
 
 const HANDLE_DIRECTIONS: Direction[] = ["top", "bottom", "left", "right"]
 const ZERO_BY_DIRECTION: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
-
-function applyViewportToRect(rect: Rect, viewport: ViewportState): Rect {
-  return {
-    x: rect.x * viewport.scale + viewport.x,
-    y: rect.y * viewport.scale + viewport.y,
-    width: rect.width * viewport.scale,
-    height: rect.height * viewport.scale,
-  }
-}
 
 /** A signature of the layout topology + selection. Re-fires the
  *  viewport-recompute effect whenever any container's children list,
@@ -54,6 +53,13 @@ export function Canvas() {
   let lastSelectedRect: Rect | null = null
   let lastViewport: ViewportState = { x: 0, y: 0, scale: 1 }
 
+  // Set during onSettled, cleared on dispose. The component-scope
+  // createEffect below consults this for the actual functions to call.
+  // Using a plain ref avoids creating reactive primitives inside the
+  // owner-backed onSettled callback.
+  let drive: { recompute: () => ViewportState; start: (target: ViewportState) => void } | null =
+    null
+
   const selectedPathKey = createMemo(() => {
     const selection = context.app.selection
     if (selection === null) {
@@ -70,8 +76,11 @@ export function Canvas() {
     const wrapperRect = wrapperElement.getBoundingClientRect()
     const screenX = event.clientX - wrapperRect.left
     const screenY = event.clientY - wrapperRect.top
-    const canvasX = (screenX - lastViewport.x) / lastViewport.scale
-    const canvasY = (screenY - lastViewport.y) / lastViewport.scale
+    // Leaves are computed in *scaled-canvas* coordinates; the viewport
+    // applies translation only (scale baked in via the flex math). So
+    // hit-test space is screenX - viewport.x.
+    const canvasX = screenX - lastViewport.x
+    const canvasY = screenY - lastViewport.y
     for (const leaf of lastLeaves) {
       if (
         canvasX >= leaf.rect.x &&
@@ -92,37 +101,45 @@ export function Canvas() {
 
     function drawAt(viewport: ViewportState) {
       const wrapperRect = wrapperElement.getBoundingClientRect()
-      // Leaves are computed at unscaled canvas dims — the renderer's
-      // vertex shader applies the viewport scale + translation. Keeping
-      // the canvas itself at viewport size sidesteps the browser layout
-      // limit on huge transformed elements.
+      // Compute leaves at *scaled* canvas dims so flex math matches
+      // `computeViewportTransform`'s realRect (fixed-pixel paddings/gaps
+      // don't scale uniformly with the viewport). The renderer then
+      // only applies translation; scale is already baked into the
+      // leaves' positions and sizes.
+      const scaledCanvas = {
+        width: wrapperRect.width * viewport.scale,
+        height: wrapperRect.height * viewport.scale,
+      }
       const { leaves, selectedRect } = layoutFrames(
         context.app.layout,
-        wrapperRect,
+        scaledCanvas,
         context.app.selection,
       )
       lastLeaves = leaves
       lastSelectedRect = selectedRect
       lastViewport = viewport
 
-      renderer.render(viewport, lastLeaves)
+      // Translate-only viewport for the renderer (scale is baked in).
+      const drawViewport: ViewportState = { x: viewport.x, y: viewport.y, scale: 1 }
+      renderer.render(drawViewport, lastLeaves)
 
-      // Test hook — snapshot of what the GL just drew.
-      ;(window as unknown as { __layoutFrames?: () => unknown }).__layoutFrames = () => ({
+      // Test hook — snapshot of what the GL just drew. `viewport.scale`
+      // here is reported as 1 because leaf rects are already in scaled
+      // coordinates; tests apply `rect.x + viewport.x` for screen space.
+      window.__layoutFrames = () => ({
         leaves: lastLeaves,
         selectedRect: lastSelectedRect,
-        viewport,
+        viewport: drawViewport,
         canvas: wrapperRect,
       })
 
-      // Drive handle overlay CSS vars from selectedRect (in screen
-      // space, after applying viewport transform).
+      // Drive handle overlay CSS vars from selectedRect (translation
+      // only — leaf coords are already in scaled space).
       if (lastSelectedRect) {
-        const screen = applyViewportToRect(lastSelectedRect, viewport)
-        wrapperElement.style.setProperty("--selected-x", `${screen.x}px`)
-        wrapperElement.style.setProperty("--selected-y", `${screen.y}px`)
-        wrapperElement.style.setProperty("--selected-width", `${screen.width}px`)
-        wrapperElement.style.setProperty("--selected-height", `${screen.height}px`)
+        wrapperElement.style.setProperty("--selected-x", `${lastSelectedRect.x + viewport.x}px`)
+        wrapperElement.style.setProperty("--selected-y", `${lastSelectedRect.y + viewport.y}px`)
+        wrapperElement.style.setProperty("--selected-width", `${lastSelectedRect.width}px`)
+        wrapperElement.style.setProperty("--selected-height", `${lastSelectedRect.height}px`)
       }
     }
 
@@ -195,21 +212,30 @@ export function Canvas() {
     const resizeObserver = new ResizeObserver(syncSize)
     resizeObserver.observe(wrapperElement)
 
-    // Drive viewport + animation from layout/selection changes.
-    createEffect(
-      () => layoutSignature(context.app.layout, context.app.selection),
-      () => {
-        const target = recomputeViewport()
-        startAnimation(target)
-      },
-    )
+    drive = { recompute: recomputeViewport, start: startAnimation }
 
     return () => {
+      drive = null
       cancelTween?.()
       resizeObserver.disconnect()
       renderer.dispose()
     }
   })
+
+  // Drive viewport + animation from layout/selection changes. The
+  // compute callback reads `context.app.layout` / `selection` (via the
+  // signature helper) so Solid tracks them; the effect re-fires when
+  // they change. `drive` is only set after onSettled resolves.
+  createEffect(
+    () => layoutSignature(context.app.layout, context.app.selection),
+    () => {
+      if (drive === null) {
+        return
+      }
+      const target = drive.recompute()
+      drive.start(target)
+    },
+  )
 
   return (
     <div
@@ -229,6 +255,21 @@ export function Canvas() {
             {direction => (
               <ArrowNotch
                 direction={direction()}
+                style={(() => {
+                  // Only set the CSS vars when non-zero — tests check
+                  // that an empty inline value means "no extension".
+                  const state = context.selectedHandlesState()
+                  const style: Record<string, string> = {}
+                  const extend = state.extend[direction()]
+                  const stick = state.stick[direction()]
+                  if (extend > 0) {
+                    style["--extend"] = `${extend}px`
+                  }
+                  if (stick > 0) {
+                    style["--stick"] = `${stick}px`
+                  }
+                  return style
+                })()}
                 onClick={() => {
                   const selection = context.app.selection
                   if (selection === null) {

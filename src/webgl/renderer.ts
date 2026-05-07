@@ -133,14 +133,23 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
     attributes.i_size.set(sizeBuffer.subarray(0, leaves.length * 2)).bind()
     attributes.i_color.set(colorBuffer.subarray(0, leaves.length * 3)).bind()
 
-    uniforms.u_canvasSize.set(canvas.width, canvas.height)
+    // u_canvasSize is in CSS pixels (matches leaf rects). The backing
+    // buffer is DPR-scaled separately via gl.viewport — that takes care
+    // of HiDPI sharpness without changing the coordinate system the
+    // shader operates in.
+    uniforms.u_canvasSize.set(cssWidth, cssHeight)
     uniforms.u_view.set(viewport.x, viewport.y, viewport.scale)
 
     gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, leaves.length)
   }
 
+  let cssWidth = 0
+  let cssHeight = 0
+
   function resize(width: number, height: number) {
     const dpr = window.devicePixelRatio || 1
+    cssWidth = width
+    cssHeight = height
     canvas.width = Math.round(width * dpr)
     canvas.height = Math.round(height * dpr)
     canvas.style.width = `${width}px`

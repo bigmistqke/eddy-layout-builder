@@ -18,24 +18,20 @@ test("single split-right does not trigger zoom", async ({ page }) => {
   await runActions(page, actions)
 
   const viewport = await page.evaluate(() => {
-    const inner = document.querySelector<HTMLElement>("[data-canvas-inner='true']")
-    const canvas = document.querySelector<HTMLElement>("[data-canvas='true']")
-    if (!inner || !canvas) {
+    const fn = (
+      window as unknown as {
+        __layoutFrames?: () => { viewport: { x: number; y: number; scale: number } }
+      }
+    ).__layoutFrames
+    if (!fn) {
       return null
     }
-    const innerWidth = parseFloat(inner.style.width) || 0
-    const canvasWidth = canvas.getBoundingClientRect().width
-    return {
-      innerWidth,
-      canvasWidth,
-      transform: inner.style.transform,
-    }
+    return fn().viewport
   })
 
   expect(viewport).not.toBeNull()
-  // canvasInner's width tracks canvasWidth × scale. At scale=1 they match
-  // (within sub-pixel rounding from the equalsWithin epsilon).
-  expect(Math.abs(viewport!.innerWidth - viewport!.canvasWidth)).toBeLessThan(1)
-  // No translation either — identity viewport.
-  expect(viewport!.transform).toMatch(/translate\(0(?:\.\d+)?(?:px)?,\s*0(?:\.\d+)?(?:px)?\)|^$|none/)
+  // Identity viewport: scale 1 with zero translate.
+  expect(viewport!.scale).toBe(1)
+  expect(Math.abs(viewport!.x)).toBeLessThan(1)
+  expect(Math.abs(viewport!.y)).toBeLessThan(1)
 })

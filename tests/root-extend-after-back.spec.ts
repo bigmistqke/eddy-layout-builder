@@ -27,8 +27,9 @@ test("root's bottom handle is extended after breadcrumb-back to root", async ({ 
   await clickBreadcrumb(page, 0)
   await page.waitForTimeout(300)
 
-  // Root frame's bottom handle. Root path = "", so [data-path=""].
-  const bottomNotch = page.locator(`[data-path=""] [data-direction="bottom"]`).last()
+  // Root frame's bottom handle. Only one selection at a time, so direction
+  // alone identifies the handle.
+  const bottomNotch = page.locator(`[data-direction="bottom"]`).last()
   const extend = await bottomNotch.evaluate(el => {
     const inline = (el as HTMLElement).style.getPropertyValue("--extend")
     return inline.trim()

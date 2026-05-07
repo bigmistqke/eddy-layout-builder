@@ -41,16 +41,30 @@ test("15-deep frame still has room for handles and is centered", async ({ page }
   }
 
   const result = await page.evaluate(() => {
-    const handle = document.querySelector<HTMLElement>("[data-direction]")
-    const selected = handle?.closest<HTMLElement>("[data-path]")
-    const canvas = document.querySelector<HTMLElement>('[data-canvas="true"]')
-    if (!selected || !canvas) return null
-    const s = selected.getBoundingClientRect()
-    const c = canvas.getBoundingClientRect()
+    const fn = (window as unknown as { __layoutFrames?: () => unknown }).__layoutFrames
+    if (!fn) {
+      return null
+    }
+    const data = fn() as {
+      selectedRect: { x: number; y: number; width: number; height: number } | null
+      viewport: { x: number; y: number; scale: number }
+      canvas: { width: number; height: number }
+    }
+    if (!data.selectedRect) {
+      return null
+    }
+    const path = document
+      .querySelector<HTMLElement>("[data-selected-path]")
+      ?.getAttribute("data-selected-path")
     return {
-      frame: { x: s.left - c.left, y: s.top - c.top, w: s.width, h: s.height },
-      canvas: { w: c.width, h: c.height },
-      path: selected.getAttribute("data-path"),
+      frame: {
+        x: data.selectedRect.x * data.viewport.scale + data.viewport.x,
+        y: data.selectedRect.y * data.viewport.scale + data.viewport.y,
+        w: data.selectedRect.width * data.viewport.scale,
+        h: data.selectedRect.height * data.viewport.scale,
+      },
+      canvas: { w: data.canvas.width, h: data.canvas.height },
+      path,
     }
   })
 

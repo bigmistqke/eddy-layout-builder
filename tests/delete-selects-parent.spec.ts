@@ -25,9 +25,8 @@ test("deleting a leaf focuses the surviving sibling at the parent's path", async
   // path [1] (where the parent container used to live, now occupied by
   // the surviving sibling b).
   const result = await page.evaluate(() => {
-    const handle = document.querySelector<HTMLElement>("[data-direction='bottom']")
-    const selected = handle?.closest<HTMLElement>("[data-path]")
-    return selected?.getAttribute("data-path") ?? null
+    const wrapper = document.querySelector<HTMLElement>("[data-selected-path]")
+    return wrapper?.getAttribute("data-selected-path") ?? null
   })
 
   expect(result).toBe("1")
@@ -44,9 +43,8 @@ test("deleting the root entity focuses the fresh replacement entity", async ({ p
   await runActions(page, actions)
 
   const result = await page.evaluate(() => {
-    const handle = document.querySelector<HTMLElement>("[data-direction='bottom']")
-    const selected = handle?.closest<HTMLElement>("[data-path]")
-    return selected?.getAttribute("data-path") ?? null
+    const wrapper = document.querySelector<HTMLElement>("[data-selected-path]")
+    return wrapper?.getAttribute("data-selected-path") ?? null
   })
 
   // Root path renders as data-path=""

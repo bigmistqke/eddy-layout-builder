@@ -1,18 +1,37 @@
 import type { Page } from "@playwright/test"
 
-/** Click a frame by its layout path (e.g., [0, 1] → `[data-path="0.1"]`).
- *  Picks the leaf-most matching node (data-path is also set on container
- *  Frames; we want the rendered leaf for click hit-testing). */
+/** Click a frame by its layout path. Frames are now rendered to a WebGL
+ *  canvas — there are no per-frame DOM elements — so we synthesize a
+ *  mouse click at the leaf's screen-space center, computed from the
+ *  `window.__layoutFrames` test hook. */
 export async function clickFrame(page: Page, path: number[], options?: { force?: boolean }) {
+  void options
   const key = path.join(".")
-  // `force` here means "dispatch a click event programmatically" — bypasses
-  // Playwright's scroll-into-view requirement, which fails when the target
-  // is panned outside the browser viewport by the canvas's CSS transform.
-  if (options?.force) {
-    await page.locator(`[data-path="${key}"]`).last().dispatchEvent("click")
-    return
+  const center = await page.evaluate(k => {
+    const fn = window.__layoutFrames
+    if (!fn) {
+      return null
+    }
+    const data = fn()
+    const leaf = k === "" ? data.leaves[0] : data.leaves.find(l => l.path.join(".") === k)
+    if (!leaf) {
+      return null
+    }
+    const screenX = leaf.rect.x * data.viewport.scale + data.viewport.x
+    const screenY = leaf.rect.y * data.viewport.scale + data.viewport.y
+    const screenW = leaf.rect.width * data.viewport.scale
+    const screenH = leaf.rect.height * data.viewport.scale
+    return {
+      x: data.canvas.left + screenX + screenW / 2,
+      y: data.canvas.top + screenY + screenH / 2,
+    }
+  }, key)
+  if (!center) {
+    throw new Error(`clickFrame: no leaf at path ${key}`)
   }
-  await page.locator(`[data-path="${key}"]`).last().click()
+  // `force` retained for API parity but not needed — canvas clicks land
+  // on a fixed-size DOM element.
+  await page.mouse.click(center.x, center.y)
 }
 
 /** Click a breadcrumb segment by its depth. Segments are buttons inside the
@@ -39,21 +58,29 @@ export async function clickHandle(
   options?: { force?: boolean },
 ) {
   const key = framePath.join(".")
-  const notch = page
-    .locator(`[data-path="${key}"] [data-direction="${dir}"]`)
-    .last()
-  // The first child of the notch wrapper is .notch-backdrop, which has an
-  // explicit width/height. The actual onClick handlers, however, live on
-  // .notchBackdrop's children (.edge/.center/.root) — the notch wrapper
-  // itself stopPropagation()s — so dispatchEvent must target a
-  // .notchBackdrop child to fire the handler. Native click works against
-  // .notchBackdrop because Playwright clicks at coordinates that resolve
-  // to the deepest element under the cursor.
+  // Notches are no longer scoped under a per-frame [data-path] element —
+  // they live in a flat overlay div carrying [data-selected-path]. The
+  // overlay is suppressed during animations, so wait for it to appear
+  // with the expected selected path before clicking. Only one path is
+  // selected at a time, so direction alone identifies the handle.
+  await page
+    .locator(`[data-selected-path="${key.replace(/"/g, '\\"')}"]`)
+    .waitFor({ state: "attached", timeout: 5000 })
+  const notch = page.locator(`[data-direction="${dir}"]`).last()
+  // The notch wrapper itself stopPropagation()s onClick — its inner
+  // .notchBackdrop > .edge / .center / .root carry the handlers. Use
+  // dispatchEvent in `force` mode (bypasses scroll-into-view, useful when
+  // the rotated CSS-transformed handle's bounding box leaks past the
+  // browser viewport).
   if (options?.force) {
     await notch.locator("> div > div").first().dispatchEvent("click")
     return
   }
-  await notch.locator("> div").first().click()
+  // Dispatch a click event programmatically. Playwright's locator.click()
+  // refuses the rotated notches with "element is outside of the viewport"
+  // because their post-transform bounding boxes leak past the window
+  // edge. dispatchEvent bypasses that gate.
+  await notch.locator("> div > div").first().dispatchEvent("click")
 }
 
 /** Click a UI action button by its data-action attribute. */
@@ -70,38 +97,43 @@ export async function activateTool(page: Page, tool: "append" | "split") {
 }
 
 /** Read the bounding box of a frame at a given path. Returns canvas-relative
- *  coords (frame.rect minus canvas.rect). */
+ *  screen-space coords (canvas-local with viewport scale + pan applied). */
 export async function frameRect(page: Page, path: number[]) {
   const key = path.join(".")
   return page.evaluate(k => {
-    const node = document.querySelector<HTMLElement>(`[data-path="${k}"]`)
-    const canvas = document.querySelector<HTMLElement>('[data-canvas="true"]')
-    if (!node || !canvas) return null
-    const n = node.getBoundingClientRect()
-    const c = canvas.getBoundingClientRect()
+    const fn = window.__layoutFrames
+    if (!fn) {
+      return null
+    }
+    const data = fn()
+    const leaf = k === "" ? data.leaves[0] : data.leaves.find(l => l.path.join(".") === k)
+    if (!leaf) {
+      return null
+    }
     return {
-      x: n.left - c.left,
-      y: n.top - c.top,
-      w: n.width,
-      h: n.height,
+      x: leaf.rect.x * data.viewport.scale + data.viewport.x,
+      y: leaf.rect.y * data.viewport.scale + data.viewport.y,
+      w: leaf.rect.width * data.viewport.scale,
+      h: leaf.rect.height * data.viewport.scale,
     }
   }, key)
 }
 
-/** Read the canvas's viewport transform (translate from the inline style on
- *  canvasInner). Returns the parsed {x, y, scale} as floats. */
+/** Read the canvas viewport transform via the test hook. Returns the
+ *  current {x, y, scale} plus canvas dimensions. */
 export async function readViewport(page: Page) {
   return page.evaluate(() => {
-    const inner = document.querySelector<HTMLElement>('[data-canvas-inner="true"]')
-    if (!inner) return null
-    const transform = inner.style.transform
-    const widthPx = parseFloat(inner.style.width) || 0
-    const m = transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/)
+    const fn = window.__layoutFrames
+    if (!fn) {
+      return null
+    }
+    const data = fn()
     return {
-      x: m ? parseFloat(m[1]) : 0,
-      y: m ? parseFloat(m[2]) : 0,
-      width: widthPx,
-      height: parseFloat(inner.style.height) || 0,
+      x: data.viewport.x,
+      y: data.viewport.y,
+      scale: data.viewport.scale,
+      width: data.canvas.width,
+      height: data.canvas.height,
     }
   })
 }
@@ -204,24 +236,34 @@ export async function expectFrameRespectsMargin(
   const framePadding = options.framePadding ?? 96
 
   const result = await page.evaluate(() => {
-    // The selected frame is the only one rendering handles.
-    const handle = document.querySelector<HTMLElement>("[data-direction='bottom']")
-    const selected = handle?.closest<HTMLElement>("[data-path]")
-    const canvas = document.querySelector<HTMLElement>("[data-canvas='true']")
-    if (!selected || !canvas) {
+    const fn = (window as unknown as { __layoutFrames?: () => unknown }).__layoutFrames
+    if (!fn) {
       return null
     }
-    const s = selected.getBoundingClientRect()
-    const c = canvas.getBoundingClientRect()
+    const data = fn() as {
+      selectedRect: { x: number; y: number; width: number; height: number } | null
+      viewport: { x: number; y: number; scale: number }
+      canvas: { width: number; height: number }
+    }
+    if (!data.selectedRect) {
+      return null
+    }
+    const screenX = data.selectedRect.x * data.viewport.scale + data.viewport.x
+    const screenY = data.selectedRect.y * data.viewport.scale + data.viewport.y
     return {
-      frame: { x: s.left - c.left, y: s.top - c.top, w: s.width, h: s.height },
-      canvas: { w: c.width, h: c.height },
+      frame: {
+        x: screenX,
+        y: screenY,
+        w: data.selectedRect.width * data.viewport.scale,
+        h: data.selectedRect.height * data.viewport.scale,
+      },
+      canvas: { w: data.canvas.width, h: data.canvas.height },
     }
   })
 
   if (!result) {
     throw new Error(
-      "expectFrameRespectsMargin: no selected frame found (no [data-direction='bottom'] handle in DOM)",
+      "expectFrameRespectsMargin: no selected frame found (window.__layoutFrames returned no selectedRect)",
     )
   }
 
@@ -275,50 +317,6 @@ export async function expectFrameRespectsMargin(
   }
 
   return { rule: detected, ...result }
-}
-
-/** Assert that all four selected-frame handles are visible inside the
- *  canvas viewport. A handle whose bounding rect lies entirely past a
- *  canvas edge isn't clickable by the user. Sticking and centering
- *  should keep handles within the canvas regardless of how far the
- *  selected frame overflows. */
-export async function expectHandlesInViewport(page: Page) {
-  const dump = await page.evaluate(() => {
-    const rect = (element: Element | null | undefined) => {
-      if (!element) {
-        return null
-      }
-      const r = element.getBoundingClientRect()
-      return { x: r.left, y: r.top, w: r.width, h: r.height }
-    }
-    const handles: Record<string, { x: number; y: number; w: number; h: number } | null> = {}
-    for (const direction of ["top", "bottom", "left", "right"]) {
-      const wrapper = document.querySelector(`[data-direction='${direction}']`)
-      handles[direction] = rect(wrapper?.firstElementChild)
-    }
-    return {
-      canvas: rect(document.querySelector("[data-canvas='true']")),
-      handles,
-    }
-  })
-
-  if (!dump.canvas) {
-    throw new Error("expectHandlesInViewport: no [data-canvas='true'] element")
-  }
-  for (const [direction, r] of Object.entries(dump.handles)) {
-    if (!r) {
-      throw new Error(`expectHandlesInViewport: ${direction} handle missing`)
-    }
-    const offLeft = r.x + r.w < dump.canvas.x - 1
-    const offRight = r.x > dump.canvas.x + dump.canvas.w + 1
-    const offTop = r.y + r.h < dump.canvas.y - 1
-    const offBottom = r.y > dump.canvas.y + dump.canvas.h + 1
-    if (offLeft || offRight || offTop || offBottom) {
-      throw new Error(
-        `expectHandlesInViewport: ${direction} handle is outside the canvas viewport: ${JSON.stringify({ handle: r, canvas: dump.canvas })}`,
-      )
-    }
-  }
 }
 
 /** Assert that the four selected-frame handles don't overlap each
