@@ -54,7 +54,12 @@ export function selectedPathKey(selection: Selection): string {
  *  Iterative in both cases because CSS padding/gap are fixed pixels —
  *  rect dims at scale s are NOT (rect at 1) × s. Converges in 1–3
  *  iterations typically, capped to avoid runaway. */
-const MAX_SCALE = 10000
+// Empirical: deep nesting (14+ levels) at canvas 1280×800 needs scale
+// in the 10–15k range to land the binding axis on target. Keep this
+// well above any plausible legitimate scale so the cap only triggers
+// for runaway pathological inputs (which the MAX_FIT_ITER cap also
+// catches independently).
+const MAX_SCALE = 1_000_000
 const MAX_FIT_ITER = 20
 function findFitInsideScale(
   layout: Node,
