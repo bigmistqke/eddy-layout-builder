@@ -21,8 +21,10 @@ Behavior is preserved exactly; only the rendering layer changes.
 ## Non-goals
 
 - Replacing HUDs (Main, Breadcrumb, Contextual) — they stay DOM.
-- Replacing handles (notches) — they stay DOM, repositioned via CSS vars.
-(none — picking moved into scope; see "Frame clicks (selection)")
+- Replacing handles (notches) — they stay DOM, repositioned via CSS
+  vars on the handle overlay.
+- GPU pick buffer for frame clicks — JS rect hit-test (see "Frame clicks
+  (selection)"); revisit if frames stop being axis-aligned non-overlapping.
 - Adding video texture support yet — schema leaves room (per-instance
   texture index) but the initial cut renders solid-color quads using the
   existing per-entity random rgb.
@@ -133,46 +135,40 @@ positioning relative to the overlay's `--x/--y/--width/--height`. Stick
 + extend logic stays identical (it computes pixel offsets from the
 selected rect, which we already provide).
 
-### Frame clicks (selection) — GPU pick buffer
+### Frame clicks (selection)
 
 Today `clickFrame(entity) → setSelection(path)` is wired via the entity
-`<div>`'s `onClick`. With no entity divs, we use a GPU pick buffer:
+`<div>`'s `onClick`. With no entity divs, clicks land on the WebGL
+`<canvas>` itself. We attach a single `onClick` on the canvas wrapper
+and hit-test in JS against the same `leaves` map the renderer used:
 
-- A second framebuffer (offscreen, same size as the visible canvas) is
-  rendered alongside the visible draw. Same vertex shader; the fragment
-  shader writes a per-instance **id color** instead of `i_color`. The
-  id is the instance's index packed into RGB(A): low byte → R, mid → G,
-  high → B. With 24 bits we encode up to 16M leaves (vastly enough).
-- On `click` against the `<canvas>` wrapper:
-  1. `gl.bindFramebuffer(gl.FRAMEBUFFER, pickFbo)`.
-  2. `gl.readPixels(clickX, height - clickY, 1, 1, RGBA, UNSIGNED_BYTE, buf)`.
-  3. Decode `buf[0] | buf[1]<<8 | buf[2]<<16` → instance index.
-  4. Look up `leaves[index].path`, dispatch `setSelection`.
-- The pick buffer is re-rendered whenever the visible buffer is —
-  immediately after the regular draw call, with the same uniforms and
-  instance attributes; only the fragment shader differs. Cost is
-  negligible (one extra solid-color pass at viewport resolution).
-
-Two shader programs (sharing the same VBO and instance attributes) is
-the simplest way; a uniform `u_pickMode` branch on a single program
-also works. Either is fine; pick whichever drops out of `view.gl`'s
-schema with less code.
-
-```glsl
-// fragment (pick)
-attribute … same as visible …
-uniform float u_idCount;        // not strictly needed
-varying vec3 v_id;              // packed from gl_InstanceID in vertex
-
-void main() { gl_FragColor = vec4(v_id, 1.0); }
+```ts
+function onCanvasClick(event: MouseEvent) {
+  if (context.app.tool === null) {
+    return
+  }
+  const rect = canvasElement.getBoundingClientRect()
+  const x = (event.clientX - rect.left - viewport.x) / viewport.scale
+  const y = (event.clientY - rect.top - viewport.y) / viewport.scale
+  // Last-rendered leaves; hit-test by point-in-rect. Leaves don't overlap
+  // (siblings under a flex container are tiled), so first match wins.
+  for (const leaf of lastLeaves) {
+    if (x >= leaf.rect.x && x < leaf.rect.x + leaf.rect.width &&
+        y >= leaf.rect.y && y < leaf.rect.y + leaf.rect.height) {
+      logAction("tap-frame", { path: leaf.path })
+      context.setSelection({ path: leaf.path, depth: 0 })
+      return
+    }
+  }
+}
 ```
 
-`gl_InstanceID` requires WebGL2 (or the `ANGLE_instanced_arrays` ext +
-manual instance-id attribute on WebGL1). Use WebGL2; it's broadly
-available and view.gl supports both.
-
-Tools active = pick buffer rebuilt; tool null = pick disabled (we skip
-readPixels and ignore clicks since selection only happens in edit mode).
+Identical observable behavior to the current `onClick`-on-entity flow.
+JS hit-test wins on cost (no GPU↔CPU sync from `readPixels`) for our
+small-N, axis-aligned, non-overlapping case. When we introduce masks
+or absolutely-positioned frames later, those can be special-cased
+inline before the rect loop (or migrated to a GPU pick buffer at that
+point).
 ```
 
 Identical observable behavior to the current `onClick`-on-entity flow.
@@ -245,7 +241,8 @@ needed:
 
 - Video texture support (plumbing left in schema; quad sampler not yet).
 - WebGPU. View.gl is WebGL only as of 0.1.18.
-- Picking entities via GPU readback. Not needed since handles cover
-  the only interactive case (frame click → select).
+- GPU pick buffer (readback). JS rect hit-test handles our small-N,
+  axis-aligned, non-overlapping case. Revisit when masks or
+  absolutely-positioned frames arrive.
 - Multi-program: one shader is sufficient for solid color + textured
   quads later (uniform branch on texture-presence).
