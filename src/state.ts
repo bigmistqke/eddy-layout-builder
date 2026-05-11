@@ -1,4 +1,7 @@
 import { createSignal, createStore, untrack } from "solid-js"
+import { createClipStore } from "./clips/store"
+import { createPreview } from "./clips/preview"
+import { createTransport } from "./clips/transport"
 import type {
   AppContext,
   AppState,
@@ -291,6 +294,11 @@ export function createAppState(): AppContext {
     handleAppend(path, direction)
   }
 
+  const clips = createClipStore()
+  const transport = createTransport()
+  const preview = createPreview()
+  const [songLength, setSongLength] = createSignal<number | null>(null)
+
   return {
     app,
     setSelection,
@@ -307,5 +315,10 @@ export function createAppState(): AppContext {
     handleAddFrame,
     viewport,
     setViewport,
+    clips,
+    transport,
+    preview,
+    songLength,
+    setSongLength,
   }
 }

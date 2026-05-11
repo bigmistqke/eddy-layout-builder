@@ -1,4 +1,7 @@
 import type { Accessor } from "solid-js"
+import type { ClipStore } from "./clips/store"
+import type { PreviewState } from "./clips/preview"
+import type { Transport } from "./clips/transport"
 import type { Rect, ViewportTransform } from "./viewport"
 
 export type Container = {
@@ -74,4 +77,10 @@ export type AppContext = {
    *  fresh Entity. No-op when nothing is selected. */
   deleteSelection: () => void
   handleAddFrame: (path: number[], direction: Direction, op: HandleOp) => void
+
+  clips: ClipStore
+  transport: Transport
+  preview: PreviewState
+  songLength: Accessor<number | null>
+  setSongLength(next: number | null): void
 }
