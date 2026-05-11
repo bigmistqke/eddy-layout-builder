@@ -1,12 +1,24 @@
 import { expect, test } from "./helpers"
 import { clickFrame } from "./helpers"
 
-test("tapping a frame with no tool active still selects it", async ({ page }) => {
+test("tap-toggle: cell click toggles selection in song mode", async ({ page }) => {
   await page.goto("/")
-  // No setTool — tool is null. Initial layout is a single Entity at root.
+
+  // App opens with root selected + preview armed (drives the camera).
+  const initial = await page.evaluate(() => window.__appContext?.app.selection ?? null)
+  expect(initial).not.toBeNull()
+  expect(initial!.preview).toBe(true)
+
+  // Tap the same cell while preview is on → deselect.
   await clickFrame(page, [])
   await page.waitForTimeout(150)
-  const selection = await page.evaluate(() => window.__appContext?.app.selection ?? null)
-  expect(selection).not.toBeNull()
-  expect(selection!.path).toEqual([])
+  const afterFirstTap = await page.evaluate(() => window.__appContext?.app.selection ?? null)
+  expect(afterFirstTap).toBeNull()
+
+  // Tap again → re-select with preview armed.
+  await clickFrame(page, [])
+  await page.waitForTimeout(150)
+  const afterSecondTap = await page.evaluate(() => window.__appContext?.app.selection ?? null)
+  expect(afterSecondTap).not.toBeNull()
+  expect(afterSecondTap!.preview).toBe(true)
 })

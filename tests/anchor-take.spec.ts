@@ -5,7 +5,7 @@ test("M3: first recording sets songLength", async ({ page }) => {
   await mockGetUserMedia(page)
   await page.goto("/")
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.previewTargetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(700)
@@ -26,7 +26,7 @@ test("M3: deleting the last clip resets songLength", async ({ page }) => {
   await mockGetUserMedia(page)
   await page.goto("/")
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.previewTargetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(600)
@@ -39,7 +39,7 @@ test("M3: deleting the last clip resets songLength", async ({ page }) => {
   // setSelection store write flushes (Solid 2.x batches on microtasks)
   // before deleteSelection reads `app.selection`.
   await page.evaluate(() => {
-    window.__appContext!.setSelection({ path: [], depth: 0 })
+    window.__appContext!.setSelection({ path: [], depth: 0, preview: true })
   })
   await page.evaluate(() => {
     window.__appContext!.deleteSelection()
@@ -59,7 +59,7 @@ test("M3: subsequent recording is clamped to songLength", async ({ page }) => {
 
   // Anchor with ~0.5s clip.
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.previewTargetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(500)
@@ -73,9 +73,9 @@ test("M3: subsequent recording is clamped to songLength", async ({ page }) => {
   // Split, select cell 1, start recording — auto-stop should fire at songLength.
   await page.evaluate(() => {
     const context = window.__appContext!
-    context.setSelection({ path: [], depth: 0 })
+    context.setSelection({ path: [], depth: 0, preview: true })
     context.handleAddFrame([], "right", "split")
-    context.setSelection({ path: [1], depth: 0 })
+    context.setSelection({ path: [1], depth: 0, preview: true })
   })
 
   await page.locator('[data-action="record-start"]').click()
@@ -90,7 +90,7 @@ test("M3: subsequent recording is clamped to songLength", async ({ page }) => {
         return false
       }
       return (
-        Object.keys(context.clips.clips).length === 2 && context.preview.targetCellId() === null
+        Object.keys(context.clips.clips).length === 2 && context.previewTargetCellId() === null
       )
     },
     { timeout: 15_000 },

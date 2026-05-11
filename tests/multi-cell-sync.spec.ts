@@ -11,16 +11,16 @@ test("M2: two cells, record into each, both play", async ({ page }) => {
     if (context === undefined) {
       throw new Error("no app context")
     }
-    context.setSelection({ path: [], depth: 0 })
+    context.setSelection({ path: [], depth: 0, preview: true })
     context.handleAddFrame([], "right", "split")
   })
 
   // Select cell 0, record.
   await page.evaluate(() => {
-    window.__appContext?.setSelection({ path: [0], depth: 0 })
+    window.__appContext?.setSelection({ path: [0], depth: 0, preview: true })
   })
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.previewTargetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(500)
@@ -34,7 +34,7 @@ test("M2: two cells, record into each, both play", async ({ page }) => {
   // recording auto-stops at that length — no manual record-stop click
   // (the button would detach mid-click as the Show flips).
   await page.evaluate(() => {
-    window.__appContext?.setSelection({ path: [1], depth: 0 })
+    window.__appContext?.setSelection({ path: [1], depth: 0, preview: true })
   })
   await page.locator('[data-action="record-start"]').click()
   await page.waitForFunction(

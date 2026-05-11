@@ -31,7 +31,15 @@ export type AppState = {
 
 export type Direction = "top" | "bottom" | "left" | "right"
 export type HudKind = "main" | "breadcrumb" | "contextual"
-export type Selection = { path: Array<number>; depth: number }
+export interface Selection {
+  path: number[]
+  depth: number
+  /** Whether the selected cell should drive the live camera preview.
+   *  Decoupled from path/depth so the post-record state (cell selected,
+   *  showing its clip's frame 0 instead of the camera) is expressible.
+   *  Click toggles re-aim this. */
+  preview: boolean
+}
 
 /** Operation a directional handle performs when tapped. */
 export type HandleOp = "append" | "split"
@@ -83,4 +91,10 @@ export type AppContext = {
   preview: Preview
   songLength: Accessor<number | null>
   setSongLength(next: number | null): void
+
+  /** Derived: the cell id where the live camera preview should paint,
+   *  or null. A memo over `selection.preview`, `selection.path`,
+   *  `app.tool`, and `app.layout`. Consumers (the WebGL render loop)
+   *  read this as the single source of truth. */
+  previewTargetCellId: Accessor<string | null>
 }

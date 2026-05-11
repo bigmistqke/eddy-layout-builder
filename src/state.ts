@@ -1,4 +1,4 @@
-import { createSignal, createStore, untrack } from "solid-js"
+import { createMemo, createSignal, createStore, untrack } from "solid-js"
 import { createClipStore } from "./clips/store"
 import { createPreview } from "./clips/preview"
 import { createTransport } from "./clips/transport"
@@ -82,10 +82,9 @@ export function createAppState(): AppContext {
   const [app, setApp] = createStore<AppState>({
     layout: createEntity(),
     tool: null,
-    // Start with the root entity selected so the camera preview lands
-    // on it immediately. Spec: "on page start the first frame should
-    // be selected and rendering the camera".
-    selection: { path: [], depth: 0 },
+    // Start with the root entity selected AND preview armed so the
+    // camera lands in that cell immediately on page load.
+    selection: { path: [], depth: 0, preview: true },
   })
 
   // HUD element refs — kept internal. Consumers register a ref via
@@ -149,7 +148,7 @@ export function createAppState(): AppContext {
       const container = resolveNode(app.layout, containerPath) as Container
       container.children.splice(insertIndex, 0, newEntity)
     })
-    setSelection({ path: [...containerPath, insertIndex], depth: 0 })
+    setSelection({ path: [...containerPath, insertIndex], depth: 0, preview: true })
   }
 
   function splitNode(nodePath: number[], direction: Direction) {
@@ -182,7 +181,7 @@ export function createAppState(): AppContext {
         app.layout = nextRoot
       })
       setApp(app => {
-        app.selection = { path: [newEntityIndex], depth: 0 }
+        app.selection = { path: [newEntityIndex], depth: 0, preview: true }
       })
 
       return
@@ -199,7 +198,7 @@ export function createAppState(): AppContext {
         parent.children.splice(newEntityFirst ? 0 : 1, 0, newEntity)
       })
       setApp(app => {
-        app.selection = { path: [...parentPath, newEntityIndex], depth: 0 }
+        app.selection = { path: [...parentPath, newEntityIndex], depth: 0, preview: true }
       })
 
       return
@@ -215,7 +214,7 @@ export function createAppState(): AppContext {
       const parent = resolveNode(app.layout, parentPath) as Container
       parent.children.splice(nodeIndex, 1, newContainer)
     })
-    setSelection({ path: [...nodePath, newEntityIndex], depth: 0 })
+    setSelection({ path: [...nodePath, newEntityIndex], depth: 0, preview: true })
   }
 
   function handleAppend(path: number[], direction: Direction) {
@@ -258,7 +257,7 @@ export function createAppState(): AppContext {
     //   * Root targetedPath ([]): root is replaced with a fresh entity;
     //     selecting [] focuses the new entity.
     const parentPath = targetedPath.slice(0, -1)
-    const nextSelection: Selection = { path: parentPath, depth: 0 }
+    const nextSelection: Selection = { path: parentPath, depth: 0, preview: true }
 
     setApp(app => {
       const next = removeAt(app.layout, targetedPath)
@@ -324,6 +323,20 @@ export function createAppState(): AppContext {
   const preview = createPreview()
   const [songLength, setSongLength] = createSignal<number | null>(null)
 
+  // The cell that the live camera preview should paint into — derived,
+  // not stored. Selection drives this: a previewing selection in song
+  // mode means the camera lands on that cell. Tool mode and the
+  // post-record state (selection.preview === false) both yield null.
+  const previewTargetCellId = createMemo<string | null>(() => {
+    const selection = app.selection
+    if (selection === null || !selection.preview || app.tool !== null) {
+      return null
+    }
+    const targetedPath = selection.path.slice(0, selection.path.length - selection.depth)
+    const node = resolveNode(app.layout, targetedPath)
+    return node.type === "entity" ? node.id : null
+  })
+
   return {
     app,
     setSelection,
@@ -345,5 +358,6 @@ export function createAppState(): AppContext {
     preview,
     songLength,
     setSongLength,
+    previewTargetCellId,
   }
 }

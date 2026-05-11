@@ -102,7 +102,28 @@ export function Canvas() {
         canvasY < leaf.rect.y + leaf.rect.height
       ) {
         logAction("tap-frame", { path: leaf.path })
-        context.setSelection({ path: leaf.path, depth: 0 })
+        const selection = context.app.selection
+        const sameAsSelected =
+          selection !== null &&
+          selection.depth === 0 &&
+          selection.path.length === leaf.path.length &&
+          selection.path.every((value, index) => value === leaf.path[index])
+        if (sameAsSelected) {
+          if (context.app.tool !== null) {
+            // Tool mode: tapping the selected cell is a no-op. Preview
+            // doesn't apply here.
+            return
+          }
+          if (selection.preview) {
+            // Camera was on → deselect entirely.
+            context.setSelection(null)
+          } else {
+            // Post-record state: re-arm preview without changing selection.
+            context.setSelection({ ...selection, preview: true })
+          }
+          return
+        }
+        context.setSelection({ path: leaf.path, depth: 0, preview: true })
         return
       }
     }
@@ -117,7 +138,7 @@ export function Canvas() {
         const frames = new Map<string, TextureSource>()
 
         // Live camera preview goes into the preview target cell, if any.
-        const previewCell = context.preview.targetCellId()
+        const previewCell = context.previewTargetCellId()
         if (previewCell !== null) {
           const previewElement = context.preview.element
           if (previewElement.videoWidth > 0 && previewElement.videoHeight > 0) {
@@ -342,7 +363,7 @@ export function Canvas() {
       const drawViewport: ViewportState = { x: lastViewport.x, y: lastViewport.y, scale: 1 }
       renderer.render(drawViewport, lastLeaves, frames.size > 0 ? frames : undefined)
       closeTransientFrames(frames)
-      const previewActive = untrack(context.preview.targetCellId) !== null
+      const previewActive = untrack(context.previewTargetCellId) !== null
       const transportPlaying = untrack(context.transport.state) === "playing"
       // Keep ticking while transport is playing or a live preview is
       // visible — both produce changing pixels. When neither, the static
@@ -405,7 +426,7 @@ export function Canvas() {
   // Start/stop the playback rAF loop based on transport + preview state.
   createEffect(
     () => ({
-      previewActive: context.preview.targetCellId() !== null,
+      previewActive: context.previewTargetCellId() !== null,
       transportPlaying: context.transport.state() === "playing",
     }),
     ({ previewActive, transportPlaying }) => {

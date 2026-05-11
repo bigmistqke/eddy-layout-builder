@@ -215,6 +215,7 @@ Don't go retro and rewrite the MVP handlers — keep them as-is until they're to
 
 Each is a small focused PR.
 
+- **Viewport-recompute effect → memo.** `canvas.tsx`'s layout-animation `createEffect` mixes derivation (writes `setViewport` + `setSelectedHandlesState`) with imperative animation triggering (rAF tween). Per the project's "effect-apply is for side effects, not state syncing" rule, the derivation should be a `createMemo`; the effect should only run the tween. Blocked on lifting `wrapperRect` and `hudRects` into reactive signals (currently DOM-read each compute via `getBoundingClientRect`).
 - **Audio rotation metadata:** read it once at clip-load, store on `Clip`, apply in renderer.
 - **`canvas.tsx` `Drive` ref shape:** the ref pattern works but is one of the more intricate parts of the codebase. If a clearer pattern (signal-based with `runWithOwner` for the rAF callback?) emerges, consider refactoring.
 - **`mediabunny` deprecated sync getters:** none used today, but if any creep in, replace with `await track.getCodec()` etc. (1.42+ deprecation).

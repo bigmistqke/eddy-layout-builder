@@ -206,7 +206,11 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
                   ].join(" ")}
                   onClick={() => {
                     logAction("tap-breadcrumb", { depth: segment().depth, segmentIndex: index() })
-                    context.setSelection({ path: selection().path, depth: segment().depth })
+                    context.setSelection({
+                      path: selection().path,
+                      depth: segment().depth,
+                      preview: selection().preview,
+                    })
                   }}
                 >
                   <Minimap

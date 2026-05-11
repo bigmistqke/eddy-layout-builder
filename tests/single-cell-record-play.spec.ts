@@ -8,7 +8,7 @@ test("M1: record into the initial cell, then play back", async ({ page }) => {
   // so Record is valid immediately without an explicit selection.
 
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.previewTargetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(700)

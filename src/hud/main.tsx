@@ -1,4 +1,4 @@
-import { createEffect, createSignal, Show, useContext } from "solid-js"
+import { createEffect, createSignal, Show, untrack, useContext } from "solid-js"
 import {
   PlayIcon,
   PlusIcon,
@@ -18,31 +18,15 @@ export function Main() {
   const context = useContext(Context)!
   const [captureHandle, setCaptureHandle] = createSignal<CaptureHandle | null>(null)
 
-  // The currently-selected cell becomes the live preview target — but
-  // only if it doesn't already have a clip. Selecting an empty cell
-  // (whether in tool mode or not) shows the camera there; selecting a
-  // cell with a clip shows that clip's frame 0 instead, so users can
-  // browse their recordings without losing them under a preview.
-  // During an active recording, onRecord locks the target.
+  // Camera lifecycle. The previewTargetCellId memo on AppContext is the
+  // source of truth for "which cell shows the camera"; this effect just
+  // mirrors it into preview.enable() so the camera comes up the moment
+  // a target appears.
   createEffect(
-    () => {
-      const selectedId = selectedCellId(context)
-      // `clips.clips` is a plain Record (host-object safety; see store.ts);
-      // reactivity comes from `cellIds()` which mirrors its key set.
-      const cellIds = context.clips.cellIds()
-      const hasClip = selectedId !== null && cellIds.includes(selectedId)
-      const recording = captureHandle() !== null
-      return { selectedId, hasClip, recording }
-    },
-    ({ selectedId, hasClip, recording }) => {
-      if (recording) {
-        return
-      }
-      if (selectedId !== null && !hasClip) {
-        context.preview.setTargetCellId(selectedId)
+    () => context.previewTargetCellId(),
+    target => {
+      if (target !== null) {
         void context.preview.enable()
-      } else {
-        context.preview.setTargetCellId(null)
       }
     },
   )
@@ -64,6 +48,13 @@ export function Main() {
     if (context.app.tool !== null) {
       context.setTool(null)
     }
+    // Force the selection into the previewing state regardless of how
+    // we got here (post-record toggle, layout-edit, etc.). The capture
+    // path needs the camera shown in the target cell.
+    const selection = context.app.selection
+    if (selection !== null && !selection.preview) {
+      context.setSelection({ ...selection, preview: true })
+    }
 
     // Monitor: play existing voices through speakers while we record.
     // Caller expected to use headphones; spec accepts mic leak otherwise.
@@ -74,8 +65,7 @@ export function Main() {
     }
 
     await context.preview.enable()
-    context.preview.setTargetCellId(cellId)
-    const stream = context.preview.stream()
+    const stream = untrack(context.preview.stream)
     if (stream === null) {
       return
     }
@@ -97,10 +87,17 @@ export function Main() {
     if (handle === null) {
       return
     }
-    const cellId = context.preview.targetCellId()
+    const cellId = untrack(context.previewTargetCellId)
     logAction("record-stop", {})
     setCaptureHandle(null)
-    context.preview.setTargetCellId(null) // let the watcher re-evaluate
+    // Flip into the post-record state: keep the selection, drop the
+    // preview flag. The previewTargetCellId memo reacts and clears
+    // itself, so the just-recorded cell stops showing the camera and
+    // shows the clip's frame 0 instead.
+    const selection = context.app.selection
+    if (selection !== null) {
+      context.setSelection({ ...selection, preview: false })
+    }
     context.transport.stop() // stop monitor playback if it was running
     const blob = await handle.stop()
     if (cellId === null) {
