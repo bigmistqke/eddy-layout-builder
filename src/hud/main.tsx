@@ -1,12 +1,6 @@
 import { createSignal, isPending, Show, untrack, useContext } from "solid-js"
 import { HudButton } from "../components/hud-button"
-import {
-  PlayIcon,
-  PlusIcon,
-  RecordIcon,
-  RecordingActiveIcon,
-  StopIcon,
-} from "../components/icons"
+import { PlayIcon, RecordIcon, RecordingActiveIcon, StopIcon } from "../components/icons"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
 import { blobToClip } from "../clips/clip"
@@ -17,15 +11,6 @@ import styles from "./main.module.css"
 export function Main() {
   const context = useContext(Context)!
   const [captureHandle, setCaptureHandle] = createSignal<CaptureHandle | null>(null)
-
-  function toggleAddMode() {
-    // Single bottom-bar "+" enters/exits add mode. Default tool on
-    // entry is "split"; the contextual bar lets the user switch to
-    // "append" once in tool mode.
-    const next = context.app.tool === null ? "split" : null
-    logAction("set-tool", { tool: next })
-    context.setTool(next)
-  }
 
   async function onRecord() {
     const cellId = selectedCellId(context)
@@ -140,7 +125,11 @@ export function Main() {
             </HudButton>
           }
         >
-          <HudButton data-action="play" onClick={onPlay}>
+          <HudButton
+            data-action="play"
+            disabled={context.clips.cellIds().length === 0}
+            onClick={onPlay}
+          >
             <PlayIcon />
           </HudButton>
         </Show>
@@ -160,13 +149,6 @@ export function Main() {
             <RecordingActiveIcon />
           </HudButton>
         </Show>
-        <HudButton
-          active={context.app.tool !== null}
-          data-action="toggle-add"
-          onClick={toggleAddMode}
-        >
-          <PlusIcon />
-        </HudButton>
       </div>
     </Notch>
   )

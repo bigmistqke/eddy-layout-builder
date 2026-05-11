@@ -3,12 +3,8 @@ import { activateTool, clickFrame, frameRect, readViewport } from "./helpers"
 
 test("dev server boots and tool buttons render", async ({ page }) => {
   await page.goto("/")
-  // The add-mode entry point sits in the main HUD and is always
-  // visible; the per-tool buttons (append/split) only mount in the
-  // contextual HUD once add-mode is active.
-  await expect(page.locator('[data-action="toggle-add"]')).toBeVisible()
-  await page.locator('[data-action="toggle-add"]').click()
   await expect(page.locator('[data-action="set-tool-append"]')).toBeVisible()
+  await expect(page.locator('[data-action="set-tool-split"]')).toBeVisible()
 })
 
 test("activating a tool shows the canvas inner", async ({ page }) => {

@@ -194,21 +194,11 @@ export async function clickAction(page: Page, action: string) {
   await page.locator(`[data-action="${action}"]`).first().click()
 }
 
-/** Activate an editing tool (`append` or `split`).
- *
- *  The contextual HUD hides the tool-pickers (append/split) until the
- *  user has entered add-mode via the main `+` button, so we always
- *  toggle `+` first if no tool is active. Idempotent if the requested
- *  tool is already active — caller's responsibility to not call twice
- *  without intending a toggle. */
+/** Activate an editing tool (`append` or `split`) by clicking its
+ *  button in the contextual HUD. Tapping the active tool again
+ *  toggles it off — caller's responsibility to know which is active. */
 export async function activateTool(page: Page, tool: "append" | "split") {
-  const activeTool = await page.evaluate(() => window.__appContext?.app.tool ?? null)
-  if (activeTool === null) {
-    await clickAction(page, "toggle-add")
-  }
-  if (activeTool !== tool) {
-    await clickAction(page, `set-tool-${tool}`)
-  }
+  await clickAction(page, `set-tool-${tool}`)
 }
 
 /** Read the bounding box of a frame at a given path. Returns canvas-relative
