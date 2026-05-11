@@ -1,4 +1,5 @@
 import { createEffect, createSignal, isPending, Show, untrack, useContext } from "solid-js"
+import { HudButton } from "../components/hud-button"
 import {
   PlayIcon,
   PlusIcon,
@@ -145,39 +146,38 @@ export function Main() {
         <Show
           when={context.transport.state() === "stopped"}
           fallback={
-            <button class={styles.button} data-action="stop" onClick={onStopPlayback}>
+            <HudButton data-action="stop" onClick={onStopPlayback}>
               <StopIcon />
-            </button>
+            </HudButton>
           }
         >
-          <button class={styles.button} data-action="play" onClick={onPlay}>
+          <HudButton data-action="play" onClick={onPlay}>
             <PlayIcon />
-          </button>
+          </HudButton>
         </Show>
         <Show
           when={captureHandle() !== null}
           fallback={
-            <button
-              class={styles.button}
+            <HudButton
               data-action="record-start"
               disabled={selectedCellId(context) === null || isPending(context.preview.stream)}
               onClick={onRecord}
             >
               <RecordIcon />
-            </button>
+            </HudButton>
           }
         >
-          <button class={styles.button} data-action="record-stop" onClick={onStopRecording}>
+          <HudButton data-action="record-stop" onClick={onStopRecording}>
             <RecordingActiveIcon />
-          </button>
+          </HudButton>
         </Show>
-        <button
-          class={[styles.button, { [styles.active]: context.app.tool !== null }]}
+        <HudButton
+          active={context.app.tool !== null}
           data-action="toggle-add"
           onClick={toggleAddMode}
         >
           <PlusIcon />
-        </button>
+        </HudButton>
       </div>
     </Notch>
   )

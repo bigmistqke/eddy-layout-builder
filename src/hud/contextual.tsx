@@ -1,4 +1,5 @@
 import { Show, useContext } from "solid-js"
+import { HudButton } from "../components/hud-button"
 import { PlusIcon, SplitIcon, TrashIcon } from "../components/icons"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
@@ -17,8 +18,7 @@ export function Contextual() {
     <Show when={isOpen()}>
       <Notch ref={context.setHudElement("contextual")} class={styles.notch} orientation="right">
         <div class={styles.content}>
-          <button
-            class={styles.button}
+          <HudButton
             data-action="delete"
             onClick={() => {
               logAction("delete")
@@ -26,10 +26,10 @@ export function Contextual() {
             }}
           >
             <TrashIcon />
-          </button>
+          </HudButton>
           <Show when={context.app.tool !== null}>
-            <button
-              class={[styles.button, { [styles.active]: context.app.tool === "append" }]}
+            <HudButton
+              active={context.app.tool === "append"}
               data-action="set-tool-append"
               onClick={() => {
                 logAction("set-tool", { tool: "append" })
@@ -37,9 +37,9 @@ export function Contextual() {
               }}
             >
               <PlusIcon />
-            </button>
-            <button
-              class={[styles.button, { [styles.active]: context.app.tool === "split" }]}
+            </HudButton>
+            <HudButton
+              active={context.app.tool === "split"}
               data-action="set-tool-split"
               onClick={() => {
                 logAction("set-tool", { tool: "split" })
@@ -47,7 +47,7 @@ export function Contextual() {
               }}
             >
               <SplitIcon />
-            </button>
+            </HudButton>
           </Show>
         </div>
       </Notch>
