@@ -1,12 +1,10 @@
-import { createSignal, isPending, Show, untrack, useContext } from "solid-js"
-import { HudButton } from "../components/hud-button"
-import { PlayIcon, RecordIcon, RecordingActiveIcon, StopIcon } from "../components/icons"
-import { Notch } from "../components/notch"
-import { Context } from "../context"
+import { createSignal, isPending, latest, Show, untrack, useContext } from "solid-js"
 import { blobToClip } from "../clips/clip"
+import { PlayIcon, RecordIcon, RecordingActiveIcon, StopIcon } from "../components/icons"
+import { Context } from "../context"
 import { startCapture, type CaptureHandle } from "../media/capture"
 import { logAction, selectedCellId } from "../utils"
-import styles from "./main.module.css"
+import { Hud } from "./hud"
 
 export function Main() {
   const context = useContext(Context)!
@@ -34,16 +32,25 @@ export function Main() {
     // Monitor: play existing voices through speakers while we record.
     // Caller expected to use headphones; spec accepts mic leak otherwise.
     const existing = Object.values(context.clips.clips).filter(clip => clip.cellId !== cellId)
-    const length = context.songLength()
+    let length = context.songLength()
+    // "New anchor" rule: when re-recording the only clip in the song,
+    // the new take redefines song length rather than being clipped to
+    // the old one. Treating a sole-clip re-record as a fresh anchor
+    // matches the "single clip = still drafting" intuition. With ≥2
+    // clips, length is committed and subsequent takes stay bounded.
+    if (existing.length === 0 && length !== null) {
+      context.setSongLength(null)
+      length = null
+    }
     if (existing.length > 0) {
       await context.transport.play(existing, length)
     }
-
-    // Stream is guaranteed resolved by the time onRecord can fire — the
-    // record button is disabled while `preview.isLoading()`. Reading
-    // outside a reactive scope is safe once the async signal has settled.
-    const stream = untrack(context.preview.stream)
-    if (stream === null) {
+    // `latest()` reads the last-committed value without throwing on a
+    // pending/transitional state. `isPending`+`untrack` disagrees in
+    // some Solid 2.x edge cases (isPending says false while the value
+    // hasn't been synchronously committed); latest avoids that gap.
+    const stream = latest(context.preview.stream)
+    if (stream === null || stream === undefined) {
       return
     }
     const handle = startCapture(stream)
@@ -115,41 +122,39 @@ export function Main() {
   }
 
   return (
-    <Notch ref={context.setHudElement("main")} class={styles.notch}>
-      <div class={styles.content}>
-        <Show
-          when={context.transport.state() === "stopped"}
-          fallback={
-            <HudButton data-action="stop" onClick={onStopPlayback}>
-              <StopIcon />
-            </HudButton>
-          }
+    <Hud kind="main" position="bottom-center" orientation="bottom">
+      <Show
+        when={context.transport.state() === "stopped"}
+        fallback={
+          <Hud.Button data-action="stop" onClick={onStopPlayback}>
+            <StopIcon />
+          </Hud.Button>
+        }
+      >
+        <Hud.Button
+          data-action="play"
+          disabled={context.clips.cellIds().length === 0}
+          onClick={onPlay}
         >
-          <HudButton
-            data-action="play"
-            disabled={context.clips.cellIds().length === 0}
-            onClick={onPlay}
+          <PlayIcon />
+        </Hud.Button>
+      </Show>
+      <Show
+        when={captureHandle() !== null}
+        fallback={
+          <Hud.Button
+            data-action="record-start"
+            disabled={selectedCellId(context) === null || isPending(context.preview.stream)}
+            onClick={onRecord}
           >
-            <PlayIcon />
-          </HudButton>
-        </Show>
-        <Show
-          when={captureHandle() !== null}
-          fallback={
-            <HudButton
-              data-action="record-start"
-              disabled={selectedCellId(context) === null || isPending(context.preview.stream)}
-              onClick={onRecord}
-            >
-              <RecordIcon />
-            </HudButton>
-          }
-        >
-          <HudButton data-action="record-stop" onClick={onStopRecording}>
-            <RecordingActiveIcon />
-          </HudButton>
-        </Show>
-      </div>
-    </Notch>
+            <RecordIcon />
+          </Hud.Button>
+        }
+      >
+        <Hud.Button data-action="record-stop" onClick={onStopRecording}>
+          <RecordingActiveIcon />
+        </Hud.Button>
+      </Show>
+    </Hud>
   )
 }

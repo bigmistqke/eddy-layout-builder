@@ -1,24 +1,15 @@
+/* Cap the wrapper width so the breadcrumb never crosses into the
+   contextual toolbar's territory (top-right, hud-height wide). Width
+   is otherwise content-driven; long chains scroll within .content. */
 .notch {
-  --notch-bg: #111;
-  --backdrop-x: 0%;
-  --backdrop-width: 100%;
-  position: absolute;
-  top: 0;
-  left: 12px;
-  /* Cap width so the breadcrumb never crosses into the contextual
-     toolbar's territory (top-right, hud-height wide). Width is otherwise
-     content-driven; long chains scroll within .content. */
   max-width: calc(100% - var(--hud-height) - 24px);
-  height: var(--hud-height);
-  z-index: var(--z-hud);
 }
 
 .content {
-  display: flex;
   align-items: stretch;
   gap: var(--padding);
-  margin-inline: calc(var(--radius) + var(--padding));
-  /* Inset the scrollbar from the backdrop's bottom by --radius. The
+  margin-inline: calc(var(--radius-big) + var(--padding));
+  /* Inset the scrollbar from the backdrop's bottom by --radius-big. The
      scrollbar appears at the content-box's bottom edge; padding-block-end
      pulls it up. box-sizing: border-box keeps the total .content height
      equal to the notch's hud-height so it never overlaps the canvas
@@ -36,7 +27,6 @@
   scrollbar-color: var(--color-scroll-thumb) transparent;
 
   & .button {
-    background: none;
     border: none;
     padding: calc(var(--padding) * 2);
     cursor: pointer;
@@ -45,19 +35,5 @@
        toggles, avoiding a resize loop. The canvas inside scales down
        (height + aspect-ratio) and centers when button height shrinks. */
     width: calc(var(--breadcrumb-button-width) + var(--padding) * 2 + 25px);
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: calc(var(--radius) - var(--padding));
-    transition: background 120ms ease;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    &.active {
-      background: var(--color-active-back);
-    }
   }
 }

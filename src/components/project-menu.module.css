@@ -3,7 +3,7 @@
   padding: 0;
   background: var(--color-back);
   color: var(--color-front);
-  border-radius: var(--radius);
+  border-radius: var(--radius-big);
   min-width: 260px;
   max-height: 80vh;
   /* Only switch to flex when the dialog is open — otherwise the UA's
@@ -44,11 +44,11 @@
   background: none;
   border: none;
   color: var(--color-front);
-  padding: var(--radius);
+  padding: var(--radius-big);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  border-radius: calc(var(--radius) - var(--padding));
+  border-radius: calc(var(--radius-big) - var(--padding));
 
   &:hover {
     background: var(--color-active-back);
@@ -84,7 +84,7 @@
   font: inherit;
   font-weight: bold;
   text-align: left;
-  padding: var(--radius);
+  padding: var(--radius-big);
   border: 1px solid transparent;
   box-sizing: border-box;
   overflow: hidden;
@@ -102,8 +102,8 @@
   font: inherit;
   font-weight: bold;
   text-align: left;
-  padding: var(--radius);
-  border-radius: calc(var(--radius) - var(--padding));
+  padding: var(--radius-big);
+  border-radius: calc(var(--radius-big) - var(--padding));
   outline: none;
 }
 
@@ -113,9 +113,9 @@
   color: var(--color-front);
   font: inherit;
   font-size: 0.8em;
-  padding: var(--padding) var(--radius);
+  padding: var(--padding) var(--radius-big);
   cursor: pointer;
-  border-radius: calc(var(--radius) - var(--padding));
+  border-radius: calc(var(--radius-big) - var(--padding));
 
   &:hover {
     background: var(--color-active-back);
@@ -174,9 +174,9 @@
   background: none;
   border: none;
   color: var(--color-front);
-  padding: 0 var(--radius);
+  padding: 0 var(--radius-big);
   cursor: pointer;
-  border-radius: calc(var(--radius) - var(--padding));
+  border-radius: calc(var(--radius-big) - var(--padding));
   display: flex;
   align-items: center;
   justify-content: center;

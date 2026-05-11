@@ -1,0 +1,296 @@
+/* ============================================================
+ * Notch — the underlying notched-bar element.
+ *
+ * Class layout:
+ *   .notch — base. ArrowNotch handles also add one of .top / .bottom
+ *            / .left / .right for rotation + edge-snap positioning.
+ *   .hud{Bottom,Top,Right,Left} — the Hud component adds these to
+ *            select backdrop orientation (flex direction + corner
+ *            shapes). Same element as .notch.
+ *
+ *   .root  = wide piece flush against the screen edge; its corners
+ *            meeting .center carry the SCOOPS that form the notch
+ *            profile.
+ *   .edge  = narrow cap on the canvas-meeting side; outward corners
+ *            stay default (rounded), inward corners are square.
+ * ============================================================ */
+
+.notch {
+  height: calc(var(--hud-height) + var(--extend, 0px));
+  position: absolute;
+  z-index: var(--z-notch);
+  color: var(--color-front);
+  pointer-events: auto;
+
+  /* ArrowNotch rotation+edge-snap variants. */
+  &.bottom {
+    left: 50%;
+    bottom: calc(var(--frame-padding, 0px) + var(--stick, 0px));
+  }
+
+  &.top {
+    left: 50%;
+    top: calc(var(--frame-padding, 0px) + var(--stick, 0px));
+    rotate: 180deg;
+    transform-origin: center center;
+  }
+
+  &.left {
+    left: calc(var(--frame-padding, 0px) + var(--stick, 0px));
+    top: 50%;
+    rotate: 90deg;
+    transform-origin: top;
+    translate: calc((var(--hud-height) + var(--extend, 0px))) 0;
+  }
+
+  &.right {
+    right: calc(var(--frame-padding, 0px) + var(--stick, 0px));
+    top: 50%;
+    rotate: -90deg;
+    transform-origin: top;
+    translate: calc(-1 * (var(--hud-height) + var(--extend, 0px))) 0;
+  }
+
+  /* Side-mounted HUDs reflow into a horizontal track. */
+  &.hudRight {
+    width: calc(var(--hud-height) + var(--padding) * 2);
+    display: flex;
+    align-items: center;
+  }
+
+  & .notchBackdrop {
+    translate: var(--backdrop-x, -50%);
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    z-index: var(--z-notch-backdrop);
+    width: var(--backdrop-width, 90px);
+    height: 100%;
+
+    & > .root,
+    & > .edge,
+    & > .center {
+      background: var(--color-back);
+    }
+
+    & > .center,
+    & > .edge {
+      margin-inline: var(--radius-big);
+    }
+
+    & > .root,
+    & > .edge {
+      border-radius: var(--radius-big);
+      content: "";
+      flex: 0 var(--radius-big);
+      overflow: hidden;
+    }
+
+    & > .center {
+      flex: 1;
+    }
+
+    /* Default corner shapes — .hudBottom doesn't override these. */
+    & > .root {
+      corner-top-shape: scoop;
+      corner-bottom-shape: square;
+    }
+  }
+}
+
+/* Top: flip column so .root sits at the screen-edge top. */
+.hudTop {
+  & .button {
+    &:not(:last-child) {
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+
+    &:not(:first-child) {
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      border-bottom-left-radius: 10px;
+    }
+  }
+
+  & > .notchBackdrop {
+    flex-direction: column-reverse;
+
+    & > .root {
+      corner-top-shape: square;
+      corner-bottom-shape: scoop;
+    }
+
+    & > .edge {
+      corner-top-shape: square;
+    }
+  }
+}
+
+/* Right: row direction; .root on screen-right, .edge canvas-facing. */
+.hudRight {
+  & .button {
+    &:not(:last-child) {
+      border-bottom-left-radius: var(--radius-small);
+      border-bottom-right-radius: var(--radius-small);
+      border-bottom-right-radius: var(--radius-small);
+    }
+
+    &:not(:first-child) {
+      border-top-left-radius: var(--radius-small);
+      border-top-right-radius: var(--radius-small);
+      border-bottom-right-radius: var(--radius-small);
+    }
+  }
+
+  & > .notchBackdrop {
+    flex-direction: row;
+
+    & > .edge,
+    & > .center {
+      margin-inline: 0;
+      margin-block: var(--radius-big);
+    }
+
+    & > .root {
+      corner-top-left-shape: scoop;
+      corner-bottom-left-shape: scoop;
+      corner-top-right-shape: square;
+      corner-bottom-right-shape: square;
+    }
+
+    & > .edge {
+      corner-top-right-shape: square;
+      corner-bottom-right-shape: square;
+    }
+  }
+}
+
+/* Left: mirror of right via row-reverse. */
+.hudLeft > .notchBackdrop {
+  flex-direction: row-reverse;
+
+  & > .edge,
+  & > .center {
+    margin-inline: 0;
+    margin-block: var(--radius-big);
+  }
+
+  & > .root {
+    corner-top-right-shape: scoop;
+    corner-bottom-right-shape: scoop;
+    corner-top-left-shape: square;
+    corner-bottom-left-shape: square;
+  }
+
+  & > .edge {
+    corner-top-left-shape: square;
+    corner-bottom-left-shape: square;
+  }
+}
+
+.arrow {
+  position: absolute;
+  translate: -50% 0;
+  top: calc(var(--radius-big) / 2);
+  transform-origin: center bottom;
+  z-index: var(--z-notch-handle);
+  pointer-events: none;
+}
+
+/* ============================================================
+ * Hud — full-width HUD wrapper, applied on top of Notch.
+ * Applied to every Hud Notch via the Hud component. ArrowNotch
+ * handles never see this class — they use the narrow centered
+ * backdrop defaults above.
+ * ============================================================ */
+
+.hud {
+  position: absolute;
+  z-index: var(--z-hud);
+  --backdrop-x: 0%;
+  --backdrop-width: 100%;
+}
+
+.hudBottom {
+  & .edge {
+    corner-bottom-shape: square;
+  }
+  /* Bottom HUD (transport): row layout with cap padding + vertical
+       centering. Top HUDs (breadcrumb) skip this because they use a
+       stretch/scroll layout — their own module owns those rules. */
+  & > .content {
+    padding-inline: var(--radius-big);
+    align-items: center;
+
+    corner-bottom-shape: square;
+  }
+}
+
+/* Side-mounted HUDs stack children vertically and need padding-block
+     to clear the round notch caps. */
+.hudRight > .content,
+.hudLeft > .content {
+  flex-direction: column;
+  padding-inline: var(--padding);
+  padding-block: calc(var(--padding) + var(--radius-big));
+}
+
+.bottomCenter {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: auto;
+}
+
+.topRight {
+  top: 12px;
+  right: 0;
+  height: auto;
+}
+
+.topLeft {
+  top: 0;
+  left: 12px;
+}
+
+/* Default content shell. Per-HUD modules add their own layout class
+   via `contentClass` for direction, padding, scroll, etc. */
+.content {
+  display: flex;
+  height: 100%;
+}
+
+/* ============================================================
+ * HudButton — square, no fill, current-color icon.
+ * ============================================================ */
+
+.button {
+  background: none;
+  border: none;
+  padding: 0;
+  width: var(--hud-height);
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-front);
+  border-radius: calc(var(--radius-big) - var(--padding));
+
+  &.active {
+    background: var(--color-active-back);
+    color: var(--color-active-front);
+  }
+
+  &:disabled {
+    color: var(--color-disabled);
+    cursor: not-allowed;
+  }
+
+  &[data-action="record-start"]:not(:disabled) {
+    color: var(--color-red);
+  }
+}

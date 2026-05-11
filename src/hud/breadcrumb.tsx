@@ -9,17 +9,18 @@ import {
   untrack,
   useContext,
 } from "solid-js"
-import { Notch } from "../components/notch"
 import { Context } from "../context"
 import type { Node } from "../types"
 import { logAction } from "../utils"
 import styles from "./breadcrumb.module.css"
+import { Hud } from "./hud"
 
 const COLOR_CONTAINER = "#1a1a1a"
-const COLOR_CELL = "#444"
-const COLOR_HIGHLIGHT = "rgb(216, 216, 216)"
+/** Mirrors --color-red in index.css. Single accent that reads against
+ *  both desaturated pastel cell fills and the dark container gutter. */
+const COLOR_HIGHLIGHT = "#e94949"
 const HIGHLIGHT_WIDTH = 2
-const GAP = 1
+const GAP = 0
 
 /** Draw the layout tree onto a canvas, outlining the highlighted node. */
 function drawNode(
@@ -33,7 +34,9 @@ function drawNode(
 ) {
   const isHighlighted = highlightPath.length === 0
   if (node.type === "entity") {
-    canvasContext.fillStyle = COLOR_CELL
+    // Use each entity's own colour so the breadcrumb minimap visually
+    // matches the WebGL canvas's cell tint.
+    canvasContext.fillStyle = node.color
     canvasContext.fillRect(x, y, width, height)
   } else {
     canvasContext.fillStyle = COLOR_CONTAINER
@@ -170,7 +173,7 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   // CSS var. Total content width stays constant whether the scrollbar is
   // showing or not — without this, canvas width would track height
   // (aspect-ratio), causing scrollbar-toggle resize loops. Full height
-  // (no scrollbar) = hud-height(60) - padding-block-end(--radius=12) -
+  // (no scrollbar) = hud-height(60) - padding-block-end(--radius-big=12) -
   // button margin(2*2) - button padding(2*2) = 40.
   const FULL_CANVAS_H = 40
   const buttonWidth = () => `${Math.max(8, Math.round(FULL_CANVAS_H * props.canvasAspect()))}px`
@@ -191,38 +194,38 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   return (
     <Show when={context.app.tool !== null && context.app.selection}>
       {selection => (
-        <Notch ref={context.setHudElement("breadcrumb")} class={styles.notch} orientation="top">
-          <div
-            ref={contentElement}
-            class={styles.content}
-            style={{ "--breadcrumb-button-width": buttonWidth() }}
-          >
-            <For each={segments()}>
-              {(segment, index) => (
-                <button
-                  class={[
-                    styles.button,
-                    { [styles.active]: segment().depth === selection().depth },
-                  ]}
-                  onClick={() => {
-                    logAction("tap-breadcrumb", { depth: segment().depth, segmentIndex: index() })
-                    context.setSelection({
-                      path: selection().path,
-                      depth: segment().depth,
-                      preview: selection().preview,
-                    })
-                  }}
-                >
-                  <Minimap
-                    layout={context.app.layout}
-                    highlightPath={segment().highlightPath}
-                    aspect={props.canvasAspect()}
-                  />
-                </button>
-              )}
-            </For>
-          </div>
-        </Notch>
+        <Hud
+          kind="breadcrumb"
+          position="top-left"
+          orientation="top"
+          class={styles.notch}
+          contentClass={styles.content}
+          contentRef={element => (contentElement = element)}
+          contentStyle={{ "--breadcrumb-button-width": buttonWidth() }}
+        >
+          <For each={segments()}>
+            {(segment, index) => (
+              <Hud.Button
+                active={segment().depth === selection().depth}
+                class={styles.button}
+                onClick={() => {
+                  logAction("tap-breadcrumb", { depth: segment().depth, segmentIndex: index() })
+                  context.setSelection({
+                    path: selection().path,
+                    depth: segment().depth,
+                    preview: selection().preview,
+                  })
+                }}
+              >
+                <Minimap
+                  layout={context.app.layout}
+                  highlightPath={segment().highlightPath}
+                  aspect={props.canvasAspect()}
+                />
+              </Hud.Button>
+            )}
+          </For>
+        </Hud>
       )}
     </Show>
   )

@@ -1,12 +1,10 @@
 import { useContext } from "solid-js"
-import { HudButton } from "../components/hud-button"
 import { PlusIcon, SplitIcon, TrashIcon } from "../components/icons"
-import { Notch } from "../components/notch"
+import { ProjectMenu } from "../components/project-menu"
 import { Context } from "../context"
 import type { Tool } from "../types"
 import { logAction } from "../utils"
-import styles from "./contextual.module.css"
-import { ProjectMenu } from "./project-menu"
+import { Hud } from "./hud"
 
 export function Contextual() {
   const context = useContext(Context)!
@@ -21,34 +19,32 @@ export function Contextual() {
   }
 
   return (
-    <Notch ref={context.setHudElement("contextual")} class={styles.notch} orientation="right">
-      <div class={styles.content}>
-        <ProjectMenu />
-        <HudButton
-          data-action="delete"
-          disabled={context.app.selection === null}
-          onClick={() => {
-            logAction("delete")
-            context.deleteSelection()
-          }}
-        >
-          <TrashIcon />
-        </HudButton>
-        <HudButton
-          active={context.app.tool === "append"}
-          data-action="set-tool-append"
-          onClick={() => setToolToggle("append")}
-        >
-          <PlusIcon />
-        </HudButton>
-        <HudButton
-          active={context.app.tool === "split"}
-          data-action="set-tool-split"
-          onClick={() => setToolToggle("split")}
-        >
-          <SplitIcon />
-        </HudButton>
-      </div>
-    </Notch>
+    <Hud kind="contextual" position="top-right" orientation="right">
+      <ProjectMenu />
+      <Hud.Button
+        data-action="delete"
+        disabled={context.app.selection === null}
+        onClick={() => {
+          logAction("delete")
+          context.deleteSelection()
+        }}
+      >
+        <TrashIcon />
+      </Hud.Button>
+      <Hud.Button
+        active={context.app.tool === "append"}
+        data-action="set-tool-append"
+        onClick={() => setToolToggle("append")}
+      >
+        <PlusIcon />
+      </Hud.Button>
+      <Hud.Button
+        active={context.app.tool === "split"}
+        data-action="set-tool-split"
+        onClick={() => setToolToggle("split")}
+      >
+        <SplitIcon />
+      </Hud.Button>
+    </Hud>
   )
 }

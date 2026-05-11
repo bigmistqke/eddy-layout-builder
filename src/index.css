@@ -21,7 +21,8 @@ body {
   --color-disabled: rgb(110, 110, 110);
   --color-red: #e94949;
 
-  --radius: 25px;
+  --radius-big: 25px;
+  --radius-small: 12px;
   --padding: 2px;
 
   --hud-height: 50px;

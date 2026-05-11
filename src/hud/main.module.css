@@ -1,27 +1,4 @@
-.notch {
-  --notch-bg: #111;
-  --backdrop-x: 0%;
-  --backdrop-width: 100%;
-  height: auto;
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-hud);
-}
-
 .content {
-  padding-inline: var(--radius);
-  display: flex;
+  padding-inline: var(--radius-big);
   align-items: center;
-  height: 100%;
-}
-
-.divider {
-  display: block;
-  width: 1px;
-  align-self: stretch;
-  background: var(--color-front);
-  margin-inline: var(--radius);
-  margin-block: calc(var(--radius) / 2);
 }

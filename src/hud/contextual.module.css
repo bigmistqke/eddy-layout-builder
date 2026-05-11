@@ -1,20 +1,7 @@
-.notch {
-  --notch-bg: #111;
-  --backdrop-x: 0%;
-  --backdrop-width: 100%;
-  position: absolute;
-  top: 12px;
-  right: 0;
-  width: var(--hud-height);
-  height: auto;
-  z-index: var(--z-hud);
-}
-
 .content {
-  display: flex;
   flex-direction: column;
-  padding-block: var(--radius);
   width: 100%;
   color: var(--color-front);
+  padding-inline: var(--padding);
+  padding-block: calc(var(--padding) + var(--radius-big));
 }
-

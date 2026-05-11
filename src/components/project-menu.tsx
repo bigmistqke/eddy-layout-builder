@@ -1,9 +1,9 @@
 import { createEffect, createMemo, createSignal, For, Show, untrack, useContext } from "solid-js"
-import { HudButton } from "../components/hud-button"
-import { HamburgerIcon, TrashIcon } from "../components/icons"
 import { Context } from "../context"
+import { Hud } from "../hud/hud"
 import { exportSong } from "../media/export"
 import { formatTimeAgo, logAction } from "../utils"
+import { HamburgerIcon, TrashIcon } from "./icons"
 import styles from "./project-menu.module.css"
 
 export function ProjectMenu() {
@@ -196,7 +196,7 @@ export function ProjectMenu() {
 
   return (
     <>
-      <HudButton
+      <Hud.Button
         data-action="open-project-menu"
         onClick={() => {
           if (context.transport.state() === "playing") {
@@ -206,7 +206,7 @@ export function ProjectMenu() {
         }}
       >
         <HamburgerIcon />
-      </HudButton>
+      </Hud.Button>
       <dialog
         ref={dialogRef}
         class={styles.dialog}

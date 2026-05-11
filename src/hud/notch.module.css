@@ -51,14 +51,14 @@
 
   & > .center,
   & > .edge {
-    margin-inline: var(--radius);
+    margin-inline: var(--radius-big);
   }
 
   & > .root,
   & > .edge {
-    border-radius: var(--radius);
+    border-radius: var(--radius-big);
     content: "";
-    flex: 0 var(--radius);
+    flex: 0 var(--radius-big);
     overflow: hidden;
   }
 
@@ -72,7 +72,7 @@
 .arrow {
   position: absolute;
   translate: -50% 0;
-  top: calc(var(--radius) / 2);
+  top: calc(var(--radius-big) / 2);
   transform-origin: center bottom;
   z-index: var(--z-notch-handle);
   pointer-events: none;
@@ -124,26 +124,32 @@
 /* Right — row direction so children stack horizontally. .root on the right
    (screen edge), .edge on the left (canvas-meeting). Margins flip from
    inline to block so .center/.edge become narrower on the cross axis. */
-.hudRight > .notchBackdrop {
-  flex-direction: row;
+.hudRight {
+  width: calc(var(--hud-height) + var(--padding) * 2);
+  display: flex;
+  align-items: center;
 
-  & > .edge,
-  & > .center {
-    margin-inline: 0;
-    margin-block: var(--radius);
-  }
+  & > .notchBackdrop {
+    flex-direction: row;
 
-  & > .root {
-    corner-top-left-shape: scoop; /* meets .center */
-    corner-bottom-left-shape: scoop; /* meets .center */
-    corner-top-right-shape: square; /* outer screen edge */
-    corner-bottom-right-shape: square; /* outer screen edge */
-  }
+    & > .edge,
+    & > .center {
+      margin-inline: 0;
+      margin-block: var(--radius-big);
+    }
 
-  & > .edge {
-    corner-top-right-shape: square; /* meets .center */
-    corner-bottom-right-shape: square; /* meets .center */
-    /* top-left and bottom-left stay default = round (canvas-meeting outer cap) */
+    & > .root {
+      corner-top-left-shape: scoop; /* meets .center */
+      corner-bottom-left-shape: scoop; /* meets .center */
+      corner-top-right-shape: square; /* outer screen edge */
+      corner-bottom-right-shape: square; /* outer screen edge */
+    }
+
+    & > .edge {
+      corner-top-right-shape: square; /* meets .center */
+      corner-bottom-right-shape: square; /* meets .center */
+      /* top-left and bottom-left stay default = round (canvas-meeting outer cap) */
+    }
   }
 }
 
@@ -154,7 +160,7 @@
   & > .edge,
   & > .center {
     margin-inline: 0;
-    margin-block: var(--radius);
+    margin-block: var(--radius-big);
   }
 
   & > .root {

@@ -10,6 +10,7 @@ import {
   useContext,
 } from "solid-js"
 import { Context } from "../context"
+import { ArrowNotch } from "../hud/hud"
 import type { Direction, Node, Selection } from "../types"
 import { logAction, track } from "../utils"
 import {
@@ -24,7 +25,6 @@ import {
 import { animateViewport } from "../webgl/animation"
 import { createRenderer, type TextureSource, type ViewportState } from "../webgl/renderer"
 import styles from "./canvas.module.css"
-import { ArrowNotch } from "./notch"
 
 const HANDLE_DIRECTIONS: Direction[] = ["top", "bottom", "left", "right"]
 const ZERO_BY_DIRECTION: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
