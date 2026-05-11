@@ -1,7 +1,14 @@
 import { createSignal, isPending, latest, Show, untrack, useContext } from "solid-js"
 import { blobToClip } from "../clips/clip"
-import { PlayIcon, RecordIcon, RecordingActiveIcon, StopIcon } from "../components/icons"
+import {
+  EditIcon,
+  PlayIcon,
+  RecordIcon,
+  RecordingActiveIcon,
+  StopIcon,
+} from "../components/icons"
 import { Context } from "../context"
+import { useDirectOutput, useMediaStreamOutput } from "../media/audio-context"
 import { startCapture, type CaptureHandle } from "../media/capture"
 import { logAction, selectedCellId } from "../utils"
 import { Hud } from "./hud"
@@ -42,6 +49,12 @@ export function Main() {
       context.setSongLength(null)
       length = null
     }
+    // Re-route monitor playback through a MediaStreamDestination +
+    // hidden <audio> for the duration of the recording. Bypasses the
+    // Chrome bug where AudioContext.destination output bleeds into the
+    // concurrent getUserMedia capture as audible glitches on the
+    // recorded track. Restored to direct output in onStopRecording.
+    useMediaStreamOutput()
     if (existing.length > 0) {
       await context.transport.play(existing, length)
     }
@@ -51,6 +64,7 @@ export function Main() {
     // hasn't been synchronously committed); latest avoids that gap.
     const stream = latest(context.preview.stream)
     if (stream === null || stream === undefined) {
+      useDirectOutput()
       return
     }
     const handle = startCapture(stream)
@@ -83,6 +97,8 @@ export function Main() {
       context.setSelection({ ...selection, preview: false })
     }
     context.transport.stop() // stop monitor playback if it was running
+    // Capture is over — autoplay below uses speakers normally.
+    useDirectOutput()
     const blob = await handle.stop()
     if (cellId === null) {
       return
@@ -121,6 +137,15 @@ export function Main() {
     context.transport.stop()
   }
 
+  /** Toggle "Edit mode" — gates the contextual HUD's tool pickers
+   *  (split / append / audio). Default tool on entry is `append`; the
+   *  contextual lets the user switch from there. */
+  function toggleEdit() {
+    const next = context.app.tool === null ? "append" : null
+    logAction("set-tool", { tool: next })
+    context.setTool(next)
+  }
+
   return (
     <Hud kind="main" position="bottom-center" orientation="bottom">
       <Show
@@ -155,6 +180,13 @@ export function Main() {
           <RecordingActiveIcon />
         </Hud.Button>
       </Show>
+      <Hud.Button
+        active={context.app.tool !== null}
+        data-action="toggle-edit"
+        onClick={toggleEdit}
+      >
+        <EditIcon />
+      </Hud.Button>
     </Hud>
   )
 }

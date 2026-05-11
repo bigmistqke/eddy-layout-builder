@@ -24,6 +24,58 @@ function IconContainer(props: {
   )
 }
 
+export function EditIcon(props: { class?: string }) {
+  return (
+    <IconContainer class={props.class}>
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M22.5 2.5l7 7L11 28H4v-7L22.5 2.5z"
+          fill="currentColor"
+          stroke="currentColor"
+          stroke-width="1"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </IconContainer>
+  )
+}
+
+export function SpeakerIcon(props: { class?: string }) {
+  return (
+    <IconContainer class={props.class}>
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M4 12h6l8-6v20l-8-6H4v-8z" fill="currentColor" />
+        <path
+          d="M22 11.5c2 1 2 8 0 9"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          fill="none"
+        />
+        <path
+          d="M25 8c4 2 4 14 0 16"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          fill="none"
+        />
+      </svg>
+    </IconContainer>
+  )
+}
+
 export function HamburgerIcon(props: { class?: string }) {
   return (
     <IconContainer class={props.class}>

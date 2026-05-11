@@ -100,6 +100,26 @@ Adjust clip in/out points without re-decoding. Drag a clip's start/end.
 - **Implementation:** per-clip `{ trimIn, trimOut }` seconds; `transport.play` schedules `source.start(when, trimIn, duration - trimIn - trimOut)`. Video lookup adds `trimIn` to position.
 - **Spec-level:** is this a v2 feature or v3? It's a lot of UX surface (drag handles, snap-to-beat) for relatively few wins. Maybe leave for v3 and v2 sticks to record/replace semantics.
 
+### Per-clip volume (mixing)
+
+A per-cell level slider so users can balance recordings against each other.
+
+- **State:** per-clip `volume: number` (default 1.0). Lives on the Clip or alongside in project manifest so it persists.
+- **Wire:** transport already owns a `GainNode` per cell (built for the preview-mute feature). Combine `volume * (muted ? 0 : 1)` into that node's gain value, with a short ramp on user-driven changes to avoid clicks.
+- **UI direction (settled 2026-05-12):** everything stays attached to the canvas. The main HUD's Edit toggle reveals three tools — split / append / **audio** — in the contextual bar. Selecting `audio` swaps the preview camera for a per-cell vertical slider on the right edge of the selected cell. Empty cells get a disabled slider; the breadcrumb is hidden in audio mode (containers don't carry audio at this layer — see v3 note below).
+- **Depends on:** nothing — pure additive feature on top of the existing per-cell gain infrastructure.
+- **v3 idea — container-as-bus:** in audio mode, selecting a container could expose a bus-level gain that scales every child clip together. Lets users group-fade a section without touching individual cell sliders. Defer until composition (time-as-composition / sections) lands so we know what containers represent musically.
+
+### Per-clip offset (recording-lag compensation)
+
+Recorded audio lands slightly later than the user pressed record (mic + browser latency, often 50–200ms). Users hearing the result want to nudge a clip earlier to sync.
+
+- **State:** per-clip `offsetSeconds: number` (default 0). Negative = play earlier than scheduled t=0; positive = later. Persist via manifest.
+- **Wire:** transport schedules audio via `source.start(when - offset, max(0, -offset))` (handles both directions cleanly). Video frame lookup shifts by `offset` too so audio + video stay locked together.
+- **UI:** ±10ms nudge buttons per cell, plus a "reset" affordance. Optionally a song-wide "calibrate latency" flow that prompts a clap, measures the delta from a known click, and applies as a default offset to future records.
+- **Open question:** is this strictly a per-clip property, or should there also be a device-wide latency baseline that all new records inherit? Probably both — the device baseline is recorded once and applied automatically; per-clip offset is the fine-tune knob.
+- **Depends on:** nothing structural; needs UI surface design.
+
 ---
 
 ## Theme 3 — Performance + scaling

@@ -1,5 +1,5 @@
-import { useContext } from "solid-js"
-import { PlusIcon, SplitIcon, TrashIcon } from "../components/icons"
+import { Show, useContext } from "solid-js"
+import { PlusIcon, SpeakerIcon, SplitIcon, TrashIcon } from "../components/icons"
 import { ProjectMenu } from "../components/project-menu"
 import { Context } from "../context"
 import type { Tool } from "../types"
@@ -31,20 +31,31 @@ export function Contextual() {
       >
         <TrashIcon />
       </Hud.Button>
-      <Hud.Button
-        active={context.app.tool === "append"}
-        data-action="set-tool-append"
-        onClick={() => setToolToggle("append")}
-      >
-        <PlusIcon />
-      </Hud.Button>
-      <Hud.Button
-        active={context.app.tool === "split"}
-        data-action="set-tool-split"
-        onClick={() => setToolToggle("split")}
-      >
-        <SplitIcon />
-      </Hud.Button>
+      {/* Edit-mode tools (append / split / audio) appear only when
+          the user has toggled Edit on (main HUD). */}
+      <Show when={context.app.tool !== null}>
+        <Hud.Button
+          active={context.app.tool === "append"}
+          data-action="set-tool-append"
+          onClick={() => setToolToggle("append")}
+        >
+          <PlusIcon />
+        </Hud.Button>
+        <Hud.Button
+          active={context.app.tool === "split"}
+          data-action="set-tool-split"
+          onClick={() => setToolToggle("split")}
+        >
+          <SplitIcon />
+        </Hud.Button>
+        <Hud.Button
+          active={context.app.tool === "audio"}
+          data-action="set-tool-audio"
+          onClick={() => setToolToggle("audio")}
+        >
+          <SpeakerIcon />
+        </Hud.Button>
+      </Show>
     </Hud>
   )
 }

@@ -8,13 +8,6 @@
 .content {
   align-items: stretch;
   gap: var(--padding);
-  margin-inline: calc(var(--radius-big) + var(--padding));
-  /* Inset the scrollbar from the backdrop's bottom by --radius-big. The
-     scrollbar appears at the content-box's bottom edge; padding-block-end
-     pulls it up. box-sizing: border-box keeps the total .content height
-     equal to the notch's hud-height so it never overlaps the canvas
-     below. */
-  padding-block: var(--padding);
   box-sizing: border-box;
   height: 100%;
   color: var(--color-front);

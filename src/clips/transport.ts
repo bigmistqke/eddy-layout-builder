@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js"
-import { audioContext, resumeAudio } from "../media/audio-context"
+import { audioContext, audioDestination, resumeAudio } from "../media/audio-context"
 import type { Clip } from "./clip"
 
 export type TransportState = "stopped" | "playing"
@@ -37,13 +37,14 @@ export function createTransport(): Transport {
 
   function scheduleSources(clips: Clip[], when: number) {
     const audio = audioContext()
+    const out = audioDestination()
     for (const clip of clips) {
       const source = audio.createBufferSource()
       const gain = audio.createGain()
       gain.gain.value = clip.cellId === mutedCell ? 0 : 1
       source.buffer = clip.audio
       source.connect(gain)
-      gain.connect(audio.destination)
+      gain.connect(out)
       source.start(when)
       sources.push(source)
       cellGains[clip.cellId] = gain

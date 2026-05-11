@@ -192,7 +192,12 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
   )
 
   return (
-    <Show when={context.app.tool !== null && context.app.selection}>
+    <Show
+      when={
+        (context.app.tool === "append" || context.app.tool === "split") &&
+        context.app.selection
+      }
+    >
       {selection => (
         <Hud
           kind="breadcrumb"

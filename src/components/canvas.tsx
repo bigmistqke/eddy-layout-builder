@@ -122,7 +122,10 @@ export function Canvas() {
           }
           return
         }
-        context.setSelection({ path: leaf.path, depth: 0, preview: true })
+        // Audio mode swaps the live camera for a per-cell level slider
+        // (see the audio overlay below); never preview on tap there.
+        const previewOnSelect = context.app.tool !== "audio"
+        context.setSelection({ path: leaf.path, depth: 0, preview: previewOnSelect })
         return
       }
     }
@@ -484,7 +487,11 @@ export function Canvas() {
         </Errored>
       </Show>
       <Show
-        when={!context.isAnimating() && context.app.tool !== null && selectedPathKey() !== null}
+        when={
+          !context.isAnimating() &&
+          (context.app.tool === "append" || context.app.tool === "split") &&
+          selectedPathKey() !== null
+        }
       >
         <div class={styles.handleOverlay} data-selected-path={selectedPathKey()!}>
           <For each={HANDLE_DIRECTIONS}>
@@ -513,7 +520,10 @@ export function Canvas() {
                   }
                   const targeted = selection.path.slice(0, selection.path.length - selection.depth)
                   const tool = context.app.tool
-                  if (tool === null) {
+                  // Handles only mount under append/split (see the
+                  // outer <Show> gate); the audio tool has no handle
+                  // operation. The runtime guard keeps TS happy.
+                  if (tool !== "append" && tool !== "split") {
                     return
                   }
                   logAction("add-frame", { path: targeted, direction: direction(), op: tool })

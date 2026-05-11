@@ -217,15 +217,25 @@
   & .edge {
     corner-bottom-shape: square;
   }
+
   /* Bottom HUD (transport): row layout with cap padding + vertical
        centering. Top HUDs (breadcrumb) skip this because they use a
        stretch/scroll layout — their own module owns those rules. */
   & > .content {
-    padding-inline: var(--radius-big);
     align-items: center;
-
     corner-bottom-shape: square;
   }
+}
+
+.hudTop > .content,
+.hudBottom > .content {
+  margin-inline: calc(var(--radius-big) + var(--padding));
+  /* Inset the scrollbar from the backdrop's bottom by --radius-big. The
+     scrollbar appears at the content-box's bottom edge; padding-block-end
+     pulls it up. box-sizing: border-box keeps the total .content height
+     equal to the notch's hud-height so it never overlaps the canvas
+     below. */
+  padding-block: var(--padding);
 }
 
 /* Side-mounted HUDs stack children vertically and need padding-block

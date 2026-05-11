@@ -19,7 +19,10 @@ export type Node = Container | Entity
 
 /** Layout-editing tool. When `null`, frames are read-only — no handles
  *  render and tapping a frame is a no-op. */
-export type Tool = "append" | "split" | null
+/** Layout-editing or audio-editing tool. Non-null = "Edit mode" is
+ *  active (see the Edit toggle in the main HUD). `audio` swaps the
+ *  preview-camera affordance for a per-cell level slider. */
+export type Tool = "append" | "split" | "audio" | null
 export type AppState = {
   /** Root of the layout tree. Starts as a single Entity; becomes a
    *  Container as soon as the user splits/appends. */
