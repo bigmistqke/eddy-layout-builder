@@ -35,7 +35,7 @@ test("project menu: contextual stays visible without a selection", async ({ page
   const box = await wrapper.boundingBox()
   if (box === null) throw new Error("canvas not visible")
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
-  // Hamburger remains; delete is gone.
+  // Hamburger remains; delete is disabled (no selection to act on).
   await expect(page.locator("[data-action='open-project-menu']")).toBeVisible()
-  await expect(page.locator("[data-action='delete']")).toBeHidden()
+  await expect(page.locator("[data-action='delete']")).toBeDisabled()
 })

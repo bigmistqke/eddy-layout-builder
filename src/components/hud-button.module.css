@@ -18,12 +18,12 @@
     color: var(--color-active-front);
   }
 
-  &[data-action="record-start"] {
-    color: var(--color-red);
+  &:disabled {
+    color: var(--color-disabled);
+    cursor: not-allowed;
+  }
 
-    &:disabled {
-      color: var(--color-front);
-      cursor: not-allowed;
-    }
+  &[data-action="record-start"]:not(:disabled) {
+    color: var(--color-red);
   }
 }

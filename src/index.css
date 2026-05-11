@@ -18,6 +18,7 @@ body {
   --color-active-back: rgb(216, 216, 216);
 
   --color-scroll-thumb: rgba(216, 216, 216, 0.3);
+  --color-disabled: rgb(110, 110, 110);
   --color-red: #e94949;
 
   --radius: 10px;
