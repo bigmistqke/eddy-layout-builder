@@ -7,6 +7,7 @@ console.log("[init]", JSON.stringify({ width: window.innerWidth, height: window.
 
 export function App() {
   const state = createAppState()
+  window.__appContext = state
 
   return (
     <Context value={state}>

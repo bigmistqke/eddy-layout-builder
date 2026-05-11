@@ -70,9 +70,9 @@ export function Canvas() {
   })
 
   function onWrapperClick(event: MouseEvent) {
-    if (context.app.tool === null) {
-      return
-    }
+    // Cell selection works in any tool mode — handles only render when
+    // a tool is active (see the <Show> below), but the underlying
+    // selection signal also drives transport + recording.
     const wrapperRect = wrapperElement.getBoundingClientRect()
     const screenX = event.clientX - wrapperRect.left
     const screenY = event.clientY - wrapperRect.top
