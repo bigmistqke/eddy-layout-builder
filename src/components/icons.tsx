@@ -24,6 +24,24 @@ function IconContainer(props: {
   )
 }
 
+export function HamburgerIcon(props: { class?: string }) {
+  return (
+    <IconContainer class={props.class}>
+      <svg
+        width="32"
+        height="20"
+        viewBox="0 0 32 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect y="0" width="32" height="3" rx="1.5" fill="currentColor" />
+        <rect y="8.5" width="32" height="3" rx="1.5" fill="currentColor" />
+        <rect y="17" width="32" height="3" rx="1.5" fill="currentColor" />
+      </svg>
+    </IconContainer>
+  )
+}
+
 export function ArrowIcon(props: { style?: JSX.CSSProperties; class?: string }) {
   return (
     <IconContainer class={props.class} style={props.style}>

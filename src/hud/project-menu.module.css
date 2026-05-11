@@ -1,0 +1,42 @@
+.dialog {
+  border: none;
+  padding: 0;
+  background: var(--color-back);
+  color: var(--color-front);
+  border-radius: var(--radius);
+  min-width: 240px;
+
+  &::backdrop {
+    background: transparent;
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: var(--padding);
+  gap: var(--padding);
+}
+
+.option {
+  background: none;
+  border: none;
+  color: var(--color-front);
+  padding: var(--radius);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  border-radius: calc(var(--radius) - var(--padding));
+
+  &:hover {
+    background: var(--color-active-back);
+    color: var(--color-active-front);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

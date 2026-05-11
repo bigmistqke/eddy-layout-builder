@@ -1,3 +1,15 @@
+@font-face {
+  font-family: "Gas";
+  src: url("./assets/fonts/gas.ttf") format("truetype");
+  font-display: swap;
+  ascent-override: 100%;
+}
+
+html,
+body {
+  font-family: "Gas", system-ui, sans-serif;
+}
+
 #root {
   --color-back: #1b1b1b;
   --color-front: rgb(216, 216, 216);
