@@ -151,6 +151,11 @@ export type Action =
   | { type: "deselect" }
   | { type: "delete" }
   | { type: "tap-breadcrumb"; depth: number; segmentIndex: number }
+  | { type: "record-start" }
+  | { type: "record-stop" }
+  | { type: "play" }
+  | { type: "stop" }
+  | { type: "delete-selection" }
 
 /** Parse the `[action] {...}` lines that get printed to the browser console
  *  by logAction(). Useful when the user pastes a console log directly into
@@ -206,6 +211,21 @@ export async function runActions(
         break
       case "tap-breadcrumb":
         await clickBreadcrumb(page, action.segmentIndex)
+        break
+      case "record-start":
+        await clickAction(page, "record-start")
+        break
+      case "record-stop":
+        await clickAction(page, "record-stop")
+        break
+      case "play":
+        await clickAction(page, "play")
+        break
+      case "stop":
+        await clickAction(page, "stop")
+        break
+      case "delete-selection":
+        await page.evaluate(() => window.__appContext?.deleteSelection())
         break
     }
     await page.waitForTimeout(delayMs)
