@@ -1,4 +1,4 @@
-import type { Container, Entity, Node } from "./types"
+import type { AppContext, Container, Entity, Node } from "./types"
 
 export function resolveNode(layout: Node, path: number[]): Entity | Container {
   let current: Entity | Container = layout
@@ -9,6 +9,23 @@ export function resolveNode(layout: Node, path: number[]): Entity | Container {
     current = current.children[path[index]]
   }
   return current
+}
+
+/**
+ * Resolve the currently-selected entity's id, or null if no entity is
+ * selected. Honours `selection.depth` (which collapses some tail of the
+ * path to refer to an ancestor — matches canvas.tsx's hit-test logic).
+ * Falls back to the root entity when nothing is selected and the layout
+ * is a single Entity (initial app state).
+ */
+export function selectedCellId(context: AppContext): string | null {
+  const selection = context.app.selection
+  if (selection === null) {
+    return context.app.layout.type === "entity" ? context.app.layout.id : null
+  }
+  const targetedPath = selection.path.slice(0, selection.path.length - selection.depth)
+  const node = resolveNode(context.app.layout, targetedPath)
+  return node.type === "entity" ? node.id : null
 }
 
 /**

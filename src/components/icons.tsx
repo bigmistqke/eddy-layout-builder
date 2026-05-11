@@ -140,6 +140,22 @@ export function PlayIcon() {
   )
 }
 
+export function StopIcon() {
+  return (
+    <IconContainer>
+      <svg
+        width="30"
+        height="30"
+        viewBox="0 0 30 30"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect x="4" y="4" width="22" height="22" rx="2" fill="currentColor" />
+      </svg>
+    </IconContainer>
+  )
+}
+
 export function TrashIcon(props: { class?: string }) {
   return (
     <IconContainer class={props.class}>
