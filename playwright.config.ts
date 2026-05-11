@@ -22,7 +22,17 @@ export default defineConfig({
     viewport: { width: 1280, height: 800 },
     trace: "on-first-retry",
     launchOptions: {
-      args: ["--autoplay-policy=no-user-gesture-required"],
+      args: [
+        "--autoplay-policy=no-user-gesture-required",
+        // Chromium ships a fake camera (color bars + tone) when this
+        // flag is set. Without it, gUM rejects with NotSupportedError
+        // in headless and the rejection wraps as a Solid StatusError
+        // that corrupts sibling JSX renders. Tests that need a
+        // *specific* recorded fixture still call mockGetUserMedia
+        // explicitly — this is just the silent fallback.
+        "--use-fake-device-for-media-stream",
+        "--use-fake-ui-for-media-stream",
+      ],
     },
   },
   webServer: {
