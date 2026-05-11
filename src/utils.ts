@@ -31,3 +31,13 @@ export function capitalize<Input extends string>(value: Input): Capitalize<Input
 export function pathEquals(first: number[], second: number[]) {
   return first.length === second.length && first.every((value, index) => value === second[index])
 }
+
+/**
+ * Resolve after `milliseconds`. Centralised so call sites stay free of
+ * `new Promise(resolve => setTimeout(resolve, ...))` boilerplate.
+ */
+export function wait(milliseconds: number): Promise<void> {
+  const { promise, resolve } = Promise.withResolvers<void>()
+  setTimeout(resolve, milliseconds)
+  return promise
+}
