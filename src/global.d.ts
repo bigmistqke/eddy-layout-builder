@@ -1,5 +1,5 @@
-import type { Rect } from "./viewport"
-import type { LeafFrame } from "./viewport"
+import type { AppContext } from "./types"
+import type { LeafFrame, Rect } from "./viewport"
 import type { ViewportState } from "./webgl/renderer"
 
 declare global {
@@ -16,6 +16,9 @@ declare global {
       viewport: ViewportState
       canvas: DOMRect
     }
+    /** Test-only hook exposed by App. Whole reactive context — used by
+     *  Playwright tests to drive transport, inspect clip state, etc. */
+    __appContext?: AppContext
   }
 }
 
