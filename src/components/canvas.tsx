@@ -112,6 +112,53 @@ export function Canvas() {
     const renderer = createRenderer(canvasElement)
     let cancelTween: (() => void) | undefined
 
+    function gatherFrames(): Map<string, TextureSource> {
+      return untrack(() => {
+        const frames = new Map<string, TextureSource>()
+
+        // Live camera preview goes into the preview target cell, if any.
+        const previewCell = context.preview.targetCellId()
+        if (previewCell !== null) {
+          const previewElement = context.preview.element
+          if (previewElement.videoWidth > 0 && previewElement.videoHeight > 0) {
+            frames.set(previewCell, previewElement)
+          }
+        }
+
+        // Clip frames. When playing, use transport position; otherwise
+        // show frame 0 of each clip so cells stay visible at rest.
+        const playing = context.transport.state() === "playing"
+        const positionMicros = playing
+          ? Math.round(context.transport.position() * 1_000_000)
+          : 0
+        const allClips = context.clips.clips
+        for (const cellId of Object.keys(allClips)) {
+          if (frames.has(cellId)) {
+            continue
+          }
+          const clip = allClips[cellId]
+          if (clip === undefined) {
+            continue
+          }
+          const sample = clip.video.frameAt(positionMicros)
+          if (sample !== null) {
+            // VideoSample → VideoFrame for texImage2D. Caller closes the
+            // VideoFrame after upload.
+            frames.set(cellId, sample.toVideoFrame())
+          }
+        }
+        return frames
+      })
+    }
+
+    function closeTransientFrames(frames: Map<string, TextureSource>) {
+      for (const source of frames.values()) {
+        if (source instanceof VideoFrame) {
+          source.close()
+        }
+      }
+    }
+
     function drawAt(viewport: ViewportState) {
       const wrapperRect = wrapperElement.getBoundingClientRect()
       // Compute leaves at *scaled* canvas dims so flex math matches
@@ -125,20 +172,31 @@ export function Canvas() {
       }
       // In song mode (no tool) cells are seamless: no gap between
       // siblings, no inset from the canvas edge. In edit mode (append
-      // or split) the constant gap/padding apply so the layout-editing
-      // affordances (handles, selection rect) have breathing room.
-      const songMode = context.app.tool === null
-      const layoutOptions = songMode ? { gap: 0, rootPadding: 0 } : undefined
-      const { leaves, selectedRect } = untrack(() =>
-        layoutFrames(context.app.layout, scaledCanvas, context.app.selection, layoutOptions),
-      )
+      // or split) the constants apply so the layout-editing affordances
+      // (handles, selection rect) have breathing room. drawAt runs in
+      // an unowned scope (called from animation tween + onSettled), so
+      // all reactive reads go through untrack — Solid 2.x dev fires
+      // STRICT_READ_UNTRACKED otherwise.
+      const { leaves, selectedRect } = untrack(() => {
+        const layoutOptions =
+          context.app.tool === null ? { gap: 0, rootPadding: 0 } : undefined
+        return layoutFrames(
+          context.app.layout,
+          scaledCanvas,
+          context.app.selection,
+          layoutOptions,
+        )
+      })
       lastLeaves = leaves
       lastSelectedRect = selectedRect
       lastViewport = viewport
 
       // Translate-only viewport for the renderer (scale is baked in).
       const drawViewport: ViewportState = { x: viewport.x, y: viewport.y, scale: 1 }
-      renderer.render(drawViewport, lastLeaves)
+      // Include clip/preview frames so layout animations don't strip them.
+      const frames = gatherFrames()
+      renderer.render(drawViewport, lastLeaves, frames.size > 0 ? frames : undefined)
+      closeTransientFrames(frames)
 
       // Test hook — snapshot of what the GL just drew. `viewport.scale`
       // here is reported as 1 because leaf rects are already in scaled
@@ -268,45 +326,6 @@ export function Canvas() {
     let playbackRaf = 0
     let lastPlaybackPosition = 0
 
-    function gatherFrames(): Map<string, TextureSource> {
-      return untrack(() => {
-        const frames = new Map<string, TextureSource>()
-
-        // Live camera preview goes into the preview target cell, if any.
-        const previewCell = context.preview.targetCellId()
-        if (previewCell !== null) {
-          const previewElement = context.preview.element
-          if (previewElement.videoWidth > 0 && previewElement.videoHeight > 0) {
-            frames.set(previewCell, previewElement)
-          }
-        }
-
-        // Clip frames. When playing, use transport position; otherwise
-        // show frame 0 of each clip so cells stay visible at rest.
-        const playing = context.transport.state() === "playing"
-        const positionMicros = playing
-          ? Math.round(context.transport.position() * 1_000_000)
-          : 0
-        const allClips = context.clips.clips
-        for (const cellId of Object.keys(allClips)) {
-          if (frames.has(cellId)) {
-            continue
-          }
-          const clip = allClips[cellId]
-          if (clip === undefined) {
-            continue
-          }
-          const sample = clip.video.frameAt(positionMicros)
-          if (sample !== null) {
-            // VideoSample → VideoFrame for texImage2D. Caller closes the
-            // VideoFrame after upload (see playbackTick).
-            frames.set(cellId, sample.toVideoFrame())
-          }
-        }
-        return frames
-      })
-    }
-
     function playbackTick() {
       // Loop transition: transport.position() reset to ~0. Reset each
       // video source so frameAt for small t doesn't return stale frames.
@@ -322,12 +341,7 @@ export function Canvas() {
       const frames = gatherFrames()
       const drawViewport: ViewportState = { x: lastViewport.x, y: lastViewport.y, scale: 1 }
       renderer.render(drawViewport, lastLeaves, frames.size > 0 ? frames : undefined)
-      // Close transient VideoFrames after upload.
-      for (const source of frames.values()) {
-        if (source instanceof VideoFrame) {
-          source.close()
-        }
-      }
+      closeTransientFrames(frames)
       const previewActive = untrack(context.preview.targetCellId) !== null
       const transportPlaying = untrack(context.transport.state) === "playing"
       // Keep ticking while transport is playing or a live preview is
@@ -356,20 +370,15 @@ export function Canvas() {
     }
 
     function requestRender() {
-      // Borrow playbackTick's frame-gathering logic for a single render.
-      // If the loop is already running, this is a no-op (the next tick
-      // will pick up the change).
+      // One-shot render. No-op if the rAF loop is already running (the
+      // next tick will pick up the change).
       if (playbackRaf !== 0) {
         return
       }
       const frames = gatherFrames()
       const drawViewport: ViewportState = { x: lastViewport.x, y: lastViewport.y, scale: 1 }
       renderer.render(drawViewport, lastLeaves, frames.size > 0 ? frames : undefined)
-      for (const source of frames.values()) {
-        if (source instanceof VideoFrame) {
-          source.close()
-        }
-      }
+      closeTransientFrames(frames)
     }
 
     drive = {

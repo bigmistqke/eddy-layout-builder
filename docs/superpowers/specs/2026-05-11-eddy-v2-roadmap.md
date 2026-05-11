@@ -197,6 +197,20 @@ Currently `pnpm test` runs `vite build && playwright test` against `vite preview
 
 ---
 
+## Cross-cutting — adopt Solid 2.x `action()` for v2 mutations
+
+Solid 2.x's `action(fn)` wraps an async mutation and gives you:
+- pending state via `useSubmissions(action)` (replaces manually-managed loading signals)
+- error propagation to `<Errored>` boundaries (replaces try/catch + custom state)
+- `refresh(source)` to invalidate derived reads after the mutation lands
+- optional optimistic UI via `createOptimistic` / `createOptimisticStore`
+
+MVP intentionally uses plain async event handlers — the win was too small to justify the refactor when error UI and pending UI weren't built yet. v2 changes that. Adopt `action()` for: **export**, **bounce**, **file import**, **atproto publish**, and possibly **record** if/when we add a visible "decoding…" indicator between record-stop and clip-lands.
+
+Don't go retro and rewrite the MVP handlers — keep them as-is until they're touched for a feature that needs the action machinery.
+
+---
+
 ## Theme 7 — Code cleanup catalogued during MVP
 
 Each is a small focused PR.

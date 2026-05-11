@@ -1,4 +1,4 @@
-import { test } from "@playwright/test"
+import { test } from "./helpers"
 import { type Action, expectFrameRespectsMargin, runActions } from "./helpers"
 
 /**

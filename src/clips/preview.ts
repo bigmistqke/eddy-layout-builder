@@ -1,4 +1,4 @@
-import { createSignal, type Accessor } from "solid-js"
+import { createSignal, untrack, type Accessor } from "solid-js"
 
 export interface Preview {
   /** Reactive — the MediaStream when the camera is enabled, else null. */
@@ -26,7 +26,11 @@ export function createPreview(): Preview {
   const [targetCellId, setTargetCellId] = createSignal<string | null>(null)
 
   async function enable() {
-    if (stream() !== null) {
+    // Idempotent — early-return if already enabled. Read untracked
+    // because enable() is called from event handlers AND from a
+    // createEffect's apply (Main's tool-mode watcher); the apply path
+    // would otherwise trip STRICT_READ_UNTRACKED.
+    if (untrack(stream) !== null) {
       return
     }
     const next = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })

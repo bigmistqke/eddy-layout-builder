@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./helpers"
 import { clickFrame } from "./helpers"
 
 test("tapping a frame with no tool active still selects it", async ({ page }) => {

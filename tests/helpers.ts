@@ -1,6 +1,56 @@
 import { readFileSync } from "fs"
 import { resolve } from "path"
-import type { Page } from "@playwright/test"
+import { expect, test as base, type Page } from "@playwright/test"
+
+/**
+ * Capture every console.warn/error and page-level error emitted by the
+ * page during a test. Asserted in afterEach: any Solid dev diagnostic
+ * (STRICT_READ_UNTRACKED, write-under-scope, etc.) fails the test.
+ *
+ * Use the exported `test` from this module instead of @playwright/test
+ * to get the assertion for free.
+ */
+const SOLID_WARNING_PATTERNS = [
+  /STRICT_READ_UNTRACKED/i,
+  /\[solid-js\]/i,
+  /write inside reactive scope/i,
+  /top-level reactive read/i,
+  /reactive write/i,
+  /ContextNotFoundError/i,
+]
+
+interface CapturedDiag {
+  type: string
+  text: string
+}
+
+export const test = base.extend<{ pageDiagnostics: void }>({
+  pageDiagnostics: [
+    async ({ page }, use) => {
+      const captured: CapturedDiag[] = []
+      page.on("console", message => {
+        const type = message.type()
+        if (type === "warning" || type === "error") {
+          captured.push({ type, text: message.text() })
+        }
+      })
+      page.on("pageerror", error => {
+        captured.push({ type: "pageerror", text: error.message })
+      })
+      await use()
+      const hits = captured.filter(entry =>
+        SOLID_WARNING_PATTERNS.some(pattern => pattern.test(entry.text)),
+      )
+      if (hits.length > 0) {
+        const summary = hits.map(h => `[${h.type}] ${h.text}`).join("\n")
+        expect(hits, `Solid dev diagnostics emitted:\n${summary}`).toEqual([])
+      }
+    },
+    { auto: true },
+  ],
+})
+
+export { expect } from "@playwright/test"
 
 /**
  * Inject a fake `navigator.mediaDevices.getUserMedia` that returns a

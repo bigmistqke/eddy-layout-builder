@@ -114,8 +114,25 @@ export function RecordIcon() {
       >
         <path
           d="M34 18.5C34 10.5918 27.3855 4 19 4C10.6145 4 4 10.5918 4 18.5C4 26.4082 10.6145 33 19 33V37C8.50659 37 0 28.7173 0 18.5C0 8.28273 8.50659 0 19 0C29.4934 0 38 8.28273 38 18.5C38 28.7173 29.4934 37 19 37V33C27.3855 33 34 26.4082 34 18.5Z"
-          fill="#E94949"
+          fill="var(--color-red)"
         />
+      </svg>
+    </IconContainer>
+  )
+}
+
+/** Filled red dot — shown on the record button while recording. */
+export function RecordingActiveIcon() {
+  return (
+    <IconContainer>
+      <svg
+        width="38"
+        height="37"
+        viewBox="0 0 38 37"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <ellipse cx="19" cy="18.5" rx="19" ry="18.5" fill="var(--color-red)" />
       </svg>
     </IconContainer>
   )

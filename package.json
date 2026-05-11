@@ -7,8 +7,9 @@
     "dev": "vite",
     "dev:test": "vite --port 5174 --strictPort",
     "build": "vite build",
+    "build:test": "NODE_ENV=development vite build --mode development",
     "preview:test": "vite preview --port 5174 --strictPort",
-    "test": "vite build && playwright test",
+    "test": "pnpm run build:test && playwright test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

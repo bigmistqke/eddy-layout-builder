@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./helpers"
 import { mockGetUserMedia } from "./helpers"
 
 test("M1: record into the initial cell, then play back", async ({ page }) => {

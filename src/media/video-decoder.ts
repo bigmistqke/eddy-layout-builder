@@ -40,7 +40,10 @@ export async function makeVideoSource(track: InputVideoTrack): Promise<VideoSour
         break
       }
     }
-    return best
+    // Snap to the first sample when t is before everything (the first
+    // sample's PTS is often slightly > 0, e.g. 0.033 at 30fps, which
+    // would otherwise leave a color-only flash at the loop boundary).
+    return best ?? samples[0]
   }
 
   function reset() {

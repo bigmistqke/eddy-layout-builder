@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./helpers"
 import { activateTool, clickFrame, clickHandle, frameRect } from "./helpers"
 
 /**

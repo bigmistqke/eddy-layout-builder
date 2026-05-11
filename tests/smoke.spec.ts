@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./helpers"
 import { activateTool, clickFrame, frameRect, readViewport } from "./helpers"
 
 test("dev server boots and tool buttons render", async ({ page }) => {

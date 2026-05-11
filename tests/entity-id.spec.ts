@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./helpers"
 
 test("entity carries a stable uuid id", async ({ page }) => {
   await page.goto("/")

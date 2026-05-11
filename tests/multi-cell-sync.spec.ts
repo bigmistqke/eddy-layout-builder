@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./helpers"
 import { mockGetUserMedia } from "./helpers"
 
 test("M2: two cells, record into each, both play", async ({ page }) => {
@@ -30,19 +30,16 @@ test("M2: two cells, record into each, both play", async ({ page }) => {
     { timeout: 10_000 },
   )
 
-  // Select cell 1, record.
+  // Select cell 1, record. The first clip set songLength, so the second
+  // recording auto-stops at that length — no manual record-stop click
+  // (the button would detach mid-click as the Show flips).
   await page.evaluate(() => {
     window.__appContext?.setSelection({ path: [1], depth: 0 })
   })
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
-    timeout: 5000,
-  })
-  await page.waitForTimeout(500)
-  await page.locator('[data-action="record-stop"]').click()
   await page.waitForFunction(
     () => Object.keys(window.__appContext?.clips.clips ?? {}).length === 2,
-    { timeout: 10_000 },
+    { timeout: 15_000 },
   )
 
   // Play.

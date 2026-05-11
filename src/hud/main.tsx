@@ -1,5 +1,12 @@
 import { createEffect, createSignal, Show, useContext } from "solid-js"
-import { PlayIcon, PlusIcon, RecordIcon, SplitIcon, StopIcon } from "../components/icons"
+import {
+  PlayIcon,
+  PlusIcon,
+  RecordIcon,
+  RecordingActiveIcon,
+  SplitIcon,
+  StopIcon,
+} from "../components/icons"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
 import { blobToClip } from "../clips/clip"
@@ -11,23 +18,27 @@ export function Main() {
   const context = useContext(Context)!
   const [captureHandle, setCaptureHandle] = createSignal<CaptureHandle | null>(null)
 
-  // In split/append mode the currently-selected cell becomes the live
-  // preview target — the user sees the camera in the cell they're
-  // about to record into. During an active recording, the captured
-  // cell stays the target. Outside tool mode + no recording, no
-  // preview target.
+  // The currently-selected cell becomes the live preview target — but
+  // only if it doesn't already have a clip. Selecting an empty cell
+  // (whether in tool mode or not) shows the camera there; selecting a
+  // cell with a clip shows that clip's frame 0 instead, so users can
+  // browse their recordings without losing them under a preview.
+  // During an active recording, onRecord locks the target.
   createEffect(
-    () => ({
-      tool: context.app.tool,
-      selectedId: selectedCellId(context),
-      recording: captureHandle() !== null,
-    }),
-    ({ tool, selectedId, recording }) => {
+    () => {
+      const selectedId = selectedCellId(context)
+      // `clips.clips` is a plain Record (host-object safety; see store.ts);
+      // reactivity comes from `cellIds()` which mirrors its key set.
+      const cellIds = context.clips.cellIds()
+      const hasClip = selectedId !== null && cellIds.includes(selectedId)
+      const recording = captureHandle() !== null
+      return { selectedId, hasClip, recording }
+    },
+    ({ selectedId, hasClip, recording }) => {
       if (recording) {
-        // Don't change the target mid-recording — onRecord locked it.
         return
       }
-      if (tool !== null && selectedId !== null) {
+      if (selectedId !== null && !hasClip) {
         context.preview.setTargetCellId(selectedId)
         void context.preview.enable()
       } else {
@@ -48,6 +59,11 @@ export function Main() {
       return
     }
     logAction("record-start", {})
+    // Pressing record collapses the layout-editing UI — recording is a
+    // song-mode action, not an edit-mode action.
+    if (context.app.tool !== null) {
+      context.setTool(null)
+    }
 
     // Monitor: play existing voices through speakers while we record.
     // Caller expected to use headphones; spec accepts mic leak otherwise.
@@ -103,6 +119,9 @@ export function Main() {
       return
     }
     logAction("play", {})
+    if (context.app.tool !== null) {
+      context.setTool(null)
+    }
     await context.transport.play(allClips, context.songLength())
   }
 
@@ -115,29 +134,27 @@ export function Main() {
     <Notch ref={context.setHudElement("main")} class={styles.notch}>
       <div class={styles.content}>
         <Show
+          when={context.transport.state() === "stopped"}
+          fallback={
+            <button class={styles.button} data-action="stop" onClick={onStopPlayback}>
+              <StopIcon />
+            </button>
+          }
+        >
+          <button class={styles.button} data-action="play" onClick={onPlay}>
+            <PlayIcon />
+          </button>
+        </Show>
+        <Show
           when={captureHandle() !== null}
           fallback={
-            <>
-              <Show
-                when={context.transport.state() === "stopped"}
-                fallback={
-                  <button class={styles.button} data-action="stop" onClick={onStopPlayback}>
-                    <StopIcon />
-                  </button>
-                }
-              >
-                <button class={styles.button} data-action="play" onClick={onPlay}>
-                  <PlayIcon />
-                </button>
-              </Show>
-              <button class={styles.button} data-action="record-start" onClick={onRecord}>
-                <RecordIcon />
-              </button>
-            </>
+            <button class={styles.button} data-action="record-start" onClick={onRecord}>
+              <RecordIcon />
+            </button>
           }
         >
           <button class={styles.button} data-action="record-stop" onClick={onStopRecording}>
-            <StopIcon />
+            <RecordingActiveIcon />
           </button>
         </Show>
         <span class={styles.divider} />

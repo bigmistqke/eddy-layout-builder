@@ -82,7 +82,10 @@ export function createAppState(): AppContext {
   const [app, setApp] = createStore<AppState>({
     layout: createEntity(),
     tool: null,
-    selection: null,
+    // Start with the root entity selected so the camera preview lands
+    // on it immediately. Spec: "on page start the first frame should
+    // be selected and rendering the camera".
+    selection: { path: [], depth: 0 },
   })
 
   // HUD element refs — kept internal. Consumers register a ref via
