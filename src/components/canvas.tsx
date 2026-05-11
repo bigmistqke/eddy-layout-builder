@@ -20,7 +20,7 @@ import {
   type Rect,
 } from "../viewport"
 import { animateViewport } from "../webgl/animation"
-import { createRenderer, type ViewportState } from "../webgl/renderer"
+import { createRenderer, type TextureSource, type ViewportState } from "../webgl/renderer"
 import { ArrowNotch } from "./notch"
 import styles from "./canvas.module.css"
 
@@ -57,8 +57,13 @@ export function Canvas() {
   // createEffect below consults this for the actual functions to call.
   // Using a plain ref avoids creating reactive primitives inside the
   // owner-backed onSettled callback.
-  let drive: { recompute: () => ViewportState; start: (target: ViewportState) => void } | null =
-    null
+  interface Drive {
+    recompute(): ViewportState
+    start(target: ViewportState): void
+    startPlaybackLoop(): void
+    stopPlaybackLoop(): void
+  }
+  let drive: Drive | null = null
 
   const selectedPathKey = createMemo(() => {
     const selection = context.app.selection
@@ -239,11 +244,86 @@ export function Canvas() {
     const resizeObserver = new ResizeObserver(syncSize)
     resizeObserver.observe(wrapperElement)
 
-    drive = { recompute: recomputeViewport, start: startAnimation }
+    // ---- Playback render loop ----
+    // Runs while transport is playing or a recording preview is active.
+    // Reads clip + preview state via untrack — the loop itself is an
+    // unowned rAF callback, no reactive dependencies.
+    let playbackRaf = 0
+
+    function gatherFrames(): Map<string, TextureSource> {
+      return untrack(() => {
+        const frames = new Map<string, TextureSource>()
+        const previewCell = context.preview.activeCellId()
+        if (previewCell !== null) {
+          frames.set(previewCell, context.preview.element)
+        }
+        if (context.transport.state() === "playing") {
+          const positionMicros = Math.round(context.transport.position() * 1_000_000)
+          const allClips = context.clips.clips
+          for (const cellId of Object.keys(allClips)) {
+            const clip = allClips[cellId]
+            if (clip === undefined) {
+              continue
+            }
+            const sample = clip.video.frameAt(positionMicros)
+            if (sample !== null && !frames.has(cellId)) {
+              // VideoSample → VideoFrame for texImage2D. Caller (this
+              // function's consumer) doesn't close the VideoFrame; we
+              // accept the leak per-tick because the sample cache owns
+              // the underlying data and re-creating cheaply.
+              frames.set(cellId, sample.toVideoFrame())
+            }
+          }
+        }
+        return frames
+      })
+    }
+
+    function playbackTick() {
+      const frames = gatherFrames()
+      const drawViewport: ViewportState = { x: lastViewport.x, y: lastViewport.y, scale: 1 }
+      renderer.render(drawViewport, lastLeaves, frames.size > 0 ? frames : undefined)
+      // Close transient VideoFrames after upload.
+      for (const source of frames.values()) {
+        if (source instanceof VideoFrame) {
+          source.close()
+        }
+      }
+      const previewActive = untrack(context.preview.activeCellId) !== null
+      const transportPlaying = untrack(context.transport.state) === "playing"
+      if (previewActive || transportPlaying) {
+        playbackRaf = requestAnimationFrame(playbackTick)
+      } else {
+        playbackRaf = 0
+        renderer.render(drawViewport, lastLeaves)
+      }
+    }
+
+    function startPlaybackLoop() {
+      if (playbackRaf !== 0) {
+        return
+      }
+      playbackRaf = requestAnimationFrame(playbackTick)
+    }
+
+    function stopPlaybackLoop() {
+      if (playbackRaf !== 0) {
+        cancelAnimationFrame(playbackRaf)
+        playbackRaf = 0
+      }
+    }
+
+    drive = {
+      recompute: recomputeViewport,
+      start: startAnimation,
+      startPlaybackLoop,
+      stopPlaybackLoop,
+    }
 
     return () => {
       drive = null
       cancelTween?.()
+      stopPlaybackLoop()
       resizeObserver.disconnect()
       renderer.dispose()
     }
@@ -253,6 +333,24 @@ export function Canvas() {
   // compute callback reads `context.app.layout` / `selection` (via the
   // signature helper) so Solid tracks them; the effect re-fires when
   // they change. `drive` is only set after onSettled resolves.
+  // Start/stop the playback rAF loop based on transport + preview state.
+  createEffect(
+    () => ({
+      previewActive: context.preview.activeCellId() !== null,
+      transportPlaying: context.transport.state() === "playing",
+    }),
+    ({ previewActive, transportPlaying }) => {
+      if (drive === null) {
+        return
+      }
+      if (previewActive || transportPlaying) {
+        drive.startPlaybackLoop()
+      } else {
+        drive.stopPlaybackLoop()
+      }
+    },
+  )
+
   createEffect(
     () => layoutSignature(context.app.layout, context.app.selection),
     () => {
