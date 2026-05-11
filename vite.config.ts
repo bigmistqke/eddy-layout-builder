@@ -13,9 +13,11 @@ export default defineConfig(({ mode }) => ({
     ),
   },
   build: {
-    // Keep diagnostic strings readable so STRICT_READ_UNTRACKED etc.
-    // survive in the build:test output for console matching.
-    minify: mode === "development" ? false : "esbuild",
+    // Always minify with esbuild. Solid's diagnostic strings ([STRICT_READ_UNTRACKED]
+    // etc.) are literals inside the bundled dev modules and survive minification —
+    // they're message *content*, not identifier names — so the test-suite console
+    // match still works against the minified output.
+    minify: "esbuild",
   },
   resolve: {
     // Prefer the `development` conditional export of solid-js and

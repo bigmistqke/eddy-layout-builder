@@ -114,6 +114,21 @@ test("post-record state: cell shows its clip's frame (preview goes off)", async 
   expect(state.previewTarget).toBeNull()
 })
 
+test("autoplay: transport starts playing after record-stop", async ({ page }) => {
+  await mockGetUserMedia(page)
+  await page.goto("/")
+  await page.locator('[data-action="record-start"]').click()
+  await page.waitForTimeout(400)
+  await page.locator('[data-action="record-stop"]').click()
+  // Once the clip lands and song-length is set, autoplay kicks in.
+  await page.waitForFunction(
+    () =>
+      window.__appContext !== undefined &&
+      window.__appContext.transport.state() === "playing",
+    { timeout: 10_000 },
+  )
+})
+
 test("tapping the post-record cell re-activates preview", async ({ page }) => {
   await mockGetUserMedia(page)
   await page.goto("/")

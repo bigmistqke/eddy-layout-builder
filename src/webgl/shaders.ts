@@ -44,13 +44,23 @@ ${attribute.vec2("i_position", { instanced: true })}
 ${attribute.vec2("i_size", { instanced: true })}
 ${uniform.vec2("u_canvasSize")}
 ${uniform.vec3("u_view")}
+${uniform.vec2("u_sourceSize")}
 out vec2 v_uv;
 
 void main() {
   vec2 canvasPixel = (a_corner * i_size + i_position) * u_view.z + u_view.xy;
   vec2 ndc = (canvasPixel / u_canvasSize) * 2.0 - 1.0;
   gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
-  v_uv = a_corner;
+  // Cover-fit on the GPU: scale UV around (0.5, 0.5) so the source
+  // fills the cell while preserving its aspect ratio. Cell wider than
+  // source (by aspect) → crop source top + bottom; cell taller → crop
+  // source left + right.
+  float cellAspect = i_size.x / i_size.y;
+  float sourceAspect = u_sourceSize.x / u_sourceSize.y;
+  vec2 uvScale = cellAspect >= sourceAspect
+    ? vec2(1.0, sourceAspect / cellAspect)
+    : vec2(cellAspect / sourceAspect, 1.0);
+  v_uv = vec2(0.5) + (a_corner - vec2(0.5)) * uvScale;
 }
 `
 

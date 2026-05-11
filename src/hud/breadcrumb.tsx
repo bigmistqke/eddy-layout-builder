@@ -202,8 +202,8 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
                 <button
                   class={[
                     styles.button,
-                    segment().depth === selection().depth ? styles.active : "",
-                  ].join(" ")}
+                    { [styles.active]: segment().depth === selection().depth },
+                  ]}
                   onClick={() => {
                     logAction("tap-breadcrumb", { depth: segment().depth, segmentIndex: index() })
                     context.setSelection({

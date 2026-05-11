@@ -4,7 +4,6 @@ import {
   PlusIcon,
   RecordIcon,
   RecordingActiveIcon,
-  SplitIcon,
   StopIcon,
 } from "../components/icons"
 import { Notch } from "../components/notch"
@@ -18,21 +17,31 @@ export function Main() {
   const context = useContext(Context)!
   const [captureHandle, setCaptureHandle] = createSignal<CaptureHandle | null>(null)
 
-  // Camera lifecycle. The previewTargetCellId memo on AppContext is the
-  // source of truth for "which cell shows the camera"; this effect just
-  // mirrors it into preview.enable() so the camera comes up the moment
-  // a target appears.
+  // Trigger camera acquisition reactively. `preview.stream` is a
+  // function-form async signal — reading it kicks off `getUserMedia`.
+  // The createEffect compute reads it whenever a preview target exists,
+  // so the camera comes up the moment the user expects to see it. The
+  // try/catch swallows the NotReadyError that fires while gUM is in
+  // flight; `preview.isLoading()` is the truth for "still acquiring".
   createEffect(
-    () => context.previewTargetCellId(),
-    target => {
-      if (target !== null) {
-        void context.preview.enable()
+    () => {
+      if (context.previewTargetCellId() === null) {
+        return null
+      }
+      try {
+        return context.preview.stream()
+      } catch {
+        return null
       }
     },
+    () => {},
   )
 
-  function toggleTool(tool: "append" | "split") {
-    const next = context.app.tool === tool ? null : tool
+  function toggleAddMode() {
+    // Single bottom-bar "+" enters/exits add mode. Default tool on
+    // entry is "split"; the contextual bar lets the user switch to
+    // "append" once in tool mode.
+    const next = context.app.tool === null ? "split" : null
     logAction("set-tool", { tool: next })
     context.setTool(next)
   }
@@ -64,7 +73,9 @@ export function Main() {
       await context.transport.play(existing, length)
     }
 
-    await context.preview.enable()
+    // Stream is guaranteed resolved by the time onRecord can fire — the
+    // record button is disabled while `preview.isLoading()`. Reading
+    // outside a reactive scope is safe once the async signal has settled.
     const stream = untrack(context.preview.stream)
     if (stream === null) {
       return
@@ -108,6 +119,12 @@ export function Main() {
     if (context.songLength() === null) {
       context.setSongLength(clip.duration)
     }
+    // Autoplay: once a recording lands, start the song so the user
+    // hears the result without an extra tap.
+    const allClips = Object.values(context.clips.clips)
+    if (allClips.length > 0) {
+      await context.transport.play(allClips, context.songLength())
+    }
   }
 
   async function onPlay() {
@@ -148,7 +165,7 @@ export function Main() {
             <button
               class={styles.button}
               data-action="record-start"
-              disabled={selectedCellId(context) === null}
+              disabled={selectedCellId(context) === null || context.preview.isLoading()}
               onClick={onRecord}
             >
               <RecordIcon />
@@ -159,20 +176,12 @@ export function Main() {
             <RecordingActiveIcon />
           </button>
         </Show>
-        <span class={styles.divider} />
         <button
-          class={[styles.button, context.app.tool === "append" ? styles.active : ""].join(" ")}
-          data-action="set-tool-append"
-          onClick={() => toggleTool("append")}
+          class={[styles.button, { [styles.active]: context.app.tool !== null }]}
+          data-action="toggle-add"
+          onClick={toggleAddMode}
         >
           <PlusIcon />
-        </button>
-        <button
-          class={[styles.button, context.app.tool === "split" ? styles.active : ""].join(" ")}
-          data-action="set-tool-split"
-          onClick={() => toggleTool("split")}
-        >
-          <SplitIcon />
         </button>
       </div>
     </Notch>

@@ -8,6 +8,17 @@ import {
   VIDEO_VERTEX_SHADER,
 } from "./shaders"
 
+function sourceDimensions(source: TextureSource): { width: number; height: number } {
+  if (source instanceof HTMLVideoElement) {
+    return { width: source.videoWidth, height: source.videoHeight }
+  }
+  if (source instanceof VideoFrame) {
+    return { width: source.displayWidth, height: source.displayHeight }
+  }
+  // ImageBitmap, HTMLCanvasElement
+  return { width: source.width, height: source.height }
+}
+
 export type ViewportState = { x: number; y: number; scale: number }
 export type TextureSource = VideoFrame | HTMLVideoElement | ImageBitmap | HTMLCanvasElement
 
@@ -222,6 +233,11 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
       videoSizeBuffer[1] = sizeBuffer[index * 2 + 1]
       videoAttributes.i_position.set(videoPositionBuffer).bind()
       videoAttributes.i_size.set(videoSizeBuffer).bind()
+
+      // Source's natural dimensions feed the cover-fit math in the
+      // vertex shader (cell size is already there via i_size).
+      const sourceSize = sourceDimensions(source)
+      videoUniforms.u_sourceSize.set(sourceSize.width, sourceSize.height)
 
       gl.texImage2D(
         gl.TEXTURE_2D,

@@ -6,9 +6,15 @@ void resolve
 export default defineConfig({
   testDir: "./tests",
   globalSetup: "./tests/global-setup.ts",
-  fullyParallel: false,
+  // Workers share the single webServer. Tests are isolated per page/
+  // browser-context, so parallelism is safe here.
+  // Workers share the single webServer. Tests are isolated per page/
+  // browser-context. Two workers gives a meaningful speedup; more
+  // pushes timing-sensitive tests (record auto-stop, layout tweens)
+  // into flake territory under CPU contention.
+  fullyParallel: true,
   retries: 0,
-  workers: 1,
+  workers: 2,
   reporter: "list",
   use: {
     baseURL: "http://localhost:5174",

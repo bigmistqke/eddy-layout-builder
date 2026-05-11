@@ -42,8 +42,8 @@ test("M2: two cells, record into each, both play", async ({ page }) => {
     { timeout: 15_000 },
   )
 
-  // Play.
-  await page.locator('[data-action="play"]').click()
+  // Autoplay: transport starts playing automatically once the second
+  // recording lands.
   await page.waitForFunction(() => window.__appContext?.transport.state() === "playing", {
     timeout: 5000,
   })

@@ -27,7 +27,7 @@ test("M1: record into the initial cell, then play back", async ({ page }) => {
   expect(result.rootId).not.toBeNull()
   expect(result.clipIds).toEqual([result.rootId])
 
-  await page.locator('[data-action="play"]').click()
+  // Autoplay: transport starts playing automatically after the clip lands.
   await page.waitForFunction(() => window.__appContext?.transport.state() === "playing", {
     timeout: 5000,
   })

@@ -1,43 +1,61 @@
 import { Show, useContext } from "solid-js"
-import { CloseIcon, TrashIcon } from "../components/icons"
+import { CloseIcon, PlusIcon, SplitIcon, TrashIcon } from "../components/icons"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
 import { logAction } from "../utils"
 import styles from "./contextual.module.css"
 
 export function Contextual() {
-  const context = useContext(Context)
-  // Deselect button shows when a tool is active and a frame is selected.
-  // Without an active tool the contextual HUD has nothing to offer.
-  const hasSelection = () => context.app.tool !== null && context.app.selection !== null
-  const hasAnyButton = () => hasSelection()
+  const context = useContext(Context)!
+  // Contextual is the home of layout-editing tools — visible whenever
+  // there's a selection. From a fresh load (root pre-selected) the user
+  // can pick split/append directly here. Hidden when nothing is selected.
+  const isOpen = () => context.app.selection !== null
 
   return (
-    <Show when={hasAnyButton()}>
+    <Show when={isOpen()}>
       <Notch ref={context.setHudElement("contextual")} class={styles.notch} orientation="right">
         <div class={styles.content}>
-          <Show when={hasSelection()}>
-            <button
-              class={styles.button}
-              data-action="deselect"
-              onClick={() => {
-                logAction("deselect")
-                context.setSelection(null)
-              }}
-            >
-              <CloseIcon />
-            </button>
-            <button
-              class={styles.button}
-              data-action="delete"
-              onClick={() => {
-                logAction("delete")
-                context.deleteSelection()
-              }}
-            >
-              <TrashIcon />
-            </button>
-          </Show>
+          <button
+            class={styles.button}
+            data-action="deselect"
+            onClick={() => {
+              logAction("deselect")
+              context.setSelection(null)
+            }}
+          >
+            <CloseIcon />
+          </button>
+          <button
+            class={styles.button}
+            data-action="delete"
+            onClick={() => {
+              logAction("delete")
+              context.deleteSelection()
+            }}
+          >
+            <TrashIcon />
+          </button>
+          <button
+            class={[styles.button, { [styles.active]: context.app.tool === "append" }]}
+            data-action="set-tool-append"
+            onClick={() => {
+              logAction("set-tool", { tool: "append" })
+              context.setTool("append")
+            }}
+          >
+            <PlusIcon />
+          </button>
+          <button
+            class={[styles.button, { [styles.active]: context.app.tool === "split" }]}
+            data-action="set-tool-split"
+            onClick={() => {
+              logAction("set-tool", { tool: "split" })
+              context.setTool("split")
+            }}
+          >
+            <SplitIcon />
+          </button>
         </div>
       </Notch>
     </Show>
