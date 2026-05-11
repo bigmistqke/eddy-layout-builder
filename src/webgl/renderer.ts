@@ -1,8 +1,15 @@
 import { view } from "@bigmistqke/view.gl"
+import { compile } from "@bigmistqke/view.gl/tag"
 import type { LeafFrame } from "../viewport"
-import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders"
+import {
+  FRAGMENT_SHADER,
+  VERTEX_SHADER,
+  VIDEO_FRAGMENT_SHADER,
+  VIDEO_VERTEX_SHADER,
+} from "./shaders"
 
 export type ViewportState = { x: number; y: number; scale: number }
+export type TextureSource = VideoFrame | HTMLVideoElement | ImageBitmap | HTMLCanvasElement
 
 /** Convert "rgb(r, g, b)" or "#rrggbb" to [0..1, 0..1, 0..1]. */
 function parseColor(input: string): [number, number, number] {
@@ -58,8 +65,12 @@ function linkProgram(gl: WebGL2RenderingContext, vs: WebGLShader, fs: WebGLShade
   return program
 }
 
-export type Renderer = {
-  render(viewport: ViewportState, leaves: LeafFrame[]): void
+export interface Renderer {
+  render(
+    viewport: ViewportState,
+    leaves: LeafFrame[],
+    frames?: ReadonlyMap<string, TextureSource>,
+  ): void
   resize(width: number, height: number): void
   dispose(): void
 }
@@ -99,6 +110,34 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
   let sizeBuffer = new Float32Array(0)
   let colorBuffer = new Float32Array(0)
 
+  // ---- Video program: compile from glsl tag, attached views typed
+  //      automatically from the tagged-template slots. ----
+  const { program: videoProgram, view: videoView } = compile(
+    gl,
+    VIDEO_VERTEX_SHADER,
+    VIDEO_FRAGMENT_SHADER,
+    { webgl2: true },
+  )
+  const videoUniforms = videoView.uniforms
+  const videoAttributes = videoView.attributes
+
+  const videoTexture = gl.createTexture()
+  if (videoTexture === null) {
+    throw new Error("createTexture returned null")
+  }
+  gl.bindTexture(gl.TEXTURE_2D, videoTexture)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+  // Same unit-quad corners as the color program (TRIANGLE_STRIP: BL, BR, TL, TR).
+  videoAttributes.a_corner.set(new Float32Array([0, 1, 1, 1, 0, 0, 1, 0])).bind()
+
+  // Reusable per-leaf single-instance buffers.
+  const videoPositionBuffer = new Float32Array(2)
+  const videoSizeBuffer = new Float32Array(2)
+
   function ensureBufferSize(count: number) {
     if (positionBuffer.length < count * 2) {
       positionBuffer = new Float32Array(count * 2)
@@ -107,7 +146,11 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
     }
   }
 
-  function render(viewport: ViewportState, leaves: LeafFrame[]) {
+  function render(
+    viewport: ViewportState,
+    leaves: LeafFrame[],
+    frames?: ReadonlyMap<string, TextureSource>,
+  ) {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -153,6 +196,43 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
     uniforms.u_view.set(0, 0, viewport.scale)
 
     gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, leaves.length)
+
+    // ---- Pass 2: video frames for leaves that have one ----
+    if (frames === undefined || frames.size === 0) {
+      return
+    }
+
+    gl.useProgram(videoProgram)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, videoTexture)
+    videoUniforms.u_videoTexture.set(0)
+    videoUniforms.u_canvasSize.set(cssWidth, cssHeight)
+    videoUniforms.u_view.set(0, 0, viewport.scale)
+    videoAttributes.a_corner.bind()
+
+    for (let index = 0; index < leaves.length; index++) {
+      const leaf = leaves[index]
+      const source = frames.get(leaf.id)
+      if (source === undefined) {
+        continue
+      }
+      videoPositionBuffer[0] = positionBuffer[index * 2]
+      videoPositionBuffer[1] = positionBuffer[index * 2 + 1]
+      videoSizeBuffer[0] = sizeBuffer[index * 2]
+      videoSizeBuffer[1] = sizeBuffer[index * 2 + 1]
+      videoAttributes.i_position.set(videoPositionBuffer).bind()
+      videoAttributes.i_size.set(videoSizeBuffer).bind()
+
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        source as TexImageSource,
+      )
+      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, 1)
+    }
   }
 
   let cssWidth = 0
@@ -173,6 +253,8 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
     gl.deleteProgram(program)
     gl.deleteShader(vs)
     gl.deleteShader(fs)
+    gl.deleteProgram(videoProgram)
+    gl.deleteTexture(videoTexture)
   }
 
   return { render, resize, dispose }
