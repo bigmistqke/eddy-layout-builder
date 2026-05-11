@@ -1,7 +1,4 @@
-import { resolve } from "path"
 import { defineConfig } from "@playwright/test"
-
-const fakeCamera = resolve(__dirname, "tests/fixtures/fake-camera.y4m")
 
 export default defineConfig({
   testDir: "./tests",
@@ -15,14 +12,8 @@ export default defineConfig({
     viewport: { width: 1280, height: 800 },
     trace: "on-first-retry",
     launchOptions: {
-      args: [
-        "--use-fake-ui-for-media-stream",
-        "--use-fake-device-for-media-stream",
-        `--use-file-for-fake-video-capture=${fakeCamera}`,
-        "--autoplay-policy=no-user-gesture-required",
-      ],
+      args: ["--autoplay-policy=no-user-gesture-required"],
     },
-    permissions: ["camera", "microphone"],
   },
   webServer: {
     // Dedicated test server on port 5174 so tests can run alongside a

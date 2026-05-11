@@ -1,5 +1,41 @@
 import type { Page } from "@playwright/test"
 
+/**
+ * Inject a fake `navigator.mediaDevices.getUserMedia` that returns a
+ * MediaStream captured from a looped <video> element pointed at our
+ * fixture clip. Headless Chromium's `--use-fake-device-for-media-stream`
+ * lists fake devices via `enumerateDevices` but rejects `getUserMedia`
+ * with `NotSupportedError`, so we can't rely on it. Call once before
+ * `page.goto` (via `page.addInitScript`).
+ */
+export async function mockGetUserMedia(page: Page, fixturePath = "/tests/fixtures/sample-1s.webm") {
+  await page.addInitScript(path => {
+    const original = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices)
+    if (original === undefined) {
+      throw new Error("mockGetUserMedia: navigator.mediaDevices.getUserMedia not present")
+    }
+    const fakeGUM = async (_: MediaStreamConstraints) => {
+      const video = document.createElement("video")
+      video.src = path
+      video.loop = true
+      video.muted = false
+      video.crossOrigin = "anonymous"
+      await new Promise<void>((resolve, reject) => {
+        video.onloadedmetadata = () => resolve()
+        video.onerror = () => reject(new Error("mockGUM: video load failed"))
+      })
+      await video.play()
+      type WithCapture = HTMLVideoElement & { captureStream(): MediaStream }
+      return (video as WithCapture).captureStream()
+    }
+    Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
+      configurable: true,
+      writable: true,
+      value: fakeGUM,
+    })
+  }, fixturePath)
+}
+
 /** Click a frame by its layout path. Frames are now rendered to a WebGL
  *  canvas — there are no per-frame DOM elements — so we synthesize a
  *  mouse click at the leaf's screen-space center, computed from the

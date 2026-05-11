@@ -255,7 +255,12 @@ export function Canvas() {
         const frames = new Map<string, TextureSource>()
         const previewCell = context.preview.activeCellId()
         if (previewCell !== null) {
-          frames.set(previewCell, context.preview.element)
+          const previewElement = context.preview.element
+          // Skip until the preview video has dimensions — otherwise
+          // texImage2D throws INVALID_VALUE: no video.
+          if (previewElement.videoWidth > 0 && previewElement.videoHeight > 0) {
+            frames.set(previewCell, previewElement)
+          }
         }
         if (context.transport.state() === "playing") {
           const positionMicros = Math.round(context.transport.position() * 1_000_000)
