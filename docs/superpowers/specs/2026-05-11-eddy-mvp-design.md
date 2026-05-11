@@ -53,17 +53,13 @@ Single Vite app, flat layout. No workspaces, no monorepo.
 - Each cell's current `VideoFrame` is uploaded as a texture and drawn at the cell's rect (computed from the layout tree).
 - Empty cells render black.
 
-**Export**
-- Off-clock render of the same composite into a `VideoEncoder` + `AudioEncoder`, muxed by mediabunny into an mp4.
-- Renders as fast as the encoders accept; not real-time.
-- Triggered by an explicit "export" action; produces a downloadable file.
-
 ## Persistence
 
 None. All clip state — encoded chunks, decoded audio buffers — lives in memory only. Reloading the page loses the song. (OPFS persistence is a v2 concern; the metadata layer it requires isn't worth it for the MVP.)
 
 ## Explicitly out of MVP (v2+)
 
+- **Export to mp4.** Deferred to v2. Without it the MVP can't save anything, but it shares the encoder+mux pipeline with the v2 "freeze/bounce" mechanism (see Scaling), so building both together later is cheaper than building export alone now.
 - Time-as-composition: multiple clips per cell, layout changes over time, automation.
 - Trim, nudge, ripple, any non-destructive editing.
 - Effects, EQ, per-voice level, pan.
@@ -78,7 +74,7 @@ None. All clip state — encoded chunks, decoded audio buffers — lives in memo
 
 Expected simultaneous-voice range is **4–9**. Beyond that, the architecture's escape hatch is the DAW "freeze / bounce" pattern: composite a finished subset of voices into a single video+audio clip and play that one clip back as a single decoder + single audio source, freeing room for new voices on top.
 
-Importantly, **the export pipeline is already a pre-renderer** (composite WebGL → encoders → mux). Bouncing is just export-to-an-in-session-clip rather than export-to-file. The same factoring also unlocks v2 time-as-composition (bounce per layout-state, stitch). The MVP should therefore keep the export pipeline factored as a reusable "composite → encoded clip" routine, even though it's invoked only by the export action in v1.
+Bouncing and export share the same pipeline (composite WebGL → `VideoEncoder` + `AudioEncoder` → mediabunny mux), differing only in destination (in-session clip vs downloadable file). Both arrive together in v2.
 
 ## Platform assumptions
 
