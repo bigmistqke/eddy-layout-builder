@@ -26,26 +26,21 @@ export function createPreview(): Preview {
   // gUM fires when something needs the stream. setStream(null) lets
   // disable() reset back to an idle state.
   const [stream, setStream] = createSignal<MediaStream | null>(async () => {
-    try {
-      const next = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      element.srcObject = next
-      const { promise, resolve } = Promise.withResolvers<void>()
-      const onLoaded = () => {
-        element.removeEventListener("loadedmetadata", onLoaded)
+    const next = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    element.srcObject = next
+    const { promise, resolve } = Promise.withResolvers<void>()
+    const controller = new AbortController()
+    element.addEventListener(
+      "loadedmetadata",
+      () => {
+        controller.abort()
         resolve()
-      }
-      element.addEventListener("loadedmetadata", onLoaded)
-      await promise
-      await element.play().catch(() => {
-        // autoplay should succeed under the autoplay-policy flag
-      })
-      return next
-    } catch {
-      // getUserMedia failed (permission denied, no device, headless
-      // without fake-media flags). Stay null — consumers must handle
-      // a null stream; we don't propagate the error and crash the page.
-      return null
-    }
+      },
+      controller,
+    )
+    await promise
+    await element.play()
+    return next
   })
 
   function disable() {

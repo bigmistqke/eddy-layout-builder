@@ -2,7 +2,7 @@ import {
   createEffect,
   createMemo,
   For,
-  isPending,
+  Loading,
   onSettled,
   Show,
   untrack,
@@ -10,7 +10,7 @@ import {
 } from "solid-js"
 import { Context } from "../context"
 import type { Direction, Node, Selection } from "../types"
-import { logAction } from "../utils"
+import { logAction, track } from "../utils"
 import {
   computeExtends,
   computeSticks,
@@ -22,8 +22,8 @@ import {
 } from "../viewport"
 import { animateViewport } from "../webgl/animation"
 import { createRenderer, type TextureSource, type ViewportState } from "../webgl/renderer"
-import { ArrowNotch } from "./notch"
 import styles from "./canvas.module.css"
+import { ArrowNotch } from "./notch"
 
 const HANDLE_DIRECTIONS: Direction[] = ["top", "bottom", "left", "right"]
 const ZERO_BY_DIRECTION: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
@@ -32,19 +32,14 @@ const ZERO_BY_DIRECTION: Record<Direction, number> = { top: 0, bottom: 0, left: 
  *  viewport-recompute effect whenever any container's children list, any
  *  container's direction, the selection, or the active tool changes —
  *  the tool affects gap/padding (song mode vs edit mode). */
-function layoutSignature(
-  layout: Node,
-  selection: Selection | null,
-  tool: string | null,
-): string {
+function layoutSignature(layout: Node, selection: Selection | null, tool: string | null): string {
   function nodeSignature(node: Node): string {
     if (node.type === "entity") {
       return "e"
     }
     return `${node.direction[0]}(${node.children.map(nodeSignature).join(",")})`
   }
-  const selectionPart =
-    selection === null ? "_" : `${selection.path.join(".")}/${selection.depth}`
+  const selectionPart = selection === null ? "_" : `${selection.path.join(".")}/${selection.depth}`
   return `${nodeSignature(layout)}|${selectionPart}|${tool ?? "_"}`
 }
 
@@ -152,9 +147,7 @@ export function Canvas() {
         // Clip frames. When playing, use transport position; otherwise
         // show frame 0 of each clip so cells stay visible at rest.
         const playing = context.transport.state() === "playing"
-        const positionMicros = playing
-          ? Math.round(context.transport.position() * 1_000_000)
-          : 0
+        const positionMicros = playing ? Math.round(context.transport.position() * 1_000_000) : 0
         const allClips = context.clips.clips
         for (const cellId of Object.keys(allClips)) {
           if (frames.has(cellId)) {
@@ -202,14 +195,8 @@ export function Canvas() {
       // all reactive reads go through untrack — Solid 2.x dev fires
       // STRICT_READ_UNTRACKED otherwise.
       const { leaves, selectedRect } = untrack(() => {
-        const layoutOptions =
-          context.app.tool === null ? { gap: 0, rootPadding: 0 } : undefined
-        return layoutFrames(
-          context.app.layout,
-          scaledCanvas,
-          context.app.selection,
-          layoutOptions,
-        )
+        const layoutOptions = context.app.tool === null ? { gap: 0, rootPadding: 0 } : undefined
+        return layoutFrames(context.app.layout, scaledCanvas, context.app.selection, layoutOptions)
       })
       lastLeaves = leaves
       lastSelectedRect = selectedRect
@@ -338,15 +325,10 @@ export function Canvas() {
         return
       }
       context.setIsAnimating(true)
-      cancelTween = animateViewport(
-        fromViewport,
-        target,
-        drawAt,
-        () => {
-          cancelTween = undefined
-          context.setIsAnimating(false)
-        },
-      )
+      cancelTween = animateViewport(fromViewport, target, drawAt, () => {
+        cancelTween = undefined
+        context.setIsAnimating(false)
+      })
     }
 
     function syncSize() {
@@ -492,26 +474,14 @@ export function Canvas() {
       data-canvas-inner="true"
     >
       <canvas ref={canvasElement} class={styles.glCanvas} />
-      <Show
-        when={(() => {
-          if (context.previewTargetCellId() === null) {
-            return false
-          }
-          try {
-            context.preview.stream()
-            return false
-          } catch {
-            // NotReadyError → gUM is still in flight.
-            return true
-          }
-        })()}
-      >
-        <div class={styles.cameraLoader} data-testid="camera-loader" />
+      <Show when={context.previewTargetCellId() !== null}>
+        <Loading
+          fallback={<div class={styles.cameraLoader} data-testid="camera-loader" />}
+          children={track(context.preview.stream)}
+        />
       </Show>
       <Show
-        when={
-          !context.isAnimating() && context.app.tool !== null && selectedPathKey() !== null
-        }
+        when={!context.isAnimating() && context.app.tool !== null && selectedPathKey() !== null}
       >
         <div class={styles.handleOverlay} data-selected-path={selectedPathKey()!}>
           <For each={HANDLE_DIRECTIONS}>
@@ -538,10 +508,7 @@ export function Canvas() {
                   if (selection === null) {
                     return
                   }
-                  const targeted = selection.path.slice(
-                    0,
-                    selection.path.length - selection.depth,
-                  )
+                  const targeted = selection.path.slice(0, selection.path.length - selection.depth)
                   const tool = context.app.tool
                   if (tool === null) {
                     return

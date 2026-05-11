@@ -1,4 +1,24 @@
+import type { JSX } from "solid-js"
 import type { AppContext, Container, Entity, Node } from "./types"
+
+/**
+ * Read `signal` and return null. Useful inside JSX expression slots
+ * that need to subscribe to a tracked signal without rendering it —
+ * e.g. to make a `<Loading>` boundary observe an async signal's
+ * pending state while the real consumer is imperative (WebGL, etc.):
+ *
+ *   <Loading fallback={<Spinner />}>{track(asyncSignal)}</Loading>
+ *
+ * The JSX child expression is evaluated in a tracking scope, so the
+ * read subscribes the parent boundary. While the signal is pending the
+ * read throws NotReadyError, which Loading catches and renders the
+ * fallback. When the signal resolves the expression re-evaluates, the
+ * throw is gone, and Loading falls through to this null (nothing).
+ */
+export function track(signal: () => unknown): JSX.Element {
+  signal()
+  return null
+}
 
 export function resolveNode(layout: Node, path: number[]): Entity | Container {
   let current: Entity | Container = layout

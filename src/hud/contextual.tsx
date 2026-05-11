@@ -7,9 +7,10 @@ import styles from "./contextual.module.css"
 
 export function Contextual() {
   const context = useContext(Context)!
-  // Contextual is the home of layout-editing tools — visible whenever
-  // there's a selection. From a fresh load (root pre-selected) the user
-  // can pick split/append directly here. Hidden when nothing is selected.
+  // Contextual is visible whenever there's a selection. The tool-picker
+  // buttons (append/split) only appear once the user has entered add
+  // mode via the main bar's `+`; otherwise the bar only carries the
+  // universal deselect/delete actions.
   const isOpen = () => context.app.selection !== null
 
   return (
@@ -36,26 +37,28 @@ export function Contextual() {
           >
             <TrashIcon />
           </button>
-          <button
-            class={[styles.button, { [styles.active]: context.app.tool === "append" }]}
-            data-action="set-tool-append"
-            onClick={() => {
-              logAction("set-tool", { tool: "append" })
-              context.setTool("append")
-            }}
-          >
-            <PlusIcon />
-          </button>
-          <button
-            class={[styles.button, { [styles.active]: context.app.tool === "split" }]}
-            data-action="set-tool-split"
-            onClick={() => {
-              logAction("set-tool", { tool: "split" })
-              context.setTool("split")
-            }}
-          >
-            <SplitIcon />
-          </button>
+          <Show when={context.app.tool !== null}>
+            <button
+              class={[styles.button, { [styles.active]: context.app.tool === "append" }]}
+              data-action="set-tool-append"
+              onClick={() => {
+                logAction("set-tool", { tool: "append" })
+                context.setTool("append")
+              }}
+            >
+              <PlusIcon />
+            </button>
+            <button
+              class={[styles.button, { [styles.active]: context.app.tool === "split" }]}
+              data-action="set-tool-split"
+              onClick={() => {
+                logAction("set-tool", { tool: "split" })
+                context.setTool("split")
+              }}
+            >
+              <SplitIcon />
+            </button>
+          </Show>
         </div>
       </Notch>
     </Show>
