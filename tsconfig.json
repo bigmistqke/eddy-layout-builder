@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "strict": true,
     "allowImportingTsExtensions": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "node"]
   },
   "include": ["src", "tests", "../../bench/global.d.ts"]
 }

@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { mockGetUserMedia } from "./helpers"
 
-test.describe.configure({ retries: 2 })
-
 test("M2: two cells, record into each, both play", async ({ page }) => {
   await mockGetUserMedia(page)
   await page.goto("/")
@@ -22,7 +20,7 @@ test("M2: two cells, record into each, both play", async ({ page }) => {
     window.__appContext?.setSelection({ path: [0], depth: 0 })
   })
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.activeCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(500)
@@ -37,7 +35,7 @@ test("M2: two cells, record into each, both play", async ({ page }) => {
     window.__appContext?.setSelection({ path: [1], depth: 0 })
   })
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.activeCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(500)

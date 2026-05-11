@@ -27,10 +27,15 @@ import styles from "./canvas.module.css"
 const HANDLE_DIRECTIONS: Direction[] = ["top", "bottom", "left", "right"]
 const ZERO_BY_DIRECTION: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }
 
-/** A signature of the layout topology + selection. Re-fires the
- *  viewport-recompute effect whenever any container's children list,
- *  any container's direction, or the selection changes. */
-function layoutSignature(layout: Node, selection: Selection | null): string {
+/** A signature of the layout topology + selection + tool. Re-fires the
+ *  viewport-recompute effect whenever any container's children list, any
+ *  container's direction, the selection, or the active tool changes —
+ *  the tool affects gap/padding (song mode vs edit mode). */
+function layoutSignature(
+  layout: Node,
+  selection: Selection | null,
+  tool: string | null,
+): string {
   function nodeSignature(node: Node): string {
     if (node.type === "entity") {
       return "e"
@@ -39,7 +44,7 @@ function layoutSignature(layout: Node, selection: Selection | null): string {
   }
   const selectionPart =
     selection === null ? "_" : `${selection.path.join(".")}/${selection.depth}`
-  return `${nodeSignature(layout)}|${selectionPart}`
+  return `${nodeSignature(layout)}|${selectionPart}|${tool ?? "_"}`
 }
 
 export function Canvas() {
@@ -62,6 +67,9 @@ export function Canvas() {
     start(target: ViewportState): void
     startPlaybackLoop(): void
     stopPlaybackLoop(): void
+    /** One-shot render. Used when clip-set changes at rest — the rAF
+     *  loop isn't running, but we still want frame-0 to update. */
+    requestRender(): void
   }
   let drive: Drive | null = null
 
@@ -115,8 +123,14 @@ export function Canvas() {
         width: wrapperRect.width * viewport.scale,
         height: wrapperRect.height * viewport.scale,
       }
+      // In song mode (no tool) cells are seamless: no gap between
+      // siblings, no inset from the canvas edge. In edit mode (append
+      // or split) the constant gap/padding apply so the layout-editing
+      // affordances (handles, selection rect) have breathing room.
+      const songMode = context.app.tool === null
+      const layoutOptions = songMode ? { gap: 0, rootPadding: 0 } : undefined
       const { leaves, selectedRect } = untrack(() =>
-        layoutFrames(context.app.layout, scaledCanvas, context.app.selection),
+        layoutFrames(context.app.layout, scaledCanvas, context.app.selection, layoutOptions),
       )
       lastLeaves = leaves
       lastSelectedRect = selectedRect
@@ -163,7 +177,10 @@ export function Canvas() {
         const wrapperRect = wrapperElement.getBoundingClientRect()
         const canvas = { width: wrapperRect.width, height: wrapperRect.height }
         const selection = context.app.selection
-        if (selection === null) {
+        // In song mode (no tool) the viewport stays at identity even if
+        // a cell is selected — selection there just tells the transport
+        // which cell to record into; we don't zoom.
+        if (selection === null || context.app.tool === null) {
           const identity: ViewportState = { x: 0, y: 0, scale: 1 }
           context.setViewport(identity)
           context.setSelectedHandlesState({ extend: ZERO_BY_DIRECTION, stick: ZERO_BY_DIRECTION })
@@ -254,31 +271,36 @@ export function Canvas() {
     function gatherFrames(): Map<string, TextureSource> {
       return untrack(() => {
         const frames = new Map<string, TextureSource>()
-        const previewCell = context.preview.activeCellId()
+
+        // Live camera preview goes into the preview target cell, if any.
+        const previewCell = context.preview.targetCellId()
         if (previewCell !== null) {
           const previewElement = context.preview.element
-          // Skip until the preview video has dimensions — otherwise
-          // texImage2D throws INVALID_VALUE: no video.
           if (previewElement.videoWidth > 0 && previewElement.videoHeight > 0) {
             frames.set(previewCell, previewElement)
           }
         }
-        if (context.transport.state() === "playing") {
-          const positionMicros = Math.round(context.transport.position() * 1_000_000)
-          const allClips = context.clips.clips
-          for (const cellId of Object.keys(allClips)) {
-            const clip = allClips[cellId]
-            if (clip === undefined) {
-              continue
-            }
-            const sample = clip.video.frameAt(positionMicros)
-            if (sample !== null && !frames.has(cellId)) {
-              // VideoSample → VideoFrame for texImage2D. Caller (this
-              // function's consumer) doesn't close the VideoFrame; we
-              // accept the leak per-tick because the sample cache owns
-              // the underlying data and re-creating cheaply.
-              frames.set(cellId, sample.toVideoFrame())
-            }
+
+        // Clip frames. When playing, use transport position; otherwise
+        // show frame 0 of each clip so cells stay visible at rest.
+        const playing = context.transport.state() === "playing"
+        const positionMicros = playing
+          ? Math.round(context.transport.position() * 1_000_000)
+          : 0
+        const allClips = context.clips.clips
+        for (const cellId of Object.keys(allClips)) {
+          if (frames.has(cellId)) {
+            continue
+          }
+          const clip = allClips[cellId]
+          if (clip === undefined) {
+            continue
+          }
+          const sample = clip.video.frameAt(positionMicros)
+          if (sample !== null) {
+            // VideoSample → VideoFrame for texImage2D. Caller closes the
+            // VideoFrame after upload (see playbackTick).
+            frames.set(cellId, sample.toVideoFrame())
           }
         }
         return frames
@@ -306,13 +328,16 @@ export function Canvas() {
           source.close()
         }
       }
-      const previewActive = untrack(context.preview.activeCellId) !== null
+      const previewActive = untrack(context.preview.targetCellId) !== null
       const transportPlaying = untrack(context.transport.state) === "playing"
+      // Keep ticking while transport is playing or a live preview is
+      // visible — both produce changing pixels. When neither, the static
+      // clip-frame-0 picture is stable, so stop the rAF and rely on
+      // explicit re-renders (triggered by createEffect watchers below).
       if (previewActive || transportPlaying) {
         playbackRaf = requestAnimationFrame(playbackTick)
       } else {
         playbackRaf = 0
-        renderer.render(drawViewport, lastLeaves)
       }
     }
 
@@ -330,11 +355,29 @@ export function Canvas() {
       }
     }
 
+    function requestRender() {
+      // Borrow playbackTick's frame-gathering logic for a single render.
+      // If the loop is already running, this is a no-op (the next tick
+      // will pick up the change).
+      if (playbackRaf !== 0) {
+        return
+      }
+      const frames = gatherFrames()
+      const drawViewport: ViewportState = { x: lastViewport.x, y: lastViewport.y, scale: 1 }
+      renderer.render(drawViewport, lastLeaves, frames.size > 0 ? frames : undefined)
+      for (const source of frames.values()) {
+        if (source instanceof VideoFrame) {
+          source.close()
+        }
+      }
+    }
+
     drive = {
       recompute: recomputeViewport,
       start: startAnimation,
       startPlaybackLoop,
       stopPlaybackLoop,
+      requestRender,
     }
 
     return () => {
@@ -353,7 +396,7 @@ export function Canvas() {
   // Start/stop the playback rAF loop based on transport + preview state.
   createEffect(
     () => ({
-      previewActive: context.preview.activeCellId() !== null,
+      previewActive: context.preview.targetCellId() !== null,
       transportPlaying: context.transport.state() === "playing",
     }),
     ({ previewActive, transportPlaying }) => {
@@ -368,8 +411,20 @@ export function Canvas() {
     },
   )
 
+  // Re-render once when the set of clips changes — adding/removing a
+  // clip changes the "frame 0 snapshot" we want to show at rest.
   createEffect(
-    () => layoutSignature(context.app.layout, context.app.selection),
+    () => context.clips.cellIds().join("|"),
+    () => {
+      if (drive === null) {
+        return
+      }
+      drive.requestRender()
+    },
+  )
+
+  createEffect(
+    () => layoutSignature(context.app.layout, context.app.selection, context.app.tool),
     () => {
       if (drive === null) {
         return

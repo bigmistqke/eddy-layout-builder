@@ -92,7 +92,10 @@ export function createTransport(): Transport {
     if (state() !== "playing") {
       return 0
     }
-    return audioContext().currentTime - startedAt()
+    // Audio is scheduled at startedAt = currentTime + SCHEDULE_LEAD_SECONDS,
+    // so during the lead window currentTime - startedAt is negative.
+    // Clamp to 0 so video frame lookups land on frame 0 instead of null.
+    return Math.max(0, audioContext().currentTime - startedAt())
   }
 
   return { state, position, play, stop }

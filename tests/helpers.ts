@@ -1,29 +1,42 @@
+import { readFileSync } from "fs"
+import { resolve } from "path"
 import type { Page } from "@playwright/test"
 
 /**
  * Inject a fake `navigator.mediaDevices.getUserMedia` that returns a
- * MediaStream captured from a looped <video> element pointed at our
- * fixture clip. Headless Chromium's `--use-fake-device-for-media-stream`
- * lists fake devices via `enumerateDevices` but rejects `getUserMedia`
- * with `NotSupportedError`, so we can't rely on it. Call once before
- * `page.goto` (via `page.addInitScript`).
+ * MediaStream captured from a looped <video> element fed by a Blob URL
+ * built from our fixture file. The fixture is read Node-side and
+ * passed as bytes — this keeps it out of `public/`/the build, and
+ * works under both dev server and `vite preview`. Headless Chromium's
+ * `--use-fake-device-for-media-stream` lists fake devices via
+ * enumerateDevices but rejects `getUserMedia` with `NotSupportedError`,
+ * so we can't rely on it. Call once before `page.goto`.
  */
-export async function mockGetUserMedia(page: Page, fixturePath = "/tests/fixtures/sample-1s.webm") {
-  await page.addInitScript(path => {
+export async function mockGetUserMedia(page: Page) {
+  const bytes = readFileSync(resolve(__dirname, "fixtures/sample-1s.webm"))
+  const base64 = bytes.toString("base64")
+  await page.addInitScript(b64 => {
     const original = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices)
     if (original === undefined) {
       throw new Error("mockGetUserMedia: navigator.mediaDevices.getUserMedia not present")
     }
+    const binary = atob(b64)
+    const buffer = new Uint8Array(binary.length)
+    for (let index = 0; index < binary.length; index++) {
+      buffer[index] = binary.charCodeAt(index)
+    }
+    const blob = new Blob([buffer], { type: "video/webm" })
+    const blobUrl = URL.createObjectURL(blob)
+
     const fakeGUM = async (_: MediaStreamConstraints) => {
       const video = document.createElement("video")
-      video.src = path
+      video.src = blobUrl
       video.loop = true
       video.muted = false
-      video.crossOrigin = "anonymous"
-      await new Promise<void>((resolve, reject) => {
-        video.onloadedmetadata = () => resolve()
-        video.onerror = () => reject(new Error("mockGUM: video load failed"))
-      })
+      const { promise, resolve } = Promise.withResolvers<void>()
+      video.onloadedmetadata = () => resolve()
+      video.onerror = () => resolve()
+      await promise
       await video.play()
       type WithCapture = HTMLVideoElement & { captureStream(): MediaStream }
       return (video as WithCapture).captureStream()
@@ -33,7 +46,7 @@ export async function mockGetUserMedia(page: Page, fixturePath = "/tests/fixture
       writable: true,
       value: fakeGUM,
     })
-  }, fixturePath)
+  }, base64)
 }
 
 /** Click a frame by its layout path. Frames are now rendered to a WebGL

@@ -1,7 +1,6 @@
 export interface CaptureHandle {
-  /** Underlying MediaStream — used by preview to attach to an HTMLVideoElement. */
-  stream: MediaStream
-  /** Stop recording and yield the encoded Blob. */
+  /** Stop recording and yield the encoded Blob. The underlying
+   *  MediaStream is NOT stopped — the caller owns it. */
   stop(): Promise<Blob>
   /** Stop without keeping the blob (e.g. user cancelled). */
   cancel(): void
@@ -22,8 +21,12 @@ function pickMimeType(): string {
   throw new Error("capture: no supported MediaRecorder mime type")
 }
 
-export async function startCapture(): Promise<CaptureHandle> {
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+/**
+ * Start recording from an existing MediaStream. The stream is borrowed —
+ * the caller is responsible for its lifecycle. Caller calls `stop()` to
+ * get the encoded blob; the stream stays live.
+ */
+export function startCapture(stream: MediaStream): CaptureHandle {
   const mimeType = pickMimeType()
   const recorder = new MediaRecorder(stream, { mimeType })
   const chunks: Blob[] = []
@@ -34,16 +37,9 @@ export async function startCapture(): Promise<CaptureHandle> {
   }
   recorder.start()
 
-  function teardownStream() {
-    for (const track of stream.getTracks()) {
-      track.stop()
-    }
-  }
-
   function stop(): Promise<Blob> {
     const { promise, resolve } = Promise.withResolvers<Blob>()
     recorder.onstop = () => {
-      teardownStream()
       resolve(new Blob(chunks, { type: mimeType }))
     }
     recorder.stop()
@@ -57,8 +53,7 @@ export async function startCapture(): Promise<CaptureHandle> {
     } catch {
       // already stopped
     }
-    teardownStream()
   }
 
-  return { stream, stop, cancel }
+  return { stop, cancel }
 }

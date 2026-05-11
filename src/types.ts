@@ -1,6 +1,6 @@
 import type { Accessor } from "solid-js"
 import type { ClipStore } from "./clips/store"
-import type { PreviewState } from "./clips/preview"
+import type { Preview } from "./clips/preview"
 import type { Transport } from "./clips/transport"
 import type { Rect, ViewportTransform } from "./viewport"
 
@@ -80,7 +80,7 @@ export type AppContext = {
 
   clips: ClipStore
   transport: Transport
-  preview: PreviewState
+  preview: Preview
   songLength: Accessor<number | null>
   setSongLength(next: number | null): void
 }

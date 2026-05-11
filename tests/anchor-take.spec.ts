@@ -1,13 +1,11 @@
 import { expect, test } from "@playwright/test"
 import { mockGetUserMedia } from "./helpers"
 
-test.describe.configure({ retries: 2 })
-
 test("M3: first recording sets songLength", async ({ page }) => {
   await mockGetUserMedia(page)
   await page.goto("/")
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.activeCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(700)
@@ -25,7 +23,7 @@ test("M3: deleting the last clip resets songLength", async ({ page }) => {
   await mockGetUserMedia(page)
   await page.goto("/")
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.activeCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(600)
@@ -58,7 +56,7 @@ test("M3: subsequent recording is clamped to songLength", async ({ page }) => {
 
   // Anchor with ~0.5s clip.
   await page.locator('[data-action="record-start"]').click()
-  await page.waitForFunction(() => window.__appContext?.preview.activeCellId() !== null, {
+  await page.waitForFunction(() => window.__appContext?.preview.targetCellId() !== null, {
     timeout: 5000,
   })
   await page.waitForTimeout(500)
@@ -87,7 +85,7 @@ test("M3: subsequent recording is clamped to songLength", async ({ page }) => {
 
   const result = await page.evaluate(() => ({
     clipCount: Object.keys(window.__appContext!.clips.clips).length,
-    previewActive: window.__appContext!.preview.activeCellId() !== null,
+    previewActive: window.__appContext!.preview.targetCellId() !== null,
   }))
   expect(result.clipCount).toBe(2)
   expect(result.previewActive).toBe(false)

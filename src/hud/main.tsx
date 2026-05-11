@@ -1,4 +1,4 @@
-import { createSignal, Show, useContext } from "solid-js"
+import { createEffect, createSignal, Show, useContext } from "solid-js"
 import { PlayIcon, PlusIcon, RecordIcon, SplitIcon, StopIcon } from "../components/icons"
 import { Notch } from "../components/notch"
 import { Context } from "../context"
@@ -10,6 +10,31 @@ import styles from "./main.module.css"
 export function Main() {
   const context = useContext(Context)!
   const [captureHandle, setCaptureHandle] = createSignal<CaptureHandle | null>(null)
+
+  // In split/append mode the currently-selected cell becomes the live
+  // preview target — the user sees the camera in the cell they're
+  // about to record into. During an active recording, the captured
+  // cell stays the target. Outside tool mode + no recording, no
+  // preview target.
+  createEffect(
+    () => ({
+      tool: context.app.tool,
+      selectedId: selectedCellId(context),
+      recording: captureHandle() !== null,
+    }),
+    ({ tool, selectedId, recording }) => {
+      if (recording) {
+        // Don't change the target mid-recording — onRecord locked it.
+        return
+      }
+      if (tool !== null && selectedId !== null) {
+        context.preview.setTargetCellId(selectedId)
+        void context.preview.enable()
+      } else {
+        context.preview.setTargetCellId(null)
+      }
+    },
+  )
 
   function toggleTool(tool: "append" | "split") {
     const next = context.app.tool === tool ? null : tool
@@ -24,22 +49,24 @@ export function Main() {
     }
     logAction("record-start", {})
 
-    // Monitor: play existing clips (excluding the cell being recorded
-    // into) so the user can overdub against the song so far. Caller is
-    // expected to be wearing headphones — spec accepts the mic
-    // picking up the speaker as a known limitation.
+    // Monitor: play existing voices through speakers while we record.
+    // Caller expected to use headphones; spec accepts mic leak otherwise.
     const existing = Object.values(context.clips.clips).filter(clip => clip.cellId !== cellId)
     const length = context.songLength()
     if (existing.length > 0) {
       await context.transport.play(existing, length)
     }
 
-    const handle = await startCapture()
+    await context.preview.enable()
+    context.preview.setTargetCellId(cellId)
+    const stream = context.preview.stream()
+    if (stream === null) {
+      return
+    }
+    const handle = startCapture(stream)
     setCaptureHandle(handle)
-    await context.preview.start(cellId, handle.stream)
 
-    // Anchor-take: if songLength is set, auto-stop the new recording at
-    // that length so it matches the anchor.
+    // Anchor-take: auto-stop at songLength if set.
     if (length !== null) {
       window.setTimeout(() => {
         if (captureHandle() === handle) {
@@ -54,10 +81,10 @@ export function Main() {
     if (handle === null) {
       return
     }
-    const cellId = context.preview.activeCellId()
+    const cellId = context.preview.targetCellId()
     logAction("record-stop", {})
     setCaptureHandle(null)
-    context.preview.stop()
+    context.preview.setTargetCellId(null) // let the watcher re-evaluate
     context.transport.stop() // stop monitor playback if it was running
     const blob = await handle.stop()
     if (cellId === null) {

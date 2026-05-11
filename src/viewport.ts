@@ -232,12 +232,15 @@ export function frameRect(
   layout: Node,
   path: number[],
   canvas: { width: number; height: number },
+  options: { gap?: number; rootPadding?: number } = {},
 ): Rect {
+  const gap = options.gap ?? SIBLING_GAP
+  const rootPadding = options.rootPadding ?? ROOT_PADDING
   let rect: Rect = {
-    x: ROOT_PADDING,
-    y: ROOT_PADDING,
-    width: canvas.width - 2 * ROOT_PADDING,
-    height: canvas.height - 2 * ROOT_PADDING,
+    x: rootPadding,
+    y: rootPadding,
+    width: canvas.width - 2 * rootPadding,
+    height: canvas.height - 2 * rootPadding,
   }
   let current: Node = layout
   for (const childIndex of path) {
@@ -245,11 +248,11 @@ export function frameRect(
       break
     }
     const childCount = current.children.length
-    const totalGap = SIBLING_GAP * (childCount - 1)
+    const totalGap = gap * (childCount - 1)
     if (current.direction === "horizontal") {
       const childWidth = (rect.width - totalGap) / childCount
       rect = {
-        x: rect.x + childIndex * (childWidth + SIBLING_GAP),
+        x: rect.x + childIndex * (childWidth + gap),
         y: rect.y,
         width: childWidth,
         height: rect.height,
@@ -258,7 +261,7 @@ export function frameRect(
       const childHeight = (rect.height - totalGap) / childCount
       rect = {
         x: rect.x,
-        y: rect.y + childIndex * (childHeight + SIBLING_GAP),
+        y: rect.y + childIndex * (childHeight + gap),
         width: rect.width,
         height: childHeight,
       }
@@ -295,7 +298,10 @@ export function layoutFrames(
   layout: Node,
   canvas: { width: number; height: number },
   selection: Selection | null = null,
+  options: { gap?: number; rootPadding?: number } = {},
 ): { leaves: LeafFrame[]; selectedRect: Rect | null } {
+  const gap = options.gap ?? SIBLING_GAP
+  const rootPadding = options.rootPadding ?? ROOT_PADDING
   const leaves: LeafFrame[] = []
   let selectedRect: Rect | null = null
 
@@ -313,12 +319,12 @@ export function layoutFrames(
       return
     }
     const childCount = node.children.length
-    const totalGap = SIBLING_GAP * (childCount - 1)
+    const totalGap = gap * (childCount - 1)
     if (node.direction === "horizontal") {
       const childWidth = (rect.width - totalGap) / childCount
       for (let index = 0; index < childCount; index++) {
         const childRect: Rect = {
-          x: rect.x + index * (childWidth + SIBLING_GAP),
+          x: rect.x + index * (childWidth + gap),
           y: rect.y,
           width: childWidth,
           height: rect.height,
@@ -332,7 +338,7 @@ export function layoutFrames(
       for (let index = 0; index < childCount; index++) {
         const childRect: Rect = {
           x: rect.x,
-          y: rect.y + index * (childHeight + SIBLING_GAP),
+          y: rect.y + index * (childHeight + gap),
           width: rect.width,
           height: childHeight,
         }
@@ -344,10 +350,10 @@ export function layoutFrames(
   }
 
   const rootRect: Rect = {
-    x: ROOT_PADDING,
-    y: ROOT_PADDING,
-    width: canvas.width - 2 * ROOT_PADDING,
-    height: canvas.height - 2 * ROOT_PADDING,
+    x: rootPadding,
+    y: rootPadding,
+    width: canvas.width - 2 * rootPadding,
+    height: canvas.height - 2 * rootPadding,
   }
   walk(layout, [], rootRect)
 
