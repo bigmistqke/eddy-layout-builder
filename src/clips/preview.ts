@@ -1,15 +1,13 @@
-import { createSignal, isPending, untrack, type Accessor } from "solid-js"
+import { createSignal, untrack, type Accessor } from "solid-js"
 
 export interface Preview {
   /** Writable async signal. Reading triggers the underlying
    *  `getUserMedia` request lazily; the first reactive read kicks
    *  acquisition off, subsequent reads return the resolved stream.
    *  Throws `NotReadyError` from event handlers while pending — gate
-   *  consumers on `isLoading()` (e.g. disable buttons) so they never
-   *  read while pending. */
+   *  consumers on `isPending(preview.stream)` (e.g. disable buttons)
+   *  so they never read while pending. */
   stream: Accessor<MediaStream | null>
-  /** True while the camera is acquiring. Derived from `isPending(stream)`. */
-  isLoading: Accessor<boolean>
   /** Persistent <video> element bound to the camera stream. Used by
    *  the renderer as a texture source. Always the same instance. */
   element: HTMLVideoElement
@@ -43,8 +41,6 @@ export function createPreview(): Preview {
     return next
   })
 
-  const isLoading = () => isPending(stream)
-
   function disable() {
     let current: MediaStream | null = null
     try {
@@ -62,5 +58,5 @@ export function createPreview(): Preview {
     setStream(null)
   }
 
-  return { stream, isLoading, element, disable }
+  return { stream, element, disable }
 }

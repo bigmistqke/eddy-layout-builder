@@ -1,4 +1,4 @@
-import { createEffect, createSignal, Show, untrack, useContext } from "solid-js"
+import { createEffect, createSignal, isPending, Show, untrack, useContext } from "solid-js"
 import {
   PlayIcon,
   PlusIcon,
@@ -165,7 +165,7 @@ export function Main() {
             <button
               class={styles.button}
               data-action="record-start"
-              disabled={selectedCellId(context) === null || context.preview.isLoading()}
+              disabled={selectedCellId(context) === null || isPending(context.preview.stream)}
               onClick={onRecord}
             >
               <RecordIcon />

@@ -17,3 +17,31 @@
   height: var(--selected-height, 0px);
   pointer-events: none; /* notch children re-enable */
 }
+
+.cameraLoader {
+  position: absolute;
+  left: var(--preview-x, 0px);
+  top: var(--preview-y, 0px);
+  width: var(--preview-width, 0px);
+  height: var(--preview-height, 0px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cameraLoader::after {
+  content: "";
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-front);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: cameraLoaderSpin 0.9s linear infinite;
+}
+
+@keyframes cameraLoaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -2,6 +2,7 @@ import {
   createEffect,
   createMemo,
   For,
+  isPending,
   onSettled,
   Show,
   untrack,
@@ -246,6 +247,23 @@ export function Canvas() {
         wrapperElement.style.setProperty("--selected-width", `${right - x}px`)
         wrapperElement.style.setProperty("--selected-height", `${bottom - y}px`)
       }
+
+      // Camera-loading overlay CSS vars: write the preview target cell's
+      // rect so the spinner can sit on top of it while gUM resolves.
+      const previewId = untrack(context.previewTargetCellId)
+      if (previewId !== null) {
+        const previewLeaf = lastLeaves.find(leaf => leaf.id === previewId)
+        if (previewLeaf !== undefined) {
+          const x = Math.round(previewLeaf.rect.x + viewport.x)
+          const y = Math.round(previewLeaf.rect.y + viewport.y)
+          const right = Math.round(previewLeaf.rect.x + previewLeaf.rect.width + viewport.x)
+          const bottom = Math.round(previewLeaf.rect.y + previewLeaf.rect.height + viewport.y)
+          wrapperElement.style.setProperty("--preview-x", `${x}px`)
+          wrapperElement.style.setProperty("--preview-y", `${y}px`)
+          wrapperElement.style.setProperty("--preview-width", `${right - x}px`)
+          wrapperElement.style.setProperty("--preview-height", `${bottom - y}px`)
+        }
+      }
     }
 
     function recomputeViewport(): ViewportState {
@@ -474,6 +492,11 @@ export function Canvas() {
       data-canvas-inner="true"
     >
       <canvas ref={canvasElement} class={styles.glCanvas} />
+      <Show
+        when={context.previewTargetCellId() !== null && isPending(context.preview.stream)}
+      >
+        <div class={styles.cameraLoader} data-testid="camera-loader" />
+      </Show>
       <Show
         when={
           !context.isAnimating() && context.app.tool !== null && selectedPathKey() !== null
