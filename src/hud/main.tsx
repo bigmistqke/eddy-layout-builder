@@ -1,4 +1,4 @@
-import { createSignal, isPending, latest, Show, untrack, useContext } from "solid-js"
+import { createSignal, isPending, Show, untrack, useContext } from "solid-js"
 import { blobToClip } from "../clips/clip"
 import {
   EditIcon,
@@ -58,18 +58,13 @@ export function Main() {
     if (existing.length > 0) {
       await context.transport.play(existing, length)
     }
-    // `latest()` reads the last-committed value without throwing on a
-    // pending/transitional state. Solid 2.x can return `undefined`
-    // briefly between the async compute resolving and the value
-    // committing (the record button may already be enabled because
-    // `isPending` flips earlier than the commit). Poll a few frames
-    // — ~16 × rAF = ~270ms — for the value to settle, then bail.
-    let stream: MediaStream | null | undefined = latest(context.preview.stream)
-    for (let attempt = 0; attempt < 16 && stream === undefined; attempt++) {
-      await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)))
-      stream = latest(context.preview.stream)
-    }
-    if (stream === null || stream === undefined) {
+    // Read under untrack — the record button is disabled while
+    // `isPending(preview.stream)` so the signal must be ready at
+    // click time. If we ever see a NotReadyError here, that's a
+    // Solid bug worth a minimal repro + issue, not something to
+    // paper over.
+    const stream = untrack(context.preview.stream)
+    if (stream === null) {
       useDirectOutput()
       return
     }

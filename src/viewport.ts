@@ -1,5 +1,5 @@
 import { FRAME_PADDING, HANDLE_H, HANDLE_W, ROOT_PADDING, SIBLING_GAP } from "./constants"
-import type { Direction, Node, Selection } from "./types"
+import type { Direction, Node, Rgb, Selection } from "./types"
 import { pathEquals } from "./utils"
 
 /**
@@ -279,7 +279,7 @@ export interface LeafFrame {
   id: string
   path: number[]
   rect: Rect
-  color: string
+  color: Rgb
 }
 
 /** Walk the layout tree once at the given canvas dims and produce:

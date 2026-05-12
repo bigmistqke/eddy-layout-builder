@@ -1,5 +1,30 @@
 import type { JSX } from "solid-js"
-import type { AppContext, Container, Entity, Node } from "./types"
+import type { AppContext, Container, Entity, Node, Rgb } from "./types"
+
+/** Pastel RGB triple — each channel in [~0.59, ~0.98]. Stored on
+ *  Entity directly so renderers don't have to parse a string. */
+function randomPastelRgb(): Rgb {
+  return [
+    (Math.random() * 100 + 150) / 255,
+    (Math.random() * 100 + 150) / 255,
+    (Math.random() * 100 + 150) / 255,
+  ]
+}
+
+/** Build a fresh entity with a UUID id and a random pastel tint. */
+export function createEntity(): Entity {
+  return {
+    type: "entity",
+    id: crypto.randomUUID(),
+    color: randomPastelRgb(),
+  }
+}
+
+/** Format an Rgb triple for CSS contexts (canvas 2d fillStyle, CSS
+ *  custom properties, etc.). */
+export function rgbToCss(color: Rgb): string {
+  return `rgb(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255})`
+}
 
 /**
  * Read `signal` and return null. Useful inside JSX expression slots

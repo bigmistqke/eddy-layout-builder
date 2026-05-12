@@ -1,5 +1,5 @@
 import { Show, useContext } from "solid-js"
-import { PlusIcon, SpeakerIcon, SplitIcon, TrashIcon } from "../components/icons"
+import { AudioIcon, PlusIcon, SplitIcon, TrashIcon } from "../components/icons"
 import { ProjectMenu } from "../components/project-menu"
 import { Context } from "../context"
 import type { Tool } from "../types"
@@ -53,7 +53,7 @@ export function Contextual() {
           data-action="set-tool-audio"
           onClick={() => setToolToggle("audio")}
         >
-          <SpeakerIcon />
+          <AudioIcon />
         </Hud.Button>
       </Show>
     </Hud>

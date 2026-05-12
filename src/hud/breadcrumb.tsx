@@ -11,7 +11,7 @@ import {
 } from "solid-js"
 import { Context } from "../context"
 import type { Node } from "../types"
-import { logAction } from "../utils"
+import { logAction, rgbToCss } from "../utils"
 import styles from "./breadcrumb.module.css"
 import { Hud } from "./hud"
 
@@ -36,7 +36,7 @@ function drawNode(
   if (node.type === "entity") {
     // Use each entity's own colour so the breadcrumb minimap visually
     // matches the WebGL canvas's cell tint.
-    canvasContext.fillStyle = node.color
+    canvasContext.fillStyle = rgbToCss(node.color)
     canvasContext.fillRect(x, y, width, height)
   } else {
     canvasContext.fillStyle = COLOR_CONTAINER

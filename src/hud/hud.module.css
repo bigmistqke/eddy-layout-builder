@@ -1,148 +1,74 @@
-/* ============================================================
- * Notch — the underlying notched-bar element.
- *
- * Class layout:
- *   .notch — base. ArrowNotch handles also add one of .top / .bottom
- *            / .left / .right for rotation + edge-snap positioning.
- *   .hud{Bottom,Top,Right,Left} — the Hud component adds these to
- *            select backdrop orientation (flex direction + corner
- *            shapes). Same element as .notch.
- *
- *   .root  = wide piece flush against the screen edge; its corners
- *            meeting .center carry the SCOOPS that form the notch
- *            profile.
- *   .edge  = narrow cap on the canvas-meeting side; outward corners
- *            stay default (rounded), inward corners are square.
- * ============================================================ */
+.hud {
+  --backdrop-x: 0%;
+  --backdrop-width: 100%;
 
-.notch {
-  height: calc(var(--hud-height) + var(--extend, 0px));
+  position: absolute;
+  height: var(--hud-height);
   position: absolute;
   z-index: var(--z-notch);
   color: var(--color-front);
   pointer-events: auto;
+  border-radius: var(--radius-big);
+  backdrop-filter: blur(10px) brightness(1.1) invert(0.25);
+  z-index: var(--z-hud);
+}
+
+.arrowButton {
+  --edge-distance: calc(var(--padding, 0px) + var(--stick, 0px) + var(--extend, 0px));
+
+  aspect-ratio: 1 / 1;
+  width: var(--hud-height);
+  border-radius: var(--radius-big);
+  position: absolute;
+  z-index: var(--z-notch);
+  color: var(--color-front);
+  pointer-events: auto;
+  border-radius: var(--radius-big);
+  transform: translate(-50%);
+  backdrop-filter: blur(10px) brightness(1.1) invert(0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  background-color: transparent;
 
   /* ArrowNotch rotation+edge-snap variants. */
-  &.bottom {
-    left: 50%;
-    bottom: calc(var(--frame-padding, 0px) + var(--stick, 0px));
-  }
-
   &.top {
     left: 50%;
-    top: calc(var(--frame-padding, 0px) + var(--stick, 0px));
+    top: var(--edge-distance, 0);
     rotate: 180deg;
     transform-origin: center center;
+    translate: -100% 0%;
+  }
+
+  &.bottom {
+    left: 50%;
+    bottom: var(--edge-distance, 0);
+    translate: 0% 0%;
   }
 
   &.left {
-    left: calc(var(--frame-padding, 0px) + var(--stick, 0px));
+    left: var(--edge-distance, 0);
     top: 50%;
     rotate: 90deg;
     transform-origin: top;
-    translate: calc((var(--hud-height) + var(--extend, 0px))) 0;
+    translate: 50% 50%;
   }
 
   &.right {
-    right: calc(var(--frame-padding, 0px) + var(--stick, 0px));
+    right: var(--edge-distance, 0);
     top: 50%;
     rotate: -90deg;
     transform-origin: top;
-    translate: calc(-1 * (var(--hud-height) + var(--extend, 0px))) 0;
-  }
-
-  /* Side-mounted HUDs reflow into a horizontal track. */
-  &.hudRight {
-    width: calc(var(--hud-height) + var(--padding) * 2);
-    display: flex;
-    align-items: center;
-  }
-
-  & .notchBackdrop {
-    translate: var(--backdrop-x, -50%);
-    display: flex;
-    position: absolute;
-    flex-direction: column;
-    z-index: var(--z-notch-backdrop);
-    width: var(--backdrop-width, 90px);
-    height: 100%;
-
-    & > .root,
-    & > .edge,
-    & > .center {
-      backdrop-filter: blur(10px) brightness(1.1) invert(0.25);
-    }
-
-    & > .center,
-    & > .edge {
-      margin-inline: var(--radius-big);
-    }
-
-    & > .root,
-    & > .edge {
-      border-radius: var(--radius-big);
-      content: "";
-      flex: 0 var(--radius-big);
-      overflow: hidden;
-    }
-
-    & > .center {
-      flex: 1;
-    }
-
-    /* Default corner shapes — .hudBottom doesn't override these. */
-    & > .root {
-      corner-top-shape: scoop;
-      corner-bottom-shape: square;
-    }
-  }
-}
-
-/* Top: flip column so .root sits at the screen-edge top. */
-.hudTop {
-  & .button {
-    &:not(:last-child) {
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-      border-bottom-right-radius: 10px;
-    }
-
-    &:not(:first-child) {
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-      border-bottom-left-radius: 10px;
-    }
-  }
-
-  & > .notchBackdrop {
-    flex-direction: column-reverse;
-
-    & > .root {
-      corner-top-shape: square;
-      corner-bottom-shape: scoop;
-    }
-
-    & > .edge {
-      corner-top-shape: square;
-    }
+    translate: -50% -50%;
   }
 }
 
 /* Right: row direction; .root on screen-right, .edge canvas-facing. */
 .hudRight {
-  & .button {
-    &:not(:last-child) {
-      border-bottom-left-radius: var(--radius-small);
-      border-bottom-right-radius: var(--radius-small);
-      border-bottom-right-radius: var(--radius-small);
-    }
-
-    &:not(:first-child) {
-      border-top-left-radius: var(--radius-small);
-      border-top-right-radius: var(--radius-small);
-      border-bottom-right-radius: var(--radius-small);
-    }
-  }
+  top: var(--padding);
+  right: 0;
+  height: auto;
 
   & > .notchBackdrop {
     flex-direction: row;
@@ -168,49 +94,28 @@
 }
 
 /* Left: mirror of right via row-reverse. */
-.hudLeft > .notchBackdrop {
-  flex-direction: row-reverse;
+.hudLeft {
+  & > .notchBackdrop {
+    flex-direction: row-reverse;
 
-  & > .edge,
-  & > .center {
-    margin-inline: 0;
-    margin-block: var(--radius-big);
+    & > .edge,
+    & > .center {
+      margin-inline: 0;
+      margin-block: var(--radius-big);
+    }
+
+    & > .root {
+      corner-top-right-shape: scoop;
+      corner-bottom-right-shape: scoop;
+      corner-top-left-shape: square;
+      corner-bottom-left-shape: square;
+    }
+
+    & > .edge {
+      corner-top-left-shape: square;
+      corner-bottom-left-shape: square;
+    }
   }
-
-  & > .root {
-    corner-top-right-shape: scoop;
-    corner-bottom-right-shape: scoop;
-    corner-top-left-shape: square;
-    corner-bottom-left-shape: square;
-  }
-
-  & > .edge {
-    corner-top-left-shape: square;
-    corner-bottom-left-shape: square;
-  }
-}
-
-.arrow {
-  position: absolute;
-  translate: -50% 0;
-  top: calc(var(--radius-big) / 2);
-  transform-origin: center bottom;
-  z-index: var(--z-notch-handle);
-  pointer-events: none;
-}
-
-/* ============================================================
- * Hud — full-width HUD wrapper, applied on top of Notch.
- * Applied to every Hud Notch via the Hud component. ArrowNotch
- * handles never see this class — they use the narrow centered
- * backdrop defaults above.
- * ============================================================ */
-
-.hud {
-  position: absolute;
-  z-index: var(--z-hud);
-  --backdrop-x: 0%;
-  --backdrop-width: 100%;
 }
 
 .hudBottom {
@@ -227,41 +132,41 @@
   }
 }
 
-.hudTop > .content,
-.hudBottom > .content {
-  margin-inline: calc(var(--radius-big) + var(--padding));
-  /* Inset the scrollbar from the backdrop's bottom by --radius-big. The
-     scrollbar appears at the content-box's bottom edge; padding-block-end
-     pulls it up. box-sizing: border-box keeps the total .content height
-     equal to the notch's hud-height so it never overlaps the canvas
-     below. */
-  padding-block: var(--padding);
+.hudTop,
+.hudBottom {
+  margin-block: var(--padding);
+  height: calc(var(--hud-height) + var(--padding) * 2);
+
+  & > .content {
+    margin-inline: var(--padding);
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 /* Side-mounted HUDs stack children vertically and need padding-block
      to clear the round notch caps. */
-.hudRight > .content,
-.hudLeft > .content {
-  flex-direction: column;
-  padding-inline: var(--padding);
-  padding-block: calc(var(--padding) + var(--radius-big));
+.hudRight,
+.hudLeft {
+  width: calc(var(--hud-height) + var(--padding) * 2);
+  margin-inline: var(--padding);
+
+  & > .content {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-block: var(--padding);
+  }
 }
 
 .bottomCenter {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  height: auto;
 }
 
 .bottomRight {
   bottom: 0;
-  right: 0;
-  height: auto;
-}
-
-.topRight {
-  top: 12px;
   right: 0;
   height: auto;
 }

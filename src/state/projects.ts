@@ -14,6 +14,7 @@ import {
   type ProjectManifest,
 } from "../storage/opfs"
 import type { Node } from "../types"
+import { createEntity } from "../utils"
 
 export interface ProjectsStoreDeps {
   clips: ClipStore
@@ -54,14 +55,6 @@ export interface ProjectsStore {
   saveClipBlob(cellId: string, blob: Blob): Promise<void>
   /** Remove a clip blob from disk. */
   removeClipBlob(cellId: string): Promise<void>
-}
-
-function freshLayout(): Node {
-  return {
-    type: "entity",
-    id: crypto.randomUUID(),
-    color: `rgb(${Math.random() * 100 + 150}, ${Math.random() * 100 + 150}, ${Math.random() * 100 + 150})`,
-  }
 }
 
 function nextUntitledName(existing: ProjectManifest[]): string {
@@ -169,7 +162,7 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
     setIsLoading(true)
     try {
       const name = nextUntitledName(list())
-      const layout = freshLayout()
+      const layout = createEntity()
       const manifest: ProjectManifest = {
         id: crypto.randomUUID(),
         name,

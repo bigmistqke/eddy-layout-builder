@@ -10,7 +10,7 @@ import {
   useContext,
 } from "solid-js"
 import { Context } from "../context"
-import { ArrowNotch } from "../hud/hud"
+import { ArrowButton } from "../hud/hud"
 import type { Direction, Node, Selection } from "../types"
 import { logAction, track } from "../utils"
 import {
@@ -201,8 +201,7 @@ export function Canvas() {
       const { leaves, selectedRect } = untrack(() => {
         // Cells are flush in every mode; song mode also drops the
         // root padding so the layout fills the canvas edge-to-edge.
-        const layoutOptions =
-          context.app.tool === null ? { gap: 0, rootPadding: 0 } : { gap: 0 }
+        const layoutOptions = context.app.tool === null ? { gap: 0, rootPadding: 0 } : { gap: 0 }
         return layoutFrames(context.app.layout, scaledCanvas, context.app.selection, layoutOptions)
       })
       lastLeaves = leaves
@@ -273,11 +272,7 @@ export function Canvas() {
         // Song mode + audio mode both stay at identity — the user
         // wants to see the whole song while tapping cells. Only the
         // layout-editing tools (split / append) zoom to selection.
-        if (
-          selection === null ||
-          context.app.tool === null ||
-          context.app.tool === "audio"
-        ) {
+        if (selection === null || context.app.tool === null || context.app.tool === "audio") {
           const identity: ViewportState = { x: 0, y: 0, scale: 1 }
           context.setViewport(identity)
           context.setSelectedHandlesState({ extend: ZERO_BY_DIRECTION, stick: ZERO_BY_DIRECTION })
@@ -503,7 +498,7 @@ export function Canvas() {
         <div class={styles.handleOverlay} data-selected-path={selectedPathKey()!}>
           <For each={HANDLE_DIRECTIONS}>
             {direction => (
-              <ArrowNotch
+              <ArrowButton
                 direction={direction()}
                 style={(() => {
                   // Only set the CSS vars when non-zero — tests check

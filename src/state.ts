@@ -16,7 +16,7 @@ import type {
   Selection,
   Tool,
 } from "./types"
-import { resolveNode } from "./utils"
+import { createEntity, resolveNode } from "./utils"
 import type { Rect, ViewportTransform } from "./viewport"
 
 function cloneNode(node: Node): Node {
@@ -62,14 +62,6 @@ function removeAt(node: Node, path: number[]): Node | null {
     return nextChildren[0]
   }
   return { type: "container", direction: node.direction, children: nextChildren }
-}
-
-function createEntity(): Entity {
-  return {
-    type: "entity",
-    id: crypto.randomUUID(),
-    color: `rgb(${Math.random() * 100 + 150}, ${Math.random() * 100 + 150}, ${Math.random() * 100 + 150})`,
-  }
 }
 
 const ZERO_BY_DIR: Record<Direction, number> = { top: 0, bottom: 0, left: 0, right: 0 }

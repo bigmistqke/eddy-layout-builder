@@ -5,61 +5,24 @@ import type { Direction, HudKind } from "../types"
 import { capitalize } from "../utils"
 import styles from "./hud.module.css"
 
-// -- Notch ------------------------------------------------------------
-
-export function Notch(props: {
-  ref?: (element: HTMLDivElement) => void
-  style?: JSX.CSSProperties
-  children: JSX.Element
-  class?: string | (string | undefined | false)[]
-  onClick?(): void
-  orientation?: "top" | "bottom" | "left" | "right"
-  "data-direction"?: Direction
-}) {
-  return (
-    <div
-      ref={props.ref}
-      class={[
-        styles.notch,
-        styles[`hud${capitalize(props.orientation ?? "bottom")}`],
-        ...(Array.isArray(props.class)
-          ? props.class
-          : props.class !== undefined
-            ? [props.class]
-            : []),
-      ]}
-      style={props.style}
-      data-direction={props["data-direction"]}
-      onClick={event => event.stopPropagation()}
-    >
-      <div class={styles.notchBackdrop}>
-        <div class={styles.edge} onClick={props.onClick} />
-        <div class={styles.center} onClick={props.onClick} />
-        <div class={styles.root} onClick={props.onClick} />
-      </div>
-      {props.children}
-    </div>
-  )
-}
-
 /** A directional notch with the arrow icon — used for the four edge
  *  handles on a selected Frame. The `direction` prop sets both the
  *  rotational positioning class (.top/.bottom/.left/.right nested
  *  inside .notch) and the data-direction attribute. */
-export function ArrowNotch(props: {
+export function ArrowButton(props: {
   style?: JSX.CSSProperties
   direction: Direction
   onClick?(): void
 }) {
   return (
-    <Notch
+    <button
       style={props.style}
-      class={styles[props.direction]}
+      class={[styles.arrowButton, styles[props.direction]]}
       onClick={props.onClick}
       data-direction={props.direction}
     >
       <ArrowIcon class={styles.arrow} />
-    </Notch>
+    </button>
   )
 }
 
@@ -95,10 +58,21 @@ export function Hud(props: {
 }) {
   const context = useContext(Context)!
   return (
-    <Notch
+    <div
+      class={[
+        styles.hud,
+        POSITION_CLASS[props.position],
+        props.class,
+        // styles.notch,
+        styles[`hud${capitalize(props.orientation ?? "bottom")}`],
+        ...(Array.isArray(props.class)
+          ? props.class
+          : props.class !== undefined
+            ? [props.class]
+            : []),
+      ]}
+      onClick={event => event.stopPropagation()}
       ref={context.setHudElement(props.kind)}
-      class={[styles.hud, POSITION_CLASS[props.position], props.class]}
-      orientation={props.orientation}
     >
       <div
         ref={props.contentRef}
@@ -107,7 +81,7 @@ export function Hud(props: {
       >
         {props.children}
       </div>
-    </Notch>
+    </div>
   )
 }
 

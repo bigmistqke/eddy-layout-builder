@@ -10,10 +10,15 @@ export type Container = {
   direction: "horizontal" | "vertical"
   children: Array<Entity | Container>
 }
+/** Normalised RGB triple, each component in [0, 1]. Stored on Entity
+ *  in this shape so renderers don't have to parse a CSS string per
+ *  frame. */
+export type Rgb = [number, number, number]
+
 export interface Entity {
   type: "entity"
   id: string
-  color: string
+  color: Rgb
 }
 export type Node = Container | Entity
 

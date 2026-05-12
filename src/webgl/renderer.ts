@@ -22,29 +22,6 @@ function sourceDimensions(source: TextureSource): { width: number; height: numbe
 export type ViewportState = { x: number; y: number; scale: number }
 export type TextureSource = VideoFrame | HTMLVideoElement | ImageBitmap | HTMLCanvasElement
 
-/** Convert "rgb(r, g, b)" or "#rrggbb" to [0..1, 0..1, 0..1]. */
-function parseColor(input: string): [number, number, number] {
-  // CSS rgb() components can be floats (e.g. our random colors are
-  // `Math.random() * 100 + 150`) — match an optional decimal part.
-  const rgbMatch = input.match(/rgb\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/)
-  if (rgbMatch) {
-    return [
-      parseFloat(rgbMatch[1]) / 255,
-      parseFloat(rgbMatch[2]) / 255,
-      parseFloat(rgbMatch[3]) / 255,
-    ]
-  }
-  const hexMatch = input.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i)
-  if (hexMatch) {
-    return [
-      parseInt(hexMatch[1], 16) / 255,
-      parseInt(hexMatch[2], 16) / 255,
-      parseInt(hexMatch[3], 16) / 255,
-    ]
-  }
-  return [0.5, 0.5, 0.5]
-}
-
 function compileShader(gl: WebGL2RenderingContext, type: number, source: string) {
   const shader = gl.createShader(type)
   if (!shader) {
@@ -188,10 +165,9 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
       positionBuffer[index * 2 + 1] = top
       sizeBuffer[index * 2] = right - left
       sizeBuffer[index * 2 + 1] = bottom - top
-      const [r, g, b] = parseColor(leaf.color)
-      colorBuffer[index * 3] = r
-      colorBuffer[index * 3 + 1] = g
-      colorBuffer[index * 3 + 2] = b
+      colorBuffer[index * 3] = leaf.color[0]
+      colorBuffer[index * 3 + 1] = leaf.color[1]
+      colorBuffer[index * 3 + 2] = leaf.color[2]
     }
 
     gl.useProgram(program)

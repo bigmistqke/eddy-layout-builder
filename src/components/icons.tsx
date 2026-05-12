@@ -46,30 +46,30 @@ export function EditIcon(props: { class?: string }) {
   )
 }
 
-export function SpeakerIcon(props: { class?: string }) {
+export function AudioIcon(props: { class?: string }) {
   return (
     <IconContainer class={props.class}>
       <svg
-        width="32"
-        height="32"
-        viewBox="0 0 32 32"
+        width="30"
+        height="41"
+        viewBox="0 0 30 41"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        style={{ "margin-left": "-3px" }}
       >
-        <path d="M4 12h6l8-6v20l-8-6H4v-8z" fill="currentColor" />
         <path
-          d="M22 11.5c2 1 2 8 0 9"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          fill="none"
+          d="M9.00459 34.4774C9.0045 40.1126 2.00017 40.3741 2 34.4774C1.99983 28.5807 9.00459 28.4192 9.00459 34.4774Z"
+          fill="currentColor"
         />
         <path
-          d="M25 8c4 2 4 14 0 16"
+          d="M28.0046 28.9774C28.0045 34.6126 21.0002 34.8741 21 28.9774C20.9998 23.0807 28.0046 22.9192 28.0046 28.9774Z"
+          fill="currentColor"
+        />
+        <path
+          d="M28.0046 28.9774V3.00769L9.00459 10.9773V34.4774M28.0046 28.9774C28.0045 34.6126 21.0002 34.8741 21 28.9774C20.9998 23.0807 28.0046 22.9192 28.0046 28.9774ZM9.00459 34.4774C9.0045 40.1126 2.00017 40.3741 2 34.4774C1.99983 28.5807 9.00459 28.4192 9.00459 34.4774Z"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="4"
           stroke-linecap="round"
-          fill="none"
         />
       </svg>
     </IconContainer>

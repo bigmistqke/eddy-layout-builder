@@ -23,10 +23,5 @@
     border: none;
     padding: calc(var(--padding) * 2);
     cursor: pointer;
-    /* Fixed width = full-size canvas width. Locking width independent of
-       height keeps total content width constant when the scrollbar
-       toggles, avoiding a resize loop. The canvas inside scales down
-       (height + aspect-ratio) and centers when button height shrinks. */
-    width: calc(var(--breadcrumb-button-width) + var(--padding) * 2 + 25px);
   }
 }
