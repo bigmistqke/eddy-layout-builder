@@ -17,7 +17,14 @@ export function ArrowButton(props: {
     <button
       style={props.style}
       class={[styles.arrowButton, styles[props.direction]]}
-      onClick={props.onClick}
+      onClick={event => {
+        // Don't let the click bubble to the canvas wrapper — the canvas
+        // tap handler would otherwise hit-test the click position and
+        // reassign selection (possibly overriding the new-frame
+        // selection that split/append just set).
+        event.stopPropagation()
+        props.onClick?.()
+      }}
       data-direction={props.direction}
     >
       <ArrowIcon class={styles.arrow} />
