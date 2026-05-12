@@ -94,6 +94,7 @@ export function createAppState(): AppContext {
     main: createSignal<HTMLElement | undefined>(),
     breadcrumb: createSignal<HTMLElement | undefined>(),
     contextual: createSignal<HTMLElement | undefined>(),
+    audio: createSignal<HTMLElement | undefined>(),
   }
 
   const setHudElement = (kind: HudKind) => hudSignals[kind][1]
@@ -109,6 +110,7 @@ export function createAppState(): AppContext {
       untrack(hudSignals.breadcrumb[0]),
       untrack(hudSignals.main[0]),
       untrack(hudSignals.contextual[0]),
+      untrack(hudSignals.audio[0]),
     ]
     const rects: Rect[] = []
     for (const element of elements) {
@@ -350,6 +352,7 @@ export function createAppState(): AppContext {
       layout: app.layout,
       songLength: songLength(),
       cellIds: clips.cellIds().join("|"),
+      cellVolumes: clips.cellVolumes(),
       loading: projects.isLoading(),
     }),
     ({ loading }) => {
@@ -387,6 +390,15 @@ export function createAppState(): AppContext {
   // with the rest of the song.
   createEffect(previewTargetCellId, cellId => {
     transport.setMutedCell(cellId)
+  })
+
+  // Push per-cell volume changes (from the audio-tool slider, or from
+  // a project load via clipStore.setCellVolumes) into the transport's
+  // existing per-cell GainNode. effective gain = muted ? 0 : volume.
+  createEffect(clips.cellVolumes, volumes => {
+    for (const cellId of Object.keys(volumes)) {
+      transport.setCellVolume(cellId, volumes[cellId])
+    }
   })
 
   return {

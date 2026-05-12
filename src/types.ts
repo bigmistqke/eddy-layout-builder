@@ -34,7 +34,7 @@ export type AppState = {
 }
 
 export type Direction = "top" | "bottom" | "left" | "right"
-export type HudKind = "main" | "breadcrumb" | "contextual"
+export type HudKind = "main" | "breadcrumb" | "contextual" | "audio"
 export interface Selection {
   path: number[]
   depth: number

@@ -199,7 +199,10 @@ export function Canvas() {
       // all reactive reads go through untrack — Solid 2.x dev fires
       // STRICT_READ_UNTRACKED otherwise.
       const { leaves, selectedRect } = untrack(() => {
-        const layoutOptions = context.app.tool === null ? { gap: 0, rootPadding: 0 } : undefined
+        // Cells are flush in every mode; song mode also drops the
+        // root padding so the layout fills the canvas edge-to-edge.
+        const layoutOptions =
+          context.app.tool === null ? { gap: 0, rootPadding: 0 } : { gap: 0 }
         return layoutFrames(context.app.layout, scaledCanvas, context.app.selection, layoutOptions)
       })
       lastLeaves = leaves
@@ -267,10 +270,14 @@ export function Canvas() {
         const wrapperRect = wrapperElement.getBoundingClientRect()
         const canvas = { width: wrapperRect.width, height: wrapperRect.height }
         const selection = context.app.selection
-        // In song mode (no tool) the viewport stays at identity even if
-        // a cell is selected — selection there just tells the transport
-        // which cell to record into; we don't zoom.
-        if (selection === null || context.app.tool === null) {
+        // Song mode + audio mode both stay at identity — the user
+        // wants to see the whole song while tapping cells. Only the
+        // layout-editing tools (split / append) zoom to selection.
+        if (
+          selection === null ||
+          context.app.tool === null ||
+          context.app.tool === "audio"
+        ) {
           const identity: ViewportState = { x: 0, y: 0, scale: 1 }
           context.setViewport(identity)
           context.setSelectedHandlesState({ extend: ZERO_BY_DIRECTION, stick: ZERO_BY_DIRECTION })

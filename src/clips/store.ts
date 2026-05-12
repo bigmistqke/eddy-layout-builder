@@ -1,5 +1,7 @@
-import { createSignal } from "solid-js"
+import { createSignal, type Accessor } from "solid-js"
 import { disposeClip, type Clip } from "./clip"
+
+const DEFAULT_VOLUME = 1
 
 export interface ClipStore {
   /** Reactive set of cell ids with clips. Reading this in a reactive
@@ -13,11 +15,20 @@ export interface ClipStore {
   clearClip(cellId: string): void
   getClip(cellId: string): Clip | undefined
   clearAll(): void
+  /** Reactive per-cell volumes (0..1+, default 1). Each cell tracked
+   *  independently of clip presence — a slider can pre-set a value
+   *  before the recording lands. */
+  cellVolume(cellId: string): number
+  cellVolumes: Accessor<Record<string, number>>
+  setCellVolume(cellId: string, value: number): void
+  /** Replace the full volumes map (used on project load). */
+  setCellVolumes(next: Record<string, number>): void
 }
 
 export function createClipStore(): ClipStore {
   const clips: Record<string, Clip> = {}
   const [cellIds, setCellIds] = createSignal<string[]>([])
+  const [cellVolumes, setCellVolumesSignal] = createSignal<Record<string, number>>({})
 
   function setClip(cellId: string, clip: Clip) {
     const existing = clips[cellId]
@@ -38,6 +49,14 @@ export function createClipStore(): ClipStore {
     disposeClip(existing)
     delete clips[cellId]
     setCellIds(cellIds().filter(id => id !== cellId))
+    setCellVolumesSignal(current => {
+      if (!(cellId in current)) {
+        return current
+      }
+      const next = { ...current }
+      delete next[cellId]
+      return next
+    })
   }
 
   function getClip(cellId: string): Clip | undefined {
@@ -50,6 +69,19 @@ export function createClipStore(): ClipStore {
       delete clips[cellId]
     }
     setCellIds([])
+    setCellVolumesSignal({})
+  }
+
+  function cellVolume(cellId: string): number {
+    return cellVolumes()[cellId] ?? DEFAULT_VOLUME
+  }
+
+  function setCellVolume(cellId: string, value: number) {
+    setCellVolumesSignal(current => ({ ...current, [cellId]: value }))
+  }
+
+  function setCellVolumes(next: Record<string, number>) {
+    setCellVolumesSignal(next)
   }
 
   return {
@@ -59,5 +91,9 @@ export function createClipStore(): ClipStore {
     clearClip,
     getClip,
     clearAll,
+    cellVolume,
+    cellVolumes,
+    setCellVolume,
+    setCellVolumes,
   }
 }

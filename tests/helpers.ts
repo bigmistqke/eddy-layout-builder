@@ -198,13 +198,17 @@ export async function clickAction(page: Page, action: string) {
  *
  *  The contextual HUD only mounts the tool-pickers when Edit mode is
  *  on, so we click the main `toggle-edit` button first if no tool is
- *  currently active. Then click the specific tool button. */
+ *  currently active. Toggle-edit defaults to `append`; if the caller
+ *  already wanted append we stop there. The per-tool button is a
+ *  toggle — clicking it when it's already active flips back to null,
+ *  so we must re-read tool state after toggling Edit before deciding
+ *  whether to click set-tool-{tool}. */
 export async function activateTool(page: Page, tool: "append" | "split" | "audio") {
-  const activeTool = await page.evaluate(() => window.__appContext?.app.tool ?? null)
-  if (activeTool === null) {
+  const readTool = () => page.evaluate(() => window.__appContext?.app.tool ?? null)
+  if ((await readTool()) === null) {
     await clickAction(page, "toggle-edit")
   }
-  if (activeTool !== tool) {
+  if ((await readTool()) !== tool) {
     await clickAction(page, `set-tool-${tool}`)
   }
 }

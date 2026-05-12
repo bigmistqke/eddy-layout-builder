@@ -59,10 +59,16 @@ export function Main() {
       await context.transport.play(existing, length)
     }
     // `latest()` reads the last-committed value without throwing on a
-    // pending/transitional state. `isPending`+`untrack` disagrees in
-    // some Solid 2.x edge cases (isPending says false while the value
-    // hasn't been synchronously committed); latest avoids that gap.
-    const stream = latest(context.preview.stream)
+    // pending/transitional state. Solid 2.x can return `undefined`
+    // briefly between the async compute resolving and the value
+    // committing (the record button may already be enabled because
+    // `isPending` flips earlier than the commit). Poll a few frames
+    // — ~16 × rAF = ~270ms — for the value to settle, then bail.
+    let stream: MediaStream | null | undefined = latest(context.preview.stream)
+    for (let attempt = 0; attempt < 16 && stream === undefined; attempt++) {
+      await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)))
+      stream = latest(context.preview.stream)
+    }
     if (stream === null || stream === undefined) {
       useDirectOutput()
       return

@@ -70,7 +70,7 @@
     & > .root,
     & > .edge,
     & > .center {
-      background: var(--color-back);
+      backdrop-filter: blur(10px) brightness(1.1) invert(0.25);
     }
 
     & > .center,
@@ -251,6 +251,12 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  height: auto;
+}
+
+.bottomRight {
+  bottom: 0;
+  right: 0;
   height: auto;
 }
 

@@ -19,6 +19,9 @@ export interface ProjectManifest {
   songLength: number | null
   /** Cell ids that have a blob on disk under clips/. */
   cellIds: string[]
+  /** Per-cell volume (0..1+, default 1). Absent entries → default.
+   *  Optional for backward compat with pre-v2.audio manifests. */
+  cellVolumes?: Record<string, number>
 }
 
 const PROJECTS_DIR = "projects"

@@ -19,6 +19,11 @@ export interface Transport {
    *  collide with the user's monitor; unmuting resumes audio in sync
    *  with the rest of the song. */
   setMutedCell(cellId: string | null): void
+  /** Set the user-facing volume (0..) for a cell. Defaults to 1 if
+   *  not previously set. Persists across reschedules; combines
+   *  multiplicatively with the mute (muted cell stays silent
+   *  regardless of volume). Ramped briefly to avoid clicks. */
+  setCellVolume(cellId: string, value: number): void
 }
 
 const SCHEDULE_LEAD_SECONDS = 0.05
@@ -32,8 +37,18 @@ export function createTransport(): Transport {
    *  clip stays in sample-lock with the rest of the song. Cleared
    *  when sources are stopped (each schedule re-creates them). */
   let cellGains: Record<string, GainNode> = {}
+  /** Per-cell user-facing volume. Survives reschedules — only
+   *  cellGains rebuild on each schedule. */
+  const cellVolumes: Record<string, number> = {}
   let mutedCell: string | null = null
   let loopTimer = 0
+
+  function effectiveGain(cellId: string): number {
+    if (cellId === mutedCell) {
+      return 0
+    }
+    return cellVolumes[cellId] ?? 1
+  }
 
   function scheduleSources(clips: Clip[], when: number) {
     const audio = audioContext()
@@ -41,7 +56,7 @@ export function createTransport(): Transport {
     for (const clip of clips) {
       const source = audio.createBufferSource()
       const gain = audio.createGain()
-      gain.gain.value = clip.cellId === mutedCell ? 0 : 1
+      gain.gain.value = effectiveGain(clip.cellId)
       source.buffer = clip.audio
       source.connect(gain)
       gain.connect(out)
@@ -63,24 +78,29 @@ export function createTransport(): Transport {
     cellGains = {}
   }
 
+  function rampGain(cellId: string) {
+    const gain = cellGains[cellId]
+    if (gain === undefined) {
+      return
+    }
+    // Short ramp to avoid a click on the transition.
+    gain.gain.setTargetAtTime(effectiveGain(cellId), audioContext().currentTime, 0.005)
+  }
+
   function setMutedCell(cellId: string | null) {
     const previous = mutedCell
     mutedCell = cellId
     if (previous !== null) {
-      const gain = cellGains[previous]
-      if (gain !== undefined) {
-        // Short ramp to avoid a click on the un-mute transition.
-        const audio = audioContext()
-        gain.gain.setTargetAtTime(1, audio.currentTime, 0.005)
-      }
+      rampGain(previous)
     }
     if (cellId !== null) {
-      const gain = cellGains[cellId]
-      if (gain !== undefined) {
-        const audio = audioContext()
-        gain.gain.setTargetAtTime(0, audio.currentTime, 0.005)
-      }
+      rampGain(cellId)
     }
+  }
+
+  function setCellVolume(cellId: string, value: number) {
+    cellVolumes[cellId] = value
+    rampGain(cellId)
   }
 
   async function play(clips: Clip[], loopLength: number | null = null) {
@@ -136,5 +156,5 @@ export function createTransport(): Transport {
     return Math.max(0, audioContext().currentTime - startedAt())
   }
 
-  return { state, position, play, stop, setMutedCell }
+  return { state, position, play, stop, setMutedCell, setCellVolume }
 }

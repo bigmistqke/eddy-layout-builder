@@ -97,6 +97,7 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
       layout: deps.readLayout(),
       songLength: deps.readSongLength(),
       cellIds: untrack(deps.clips.cellIds),
+      cellVolumes: { ...untrack(deps.clips.cellVolumes) },
     }
   }
 
@@ -113,6 +114,7 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
       deps.clips.clearAll()
       deps.setLayout(manifest.layout)
       deps.setSongLength(manifest.songLength)
+      deps.clips.setCellVolumes(manifest.cellVolumes ?? {})
       deps.resetSelection()
       for (const cellId of manifest.cellIds) {
         const blob = await readClipBlob(manifest.id, cellId)

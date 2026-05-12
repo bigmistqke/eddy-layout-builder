@@ -256,23 +256,25 @@ export function TrashIcon(props: { class?: string }) {
   return (
     <IconContainer class={props.class}>
       <svg
-        width="38"
-        height="37"
-        viewBox="0 0 38 37"
+        width="42"
+        height="40"
+        viewBox="0 0 42 40"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <path d="M25 13L25 30" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+        <path d="M17 13L17 30" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
         <path
-          d="M24 26C24 27.1046 23.1046 28 22 28C20.8954 28 20 27.1046 20 26V11C20 9.89543 20.8954 9 22 9C23.1046 9 24 9.89543 24 11V26Z"
-          fill="currentColor"
+          d="M6 7L8.97838 38H32.0216L35 7"
+          stroke="currentColor"
+          stroke-width="4"
+          stroke-linecap="round"
         />
         <path
-          d="M17 26C17 27.1046 16.1046 28 15 28C13.8954 28 13 27.1046 13 26L13 11C13 9.89543 13.8954 9 15 9C16.1046 9 17 9.89543 17 11V26Z"
-          fill="currentColor"
-        />
-        <path
-          d="M4.03789 7L6.74219 36.5H30.2578L32.9621 7H35.5C36.6046 7 37.5 6.10457 37.5 5C37.5 3.89543 36.6046 3 35.5 3H26.0703L24.0703 0H13.4297L11.4297 3H2C0.89543 3 0 3.89543 0 5C0 6.10457 0.89543 7 2 7H4.03789ZM10.3926 32.5L8.05382 7H13.5703L15.5703 4H21.9297L23.9297 7H28.9462L26.6074 32.5H10.3926Z"
-          fill="currentColor"
+          d="M2 5H13.9104L16.1791 2H25.8209L28.0896 5H40"
+          stroke="currentColor"
+          stroke-width="4"
+          stroke-linecap="round"
         />
       </svg>
     </IconContainer>
