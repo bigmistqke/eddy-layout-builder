@@ -122,7 +122,13 @@ export function Canvas() {
           }
           return
         }
-        context.setSelection({ path: leaf.path, depth: 0, preview: true })
+        // In edit mode, only auto-preview cells without a clip — once
+        // a clip exists the user is mid-layout, not mid-recording, and
+        // popping the camera back over recorded footage is jarring.
+        // Song mode keeps preview=true so the camera follows selection.
+        const previewOnSelect =
+          context.app.tool === null || !context.clips.cellIds().includes(leaf.id)
+        context.setSelection({ path: leaf.path, depth: 0, preview: previewOnSelect })
         return
       }
     }
