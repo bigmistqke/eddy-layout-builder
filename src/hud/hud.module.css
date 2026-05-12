@@ -1,18 +1,15 @@
 /* ============================================================
  * Hud — base shell, orientation modifiers, grid placement.
  *
- * Layout model: the parent (.canvas in layout-builder.module.css)
- * defines a 3×3 grid with named areas. Each Hud picks an area via
- * its position class (.topLeft / .bottomCenter / etc.) and pins
- * itself flush against the corresponding edge via place-self.
- *
- * Orientation classes (.hudTop / .hudBottom / .hudLeft / .hudRight)
- * are independent of position — they pick the children's stacking
- * axis (row vs. column) and the gutter spacing.
+ * Layout model: the parent (.hudOverlay in layout-builder.module.css)
+ * is a 3×3 grid with `padding` for container insets and `gap` for
+ * between-HUD spacing — HUDs themselves carry no margin. A Hud picks
+ * its cell via the position class (.topLeft / .middleRight / etc.)
+ * and its children-stacking axis via the orientation class
+ * (.horizontal / .vertical).
  * ============================================================ */
 
 .hud {
-  height: var(--hud-height);
   z-index: var(--z-hud);
   color: var(--color-front);
   pointer-events: auto;
@@ -22,29 +19,20 @@
 
 /* ---- Orientation -------------------------------------------------- */
 
-.hudTop,
-.hudBottom {
+.horizontal {
   height: calc(var(--hud-height) + var(--padding) * 2);
-  margin-block: var(--padding);
 
   & > .content {
-    margin-inline: var(--padding);
     flex-direction: row;
-    justify-content: center;
-    align-items: center;
+    padding: var(--padding);
   }
 }
 
-.hudLeft,
-.hudRight {
+.vertical {
   width: calc(var(--hud-height) + var(--padding) * 2);
-  height: auto;
-  margin-inline: var(--padding);
 
   & > .content {
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     padding-block: var(--padding);
   }
 }
@@ -63,29 +51,25 @@
 
 /* Contextual tool-bar slot — sized to its content, capped at the
    middle row's height so it can't extend under the bottom-row's main
-   HUD. When content exceeds the cap, the HUD's content shell scrolls
-   (see hud/contextual.module.css). */
+   HUD. When content exceeds the cap the HUD's content shell scrolls
+   (see hud/contextual.module.css). min-height: 0 is needed so the
+   grid item can shrink below its intrinsic height for the cap to bite. */
 .middleRight {
   grid-area: middle-right;
   place-self: start end;
-  height: auto;
   max-height: 100%;
   min-height: 0;
 }
 
 /* Bottom-center is pinned to the container, not the grid — its
-   position must not shift when other HUDs in the bottom row grow or
-   shrink (e.g. the audio slider mounting in edit mode). */
+   position must not shift when other HUDs grow or shrink. Sits inside
+   the overlay padding so the main HUD has the same visual inset as
+   any grid-placed HUD. */
 .bottomCenter {
   position: absolute;
-  bottom: 0;
+  bottom: var(--padding);
   left: 50%;
   transform: translateX(-50%);
-}
-
-.bottomRight {
-  grid-area: bottom-right;
-  place-self: end end;
 }
 
 /* ---- Content shell ----------------------------------------------- */
@@ -94,6 +78,8 @@
   display: flex;
   height: 100%;
   box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
 }
 
 /* ============================================================
@@ -136,7 +122,7 @@
  * ============================================================ */
 
 .arrowButton {
-  --edge-distance: calc(var(--padding, 0px) + var(--stick, 0px) + var(--extend, 0px));
+  --edge-distance: calc(var(--padding) + var(--stick, 0px) + var(--extend, 0px));
 
   width: var(--hud-height);
   aspect-ratio: 1 / 1;
@@ -152,33 +138,37 @@
   align-items: center;
   backdrop-filter: blur(10px) brightness(1.1) invert(0.25);
 
-  &.top {
+  &.top,
+  &.bottom {
     left: 50%;
-    top: var(--edge-distance, 0);
+    translate: -50% 0%;
+  }
+
+  &.left,
+  &.right {
+    top: 50%;
+    transform-origin: top;
+  }
+
+  &.top {
+    top: var(--edge-distance);
     rotate: 180deg;
     transform-origin: center center;
-    translate: -50% 0%;
   }
 
   &.bottom {
-    left: 50%;
-    bottom: var(--edge-distance, 0);
-    translate: -50% 0%;
+    bottom: var(--edge-distance);
   }
 
   &.left {
-    left: var(--edge-distance, 0);
-    top: 50%;
+    left: var(--edge-distance);
     rotate: 90deg;
-    transform-origin: top;
     translate: 50% 0%;
   }
 
   &.right {
-    right: var(--edge-distance, 0);
-    top: 50%;
+    right: var(--edge-distance);
     rotate: -90deg;
-    transform-origin: top;
     translate: -50% 0%;
   }
 }

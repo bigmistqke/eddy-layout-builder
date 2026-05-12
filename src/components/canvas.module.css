@@ -1,11 +1,6 @@
 .canvasWrapper {
-  /* Span every grid cell of the layout-builder grid so HUDs overlay
-     the canvas. Position: relative so absolutely-positioned children
-     (handle overlay, camera loader) still anchor to the canvas. */
-  grid-area: 1 / 1 / -1 / -1;
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
 }
 
 .glCanvas {

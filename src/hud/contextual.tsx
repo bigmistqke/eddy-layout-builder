@@ -25,7 +25,7 @@ export function Contextual() {
       <Hud
         kind="contextual"
         position="middle-right"
-        orientation="right"
+        orientation="vertical"
         contentClass={styles.content}
       >
         <Hud.Button

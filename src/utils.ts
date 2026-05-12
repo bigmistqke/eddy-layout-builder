@@ -83,11 +83,6 @@ export function logAction(type: string, payload?: Record<string, unknown>): void
   console.log("[action]", JSON.stringify({ type, ...payload }))
 }
 
-/** Uppercase the first character of a string. */
-export function capitalize<Input extends string>(value: Input): Capitalize<Input> {
-  return (value.charAt(0).toUpperCase() + value.slice(1)) as Capitalize<Input>
-}
-
 export function pathEquals(first: number[], second: number[]) {
   return first.length === second.length && first.every((value, index) => value === second[index])
 }

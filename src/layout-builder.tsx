@@ -32,10 +32,12 @@ export function LayoutBuilder() {
     <div class={styles.layoutBuilder}>
       <div class={styles.canvas} ref={canvasElement} data-canvas="true">
         <Canvas />
-        <Breadcrumb canvasAspect={canvasAspect} />
-        <Menu />
-        <Contextual />
-        <Main />
+        <div class={styles.hudOverlay}>
+          <Breadcrumb canvasAspect={canvasAspect} />
+          <Menu />
+          <Contextual />
+          <Main />
+        </div>
       </div>
     </div>
   )

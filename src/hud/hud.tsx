@@ -2,7 +2,6 @@ import { omit, useContext, type ComponentProps, type JSX } from "solid-js"
 import { ArrowIcon } from "../components/icons"
 import { Context } from "../context"
 import type { Direction, HudKind } from "../types"
-import { capitalize } from "../utils"
 import styles from "./hud.module.css"
 
 /** A directional notch with the arrow icon — used for the four edge
@@ -28,19 +27,20 @@ export function ArrowButton(props: {
 
 // -- Hud --------------------------------------------------------------
 
-export type HudPosition =
-  | "bottom-center"
-  | "bottom-right"
-  | "middle-right"
-  | "top-left"
-  | "top-right"
+export type HudPosition = "bottom-center" | "middle-right" | "top-left" | "top-right"
 
 const POSITION_CLASS: Record<HudPosition, string> = {
   "bottom-center": styles.bottomCenter,
-  "bottom-right": styles.bottomRight,
   "middle-right": styles.middleRight,
   "top-left": styles.topLeft,
   "top-right": styles.topRight,
+}
+
+export type HudOrientation = "horizontal" | "vertical"
+
+const ORIENTATION_CLASS: Record<HudOrientation, string> = {
+  horizontal: styles.horizontal,
+  vertical: styles.vertical,
 }
 
 /** A HUD-level Notch instance. Wires the canonical HUD-element ref via
@@ -53,8 +53,8 @@ const POSITION_CLASS: Record<HudPosition, string> = {
 export function Hud(props: {
   kind: HudKind
   position: HudPosition
-  orientation: "top" | "bottom" | "left" | "right"
-  /** Extra class applied to the outer Notch — for HUD-specific
+  orientation: HudOrientation
+  /** Extra class applied to the outer wrapper — for HUD-specific
    *  constraints like max-width that need to sit on the wrapper. */
   class?: string
   contentClass?: string
@@ -68,14 +68,8 @@ export function Hud(props: {
       class={[
         styles.hud,
         POSITION_CLASS[props.position],
+        ORIENTATION_CLASS[props.orientation],
         props.class,
-        // styles.notch,
-        styles[`hud${capitalize(props.orientation ?? "bottom")}`],
-        ...(Array.isArray(props.class)
-          ? props.class
-          : props.class !== undefined
-            ? [props.class]
-            : []),
       ]}
       onClick={event => event.stopPropagation()}
       ref={context.setHudElement(props.kind)}

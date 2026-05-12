@@ -4,24 +4,34 @@
   height: 100%;
 }
 
-/* HUD grid. The WebGL canvas spans every cell (grid-area: 1 / 1 / -1 / -1)
-   so HUDs visually overlay it; placement is purely declarative.
-
-   The bottom row is reserved at the main HUD's height — the main HUD is
-   absolutely positioned to stay container-centered regardless of any
-   other HUD growing/shrinking, but the reserved row keeps the
-   middle-right contextual HUD from extending under the main HUD. */
 .canvas {
-  --hud-row: calc(var(--hud-height) + var(--padding) * 2);
-
   width: 100%;
   height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* HUD overlay — fills the canvas with a 3×3 grid for declarative HUD
+   placement. Padding insets HUDs from the container edges and `gap`
+   handles spacing between adjacent HUDs (no per-HUD margins needed).
+   Reserved bottom row keeps the middle-right contextual HUD from
+   extending under the absolutely-positioned main HUD. The overlay
+   itself is pointer-events: none so canvas clicks pass through where
+   no HUD is mounted; each Hud sets pointer-events: auto on itself. */
+.hudOverlay {
+  --hud-row: calc(var(--hud-height) + var(--padding) * 2);
+
+  position: absolute;
+  inset: 0;
+  padding: var(--padding);
   display: grid;
+  gap: var(--padding);
   grid-template-columns: auto 1fr auto;
   grid-template-rows: auto 1fr var(--hud-row);
   grid-template-areas:
     "top-left   .   top-right"
     ".          .   middle-right"
     ".          .   .";
-  overflow: hidden;
+  pointer-events: none;
+  box-sizing: border-box;
 }

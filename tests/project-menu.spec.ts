@@ -28,14 +28,15 @@ test("project menu: backdrop click closes dialog", async ({ page }) => {
   await expect(dialog).toBeHidden()
 })
 
-test("project menu: contextual stays visible without a selection", async ({ page }) => {
+test("project menu: hamburger stays visible without a selection", async ({ page }) => {
   await page.goto("/")
   // Deselect by tapping the selected (root) cell.
   const wrapper = page.locator("[data-canvas-inner]")
   const box = await wrapper.boundingBox()
   if (box === null) throw new Error("canvas not visible")
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
-  // Hamburger remains; delete is disabled (no selection to act on).
+  // Hamburger is in its own always-mounted menu HUD; the contextual
+  // tool-bar (which carries delete) only mounts in edit mode.
   await expect(page.locator("[data-action='open-project-menu']")).toBeVisible()
-  await expect(page.locator("[data-action='delete']")).toBeDisabled()
+  await expect(page.locator("[data-action='delete']")).toHaveCount(0)
 })

@@ -146,10 +146,10 @@ export async function clickFrame(page: Page, path: number[], options?: { force?:
  *  position, not depth, since the test author can read the button index
  *  directly from the DOM. */
 export async function clickBreadcrumb(page: Page, segmentIndex: number) {
-  // The breadcrumb is the only top-oriented Notch (`hudTop` modifier),
-  // so scope button-nth lookup to that subtree.
+  // The breadcrumb is the only top-left HUD, so scope button-nth lookup
+  // to that subtree via the `topLeft` position class.
   await page
-    .locator('[class*="hudTop"] button')
+    .locator('[class*="topLeft"] button')
     .nth(segmentIndex)
     .click()
 }
@@ -470,12 +470,12 @@ export async function expectHandlesDontOverlap(page: Page) {
     }
     const huds: Record<string, { x: number; y: number; w: number; h: number } | null> = {
       mainBottom: rect(
-        document.querySelector("[data-action='toggle-edit']")?.closest("[class*='_notch_']"),
+        document.querySelector("[data-action='toggle-edit']")?.closest("[class*='_hud_']"),
       ),
       contextualRight: rect(
-        document.querySelector("[data-action='delete']")?.closest("[class*='_notch_']"),
+        document.querySelector("[data-action='delete']")?.closest("[class*='_hud_']"),
       ),
-      breadcrumbTop: rect(document.querySelector("[class*='hudTop']")),
+      breadcrumbTop: rect(document.querySelector("[class*='topLeft']")),
     }
     return { handles, huds }
   })
