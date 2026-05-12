@@ -87,6 +87,21 @@ export function pathEquals(first: number[], second: number[]) {
   return first.length === second.length && first.every((value, index) => value === second[index])
 }
 
+/** Recursive walk that reads every node property along the way, so
+ *  using it inside a Solid effect/memo subscribes to deep mutations
+ *  (splice/direction changes that don't reassign `app.layout`). The
+ *  return value is irrelevant — only the property reads matter. */
+export function trackLayout(node: Node): void {
+  if (node.type === "entity") {
+    void node.id
+    return
+  }
+  void node.direction
+  for (const child of node.children) {
+    trackLayout(child)
+  }
+}
+
 /** Short relative-time label ("just now", "5 m", "3 h", "2 d", or a
  *  formatted date for older entries). Used in the project list. */
 export function formatTimeAgo(timestamp: number, now: number = Date.now()): string {

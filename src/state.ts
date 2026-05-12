@@ -16,7 +16,7 @@ import type {
   Selection,
   Tool,
 } from "./types"
-import { createEntity, resolveNode } from "./utils"
+import { createEntity, resolveNode, trackLayout } from "./utils"
 import type { Rect, ViewportTransform } from "./viewport"
 
 function cloneNode(node: Node): Node {
@@ -338,15 +338,21 @@ export function createAppState(): AppContext {
   // Single auto-save effect: any change to layout, songLength, or the
   // set of recorded cells writes a fresh manifest. Skipped while a
   // load is in flight so we don't redundantly re-save state we just
-  // pulled from disk.
+  // pulled from disk. The layout dep uses `layoutTopologyKey` because
+  // Solid stores fire signals on the specific property mutated — deep
+  // splice/direction changes inside splitNode/appendToContainer don't
+  // bubble up to the top-level `app.layout` signal. Reading every node
+  // property via the recursive key registers subscriptions on each.
   createEffect(
-    () => ({
-      layout: app.layout,
-      songLength: songLength(),
-      cellIds: clips.cellIds().join("|"),
-      cellVolumes: clips.cellVolumes(),
-      loading: projects.isLoading(),
-    }),
+    () => {
+      trackLayout(app.layout)
+      return {
+        songLength: songLength(),
+        cellIds: clips.cellIds().join("|"),
+        cellVolumes: clips.cellVolumes(),
+        loading: projects.isLoading(),
+      }
+    },
     ({ loading }) => {
       if (loading) {
         return
