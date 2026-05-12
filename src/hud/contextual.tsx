@@ -47,31 +47,32 @@ export function Contextual() {
             <PlusIcon />
           </Show>
         </Hud.Button>
-        <Show when={selectedCellId(context)}>
-          {id => {
-            const hasClip = () => context.clips.cellIds().includes(id())
-            return (
-              <div class={styles.sliderContainer}>
-                <input
-                  class={styles.slider}
-                  data-action="set-cell-volume"
-                  data-audio-cell={id()}
-                  type="range"
-                  min="0"
-                  max="1.5"
-                  step="0.01"
-                  disabled={!hasClip()}
-                  value={context.clips.cellVolume(id())}
-                  onInput={event => {
-                    context.clips.setCellVolume(
-                      id(),
-                      Number((event.currentTarget as HTMLInputElement).value),
-                    )
-                  }}
-                />
-              </div>
-            )
-          }}
+        <Show
+          when={(() => {
+            const id = selectedCellId(context)
+            return id !== null && context.clips.cellIds().includes(id) ? id : null
+          })()}
+        >
+          {id => (
+            <div class={styles.sliderContainer}>
+              <input
+                class={styles.slider}
+                data-action="set-cell-volume"
+                data-audio-cell={id()}
+                type="range"
+                min="0"
+                max="1.5"
+                step="0.01"
+                value={context.clips.cellVolume(id())}
+                onInput={event => {
+                  context.clips.setCellVolume(
+                    id(),
+                    Number((event.currentTarget as HTMLInputElement).value),
+                  )
+                }}
+              />
+            </div>
+          )}
         </Show>
       </Hud>
     </Show>
