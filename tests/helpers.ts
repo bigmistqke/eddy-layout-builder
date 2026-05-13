@@ -406,9 +406,13 @@ export async function expectFrameRespectsMargin(
 
   // Classify which rule applied: the non-binding axis is either
   // smaller than target (fit-inside) or larger than canvas (overflow).
-  const nonBindingFitsInside = widthAtTarget
-    ? result.frame.h < targetHeight - tolerance
-    : result.frame.w < targetWidth - tolerance
+  // When BOTH axes hit target (frame aspect matches canvas), treat the
+  // tie as fit-inside — both axes are at the binding edge, no overflow.
+  const nonBindingFitsInside =
+    (widthAtTarget && heightAtTarget) ||
+    (widthAtTarget
+      ? result.frame.h < targetHeight - tolerance
+      : result.frame.w < targetWidth - tolerance)
   const nonBindingOverflows = widthAtTarget
     ? result.frame.h > result.canvas.h + tolerance
     : result.frame.w > result.canvas.w + tolerance
