@@ -1,4 +1,4 @@
-import { createSignal, isPending, Show, untrack, useContext } from "solid-js"
+import { createSignal, isPending, latest, Loading, Show, untrack, useContext } from "solid-js"
 import { blobToClip } from "../clips/clip"
 import {
   EditIcon,
@@ -58,13 +58,14 @@ export function Main() {
     if (existing.length > 0) {
       await context.transport.play(existing, length)
     }
-    // Read under untrack — the record button is disabled while
-    // `isPending(preview.stream)` so the signal must be ready at
-    // click time. If we ever see a NotReadyError here, that's a
-    // Solid bug worth a minimal repro + issue, not something to
-    // paper over.
-    const stream = untrack(context.preview.stream)
-    if (stream === null) {
+    // `latest`, not `untrack` — `isPending` only reports the refresh
+    // state (already-initialized signal recomputing), not initial
+    // load. `untrack` throws NotReadyError on an UNINITIALIZED+PENDING
+    // signal even when `isPending` says false. `latest` returns
+    // `undefined` instead. See ../../../solid-pending-bug-repro for
+    // the upstream contract mismatch.
+    const stream = latest(context.preview.stream)
+    if (stream == null) {
       useDirectOutput()
       return
     }
@@ -168,13 +169,33 @@ export function Main() {
       <Show
         when={captureHandle() !== null}
         fallback={
-          <Hud.Button
-            data-action="record-start"
-            disabled={selectedCellId(context) === null || isPending(context.preview.stream)}
-            onClick={onRecord}
+          // Loading boundary makes the disabled gate read the real
+          // stream value: `preview.stream() === null` throws
+          // NotReadyError during UNINITIALIZED+PENDING (initial gUM
+          // load), which the boundary catches and shows the disabled
+          // fallback button. Once the stream commits, the inner button
+          // takes over and onClick can safely call into onRecord.
+          // `isPending` alone doesn't cover initial load — see
+          // ../../../solid-pending-bug-repro.
+          <Loading
+            fallback={
+              <Hud.Button data-action="record-start" disabled>
+                <RecordIcon />
+              </Hud.Button>
+            }
           >
-            <RecordIcon />
-          </Hud.Button>
+            <Hud.Button
+              data-action="record-start"
+              disabled={
+                selectedCellId(context) === null ||
+                isPending(context.preview.stream) ||
+                context.preview.stream() === null
+              }
+              onClick={onRecord}
+            >
+              <RecordIcon />
+            </Hud.Button>
+          </Loading>
         }
       >
         <Hud.Button data-action="record-stop" onClick={onStopRecording}>

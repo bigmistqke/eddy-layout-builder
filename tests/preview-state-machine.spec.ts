@@ -63,7 +63,10 @@ test("record button is disabled when no cell is selected", async ({ page }) => {
 
 test("record button is enabled when a cell is selected", async ({ page }) => {
   await page.goto("/")
-  // Initial state already has root selected, so record-start is enabled.
+  // Initial state has root selected, but the button is also gated on
+  // preview.stream being non-null — i.e. gUM has resolved. Wait for
+  // the gate to actually drop before asserting.
+  await page.locator('[data-action="record-start"]:not([disabled])').waitFor({ timeout: 5000 })
   const isDisabled = await page
     .locator('[data-action="record-start"]')
     .evaluate(element => (element as HTMLButtonElement).disabled)
