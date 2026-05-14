@@ -1,0 +1,83 @@
+{
+  "ranAt": "2026-05-14T21:13:35.798Z",
+  "git": {
+    "sha": "7e7a882",
+    "dirty": true
+  },
+  "experiment": "compositing-full-video",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "atlasResolution": {
+      "width": 1080,
+      "height": 1965
+    },
+    "gridSizes": [
+      4,
+      9,
+      16,
+      25
+    ],
+    "recordSeconds": 6,
+    "runSeconds": 6,
+    "maxQueue": 8,
+    "realtimeFps": 28
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "source": {
+      "requested": "1280x720",
+      "actual": "720x1280"
+    },
+    "grids": [
+      {
+        "n": 4,
+        "atlas": {
+          "target": "1080x1965",
+          "actual": "1088x1968"
+        },
+        "compositeMs": 8839.90000000596,
+        "fps": 89.3457269790435,
+        "realtimeOk": true
+      },
+      {
+        "n": 9,
+        "atlas": {
+          "target": "1080x1965",
+          "actual": "1088x1968"
+        },
+        "compositeMs": 11961.5,
+        "fps": 78.26797385620915,
+        "realtimeOk": true
+      },
+      {
+        "n": 16,
+        "atlas": {
+          "target": "1080x1965",
+          "actual": "1088x1968"
+        },
+        "compositeMs": 10306.800000011921,
+        "fps": 110.33691286170998,
+        "realtimeOk": true
+      },
+      {
+        "n": 25,
+        "atlas": {
+          "target": "1080x1965",
+          "actual": "1088x1968"
+        },
+        "compositeMs": 12710.300000011921,
+        "fps": 98.42907848044345,
+        "realtimeOk": true
+      }
+    ]
+  }
+}

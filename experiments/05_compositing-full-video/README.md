@@ -34,9 +34,42 @@ Compare directly to 04's per-decoder `minFps` at the same N:
 - If atlas fps also sags (big viewport-res decode + the re-encode tax)
   → the composite is not the easy win, and the design space reopens.
 
-## Verdict
+## Verdict (2026-05-14 · Galaxy A15 · Android 10 · Chrome 148)
 
-_Pending first device run._
+**The composite is O(1) in N — decisively.** `result.json`:
+
+| N | atlas | atlas fps | realtime? | compositeMs | streaming (04) min fps |
+|---|---|---|---|---|---|
+| 4 | 1088×1968 | 89.3 | ✅ | 8840 | 31.8 ✅ |
+| 9 | 1088×1968 | 78.3 | ✅ | 11962 | 20.6 ❌ |
+| 16 | 1088×1968 | 110.3 | ✅ | 10307 | 14.2 ❌ |
+| 25 | 1088×1968 | 98.4 | ✅ | 12710 | 10.7 ❌ |
+
+One ~2.1 MP atlas decode sustains **78–110 fps regardless of N** — the
+fps wobble is run-to-run noise, not an N-trend (N=16 is the *highest*).
+Tiling finer just changes how the canvas is drawn; the decoded frame is
+the same size either way. All N hit realtime with **2.5–3.7× headroom**,
+and this is **under the same re-encode tax** that 04 surfaced — the
+composite wins even paying it. Streaming fell off past N=4; the
+composite doesn't notice N.
+
+### Caveats — read before trusting the absolute numbers
+
+1. **Identical-tiles confound.** The atlas tiles the *same* source clip
+   into every cell. Identical repeated content compresses — and decodes
+   — unrealistically well. A real atlas of N *distinct* videos has more
+   entropy and would decode heavier. **The O(1)-in-N structure is real
+   regardless** (one decode is one decode), but treat 78–110 fps as an
+   optimistic ceiling, not a promise.
+2. **Build cost.** `compositeMs` is ~9–13 s for 150 frames at viewport
+   res — much heavier than `transcode` (~1.6 s per cell). One-time per
+   atlas rebuild, off the playback path, but not free.
+3. Single run; no resolution sweep above viewport.
+
+**Bottom line:** across 01–05, streaming N decoders is O(N) and walls at
+N≈4; the composite is O(1) in N and clears realtime with headroom even
+under the re-encode tax. The composite is the architecture — pending a
+re-run with **distinct** per-cell content to pin the realistic fps.
 
 ## Reproduce
 
