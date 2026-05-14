@@ -68,14 +68,21 @@ export async function recordProbeInput(
   }
   const sink = new EncodedPacketSink(videoTrack)
   const chunks: EncodedVideoChunk[] = []
+  // A VideoDecoder must be fed from a keyframe. MediaRecorder normally
+  // emits one first, but occasionally the demuxed stream leads with
+  // delta packets — skip those rather than failing the whole run.
   for await (const packet of sink.packets()) {
-    chunks.push(packet.toEncodedVideoChunk())
+    const chunk = packet.toEncodedVideoChunk()
+    if (chunks.length === 0 && chunk.type !== "key") {
+      continue
+    }
+    chunks.push(chunk)
     if (chunks.length >= MAX_CHUNKS) {
       break
     }
   }
-  if (chunks.length === 0 || chunks[0].type !== "key") {
-    throw new Error("recordProbeInput: first packet is not a keyframe")
+  if (chunks.length === 0) {
+    throw new Error("recordProbeInput: no keyframe found in the recording")
   }
   return {
     config,
