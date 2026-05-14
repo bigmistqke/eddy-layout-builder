@@ -1,0 +1,56 @@
+{
+  "ranAt": "2026-05-14T21:36:34.053Z",
+  "git": {
+    "sha": "818928f",
+    "dirty": true
+  },
+  "experiment": "build-cost",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "atlasResolution": {
+      "width": 1080,
+      "height": 1965
+    },
+    "gridN": 16,
+    "durations": [
+      3,
+      6,
+      9
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "durations": [
+      {
+        "durationSeconds": 3,
+        "sourceChunks": 44,
+        "atlas": "1088x1968",
+        "compositeMs": 3460.5999999940395,
+        "buildRateVsRealtime": 1.1535333333313464
+      },
+      {
+        "durationSeconds": 6,
+        "sourceChunks": 84,
+        "atlas": "1088x1968",
+        "compositeMs": 7142.5999999940395,
+        "buildRateVsRealtime": 1.1904333333323398
+      },
+      {
+        "durationSeconds": 9,
+        "sourceChunks": 127,
+        "atlas": "1088x1968",
+        "compositeMs": 11076.699999988079,
+        "buildRateVsRealtime": 1.23074444444312
+      }
+    ]
+  }
+}

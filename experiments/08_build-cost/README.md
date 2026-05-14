@@ -36,9 +36,39 @@ clips aren't truncated.)
 slope pinned, chunking is plannable. Rising ratio → super-linear, worse
 than feared.
 
-## Verdict
+## Verdict (2026-05-14 · Galaxy A15 · Android 10 · Chrome 148)
 
-_Pending first device run._
+Build cost is **~1.2× realtime and ~linear** — much better than the ~2×
+extrapolated from 05 (whose "6 s clip" actually hit the old
+`MAX_CHUNKS=150` cap, so it was ~10 s of content — inflating the ratio).
+
+| clip | frames | build | rate |
+|---|---|---|---|
+| 3 s | 44 | 3.5 s | 1.15× realtime |
+| 6 s | 84 | 7.1 s | 1.19× realtime |
+| 9 s | 127 | 11.1 s | 1.23× realtime |
+
+- **Slope ≈ 1.2× realtime**, slight upward drift (1.15 → 1.23) — mild
+  super-linearity, likely thermal / memory creep over the run.
+- The camera records at **~14 fps** (44 frames / 3 s), not 30 — fewer
+  frames to decode and build than assumed.
+- **Hard memory ceiling:** a first attempt at 16 s OOM-crashed Chrome
+  during the composite. Single-pass compositing cannot span a full song
+  — **chunking is mandatory for memory**, independent of the
+  pipelining argument.
+
+### Implication for the hybrid
+
+A 5-min song's composite builds in ~6 min (1.2× realtime) — tight but
+workable: it outpaces a take by only 20%, so any think-time between
+takes keeps the streamed-over count bounded. But the build **must** be
+chunked into ≤~9 s segments (memory ceiling), which also makes it
+naturally pipelineable — play / stream-over the early chunks while later
+ones build.
+
+**Next:** `09` — chunked + pipelined rebuild, and the still-unmeasured
+`composite-decode + K concurrent cell-streams` (the steady-state hybrid
+load).
 
 ## Reproduce
 
