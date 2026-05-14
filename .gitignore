@@ -2,6 +2,7 @@ node_modules
 dist
 .superpowers
 .worktrees
+.introspect
 test-results
 playwright-report
 issue-draft.md

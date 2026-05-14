@@ -11,6 +11,8 @@
     "preview:test": "vite preview --port 5174 --strictPort",
     "test": "pnpm run build:test && playwright test",
     "test:fast": "playwright test",
+    "test:android": "pnpm run build:test && playwright test --config=playwright.android.config.ts",
+    "test:android:fast": "playwright test --config=playwright.android.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -21,8 +23,15 @@
     "solid-js": "2.0.0-beta.9"
   },
   "devDependencies": {
+    "@introspection/playwright": "https://pkg.pr.new/bigmistqke/introspection/@introspection/playwright@841407b73c12a7c82fcbbad7afc8a791ecaa8492",
+    "@introspection/plugin-console": "https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-console@841407b73c12a7c82fcbbad7afc8a791ecaa8492",
+    "@introspection/plugin-defaults": "https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-defaults@841407b73c12a7c82fcbbad7afc8a791ecaa8492",
+    "@introspection/plugin-js-error": "https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-js-error@841407b73c12a7c82fcbbad7afc8a791ecaa8492",
+    "@introspection/plugin-network": "https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-network@841407b73c12a7c82fcbbad7afc8a791ecaa8492",
+    "@introspection/plugin-performance": "https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-performance@841407b73c12a7c82fcbbad7afc8a791ecaa8492",
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.2",
+    "introspect": "https://pkg.pr.new/bigmistqke/introspection/introspect@841407b73c12a7c82fcbbad7afc8a791ecaa8492",
     "typescript": "^6.0.3",
     "vite": "^5.2.0",
     "vite-plugin-solid": "3.0.0-next.4"

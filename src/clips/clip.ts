@@ -2,6 +2,7 @@ import type { Input } from "mediabunny"
 import { decodeToAudioBuffer } from "../media/audio-decoder"
 import { demuxBlob } from "../media/demuxer"
 import { makeVideoSource, type VideoSource } from "../media/video-decoder"
+import { logTrace } from "../utils"
 
 export interface Clip {
   cellId: string
@@ -17,10 +18,18 @@ export interface Clip {
  * video samples. Returned Clip is ready for synchronous playback.
  */
 export async function blobToClip(cellId: string, blob: Blob): Promise<Clip> {
+  logTrace("clip-demux-begin", { cellId, blobSize: blob.size, blobType: blob.type })
   const demuxed = await demuxBlob(blob)
+  logTrace("clip-demux-done", { cellId, durationSeconds: demuxed.durationSeconds })
   const [audio, video] = await Promise.all([
-    decodeToAudioBuffer(demuxed.audioTrack),
-    makeVideoSource(demuxed.videoTrack),
+    decodeToAudioBuffer(demuxed.audioTrack).then(a => {
+      logTrace("clip-audio-decoded", { cellId, duration: a.duration, channels: a.numberOfChannels, sampleRate: a.sampleRate })
+      return a
+    }),
+    makeVideoSource(demuxed.videoTrack).then(v => {
+      logTrace("clip-video-decoded", { cellId })
+      return v
+    }),
   ])
   return {
     cellId,

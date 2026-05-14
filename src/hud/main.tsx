@@ -10,7 +10,7 @@ import {
 import { Context } from "../context"
 import { useDirectOutput, useMediaStreamOutput } from "../media/audio-context"
 import { startCapture, type CaptureHandle } from "../media/capture"
-import { logAction, selectedCellId } from "../utils"
+import { logAction, logTrace, run, selectedCellId } from "../utils"
 import { Hud } from "./hud"
 
 export function Main() {
@@ -65,18 +65,20 @@ export function Main() {
     // `undefined` instead. See ../../../solid-pending-bug-repro for
     // the upstream contract mismatch.
     const stream = latest(context.preview.stream)
+    logTrace("record-start-stream", { hasStream: stream != null })
     if (stream == null) {
       useDirectOutput()
       return
     }
     const handle = startCapture(stream)
     setCaptureHandle(handle)
+    logTrace("record-start-handle", { cellId })
 
     // Anchor-take: auto-stop at songLength if set.
     if (length !== null) {
       window.setTimeout(() => {
         if (captureHandle() === handle) {
-          void onStopRecording()
+          run("record-stop-auto", onStopRecording)
         }
       }, length * 1000)
     }
@@ -102,14 +104,18 @@ export function Main() {
     // Capture is over — autoplay below uses speakers normally.
     useDirectOutput()
     const blob = await handle.stop()
+    logTrace("record-stop-blob", { cellId, size: blob.size, type: blob.type })
     if (cellId === null) {
+      logTrace("record-stop-abort", { reason: "no cellId" })
       return
     }
     const clip = await blobToClip(cellId, blob)
+    logTrace("record-stop-clip-ready", { cellId, duration: clip.duration })
     // Persist the raw blob to OPFS before staging the in-memory clip
     // so a refresh mid-decode can't lose the recording. The manifest
     // update inside saveClipBlob will include the new cellId.
     await context.projects.saveClipBlob(cellId, blob)
+    logTrace("record-stop-saved", { cellId })
     context.clips.setClip(cellId, clip)
     if (context.songLength() === null) {
       context.setSongLength(clip.duration)
@@ -117,9 +123,11 @@ export function Main() {
     // Autoplay: once a recording lands, start the song so the user
     // hears the result without an extra tap.
     const allClips = Object.values(context.clips.clips)
+    logTrace("record-stop-autoplay", { clipCount: allClips.length })
     if (allClips.length > 0) {
       await context.transport.play(allClips, context.songLength())
     }
+    logTrace("record-stop-complete", { cellId })
   }
 
   async function onPlay() {
@@ -161,7 +169,7 @@ export function Main() {
         <Hud.Button
           data-action="play"
           disabled={context.clips.cellIds().length === 0}
-          onClick={onPlay}
+          onClick={() => run("play", onPlay)}
         >
           <PlayIcon />
         </Hud.Button>
@@ -191,14 +199,14 @@ export function Main() {
                 isPending(context.preview.stream) ||
                 context.preview.stream() === null
               }
-              onClick={onRecord}
+              onClick={() => run("record-start", onRecord)}
             >
               <RecordIcon />
             </Hud.Button>
           </Loading>
         }
       >
-        <Hud.Button data-action="record-stop" onClick={onStopRecording}>
+        <Hud.Button data-action="record-stop" onClick={() => run("record-stop", onStopRecording)}>
           <RecordingActiveIcon />
         </Hud.Button>
       </Show>

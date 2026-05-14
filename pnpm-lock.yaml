@@ -24,12 +24,33 @@ importers:
         specifier: 2.0.0-beta.9
         version: 2.0.0-beta.9
     devDependencies:
+      '@introspection/playwright':
+        specifier: https://pkg.pr.new/bigmistqke/introspection/@introspection/playwright@841407b73c12a7c82fcbbad7afc8a791ecaa8492
+        version: https://pkg.pr.new/bigmistqke/introspection/@introspection/playwright@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/plugin-console':
+        specifier: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-console@841407b73c12a7c82fcbbad7afc8a791ecaa8492
+        version: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-console@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/plugin-defaults':
+        specifier: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-defaults@841407b73c12a7c82fcbbad7afc8a791ecaa8492
+        version: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-defaults@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/plugin-js-error':
+        specifier: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-js-error@841407b73c12a7c82fcbbad7afc8a791ecaa8492
+        version: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-js-error@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/plugin-network':
+        specifier: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-network@841407b73c12a7c82fcbbad7afc8a791ecaa8492
+        version: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-network@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/plugin-performance':
+        specifier: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-performance@841407b73c12a7c82fcbbad7afc8a791ecaa8492
+        version: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-performance@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
       '@playwright/test':
         specifier: ^1.59.1
         version: 1.59.1
       '@types/node':
         specifier: ^25.6.2
         version: 25.6.2
+      introspect:
+        specifier: https://pkg.pr.new/bigmistqke/introspection/introspect@841407b73c12a7c82fcbbad7afc8a791ecaa8492
+        version: https://pkg.pr.new/bigmistqke/introspection/introspect@841407b73c12a7c82fcbbad7afc8a791ecaa8492
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -264,6 +285,62 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@introspection/config@https://pkg.pr.new/bigmistqke/introspection/@introspection/config@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/config@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/playwright@https://pkg.pr.new/bigmistqke/introspection/@introspection/playwright@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/playwright@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+    peerDependencies:
+      '@playwright/test': '>=1.40.0'
+
+  '@introspection/plugin-console@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-console@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-console@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/plugin-debugger@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-debugger@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-debugger@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/plugin-defaults@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-defaults@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-defaults@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/plugin-js-error@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-js-error@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-js-error@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/plugin-network@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-network@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-network@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/plugin-performance@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-performance@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-performance@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/read@https://pkg.pr.new/bigmistqke/introspection/@introspection/read@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/read@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/serve@https://pkg.pr.new/bigmistqke/introspection/@introspection/serve@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/serve@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/types@https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+    peerDependencies:
+      '@playwright/test': '>=1.40.0'
+
+  '@introspection/utils@https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
+  '@introspection/write@https://pkg.pr.new/bigmistqke/introspection/@introspection/write@841407b73c12a7c82fcbbad7afc8a791ecaa8492':
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/@introspection/write@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
@@ -279,6 +356,18 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@jsep-plugin/assignment@1.3.0':
+    resolution: {integrity: sha512-VVgV+CXrhbMI3aSusQyclHkenWSAm95WaiKrMxRFam3JSUiIaQjoMIw2sEs/OX4XifnqeQUN4DYbJjlA8EfktQ==}
+    engines: {node: '>= 10.16.0'}
+    peerDependencies:
+      jsep: ^0.4.0||^1.0.0
+
+  '@jsep-plugin/regex@1.0.4':
+    resolution: {integrity: sha512-q7qL4Mgjs1vByCaTnDFcBnV9HS7GVPJX5vyVoCgZHNSC9rjwIlmbXG5sUuorR5ndfHAIlJ8pVStxvjXHbNvtUg==}
+    engines: {node: '>= 10.16.0'}
+    peerDependencies:
+      jsep: ^0.4.0||^1.0.0
 
   '@playwright/test@1.59.1':
     resolution: {integrity: sha512-PG6q63nQg5c9rIi4/Z5lR5IVF7yU5MqmKaPOe0HSc0O2cX1fPi96sUQu5j7eo4gKCkB2AnNGoWt7y4/Xx3Kcqg==}
@@ -469,6 +558,14 @@ packages:
   caniuse-lite@1.0.30001791:
     resolution: {integrity: sha512-yk0l/YSrOnFZk3UROpDLQD9+kC1l4meK/wed583AXrzoarMGJcbRi2Q4RaUYbKxYAsZ8sWmaSa/DsLmdBeI1vQ==}
 
+  chalk@5.6.2:
+    resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
+    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
+
+  commander@12.1.0:
+    resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
+    engines: {node: '>=18'}
+
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
@@ -517,12 +614,21 @@ packages:
   html-entities@2.3.3:
     resolution: {integrity: sha512-DV5Ln36z34NNTDgnz0EWGBLZENelNAtkiFA4kyNOG2tDI6Mz1uSWiq1wAKdyjnJwyDiDO7Fa2SO1CTxPXL8VxA==}
 
+  introspect@https://pkg.pr.new/bigmistqke/introspection/introspect@841407b73c12a7c82fcbbad7afc8a791ecaa8492:
+    resolution: {tarball: https://pkg.pr.new/bigmistqke/introspection/introspect@841407b73c12a7c82fcbbad7afc8a791ecaa8492}
+    version: 0.1.0
+    hasBin: true
+
   is-what@4.1.16:
     resolution: {integrity: sha512-ZhMwEosbFJkA0YhFnNDgTM4ZxDRsS6HqTo7qsZM08fehyRYIYa0yHu5R6mgo1n/8MgaPBXiPimPD77baVFYg+A==}
     engines: {node: '>=12.13'}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
+
+  jsep@1.4.0:
+    resolution: {integrity: sha512-B7qPcEVE3NVkmSJbaYxvv4cHkVW7DQsZz13pUMrfS8z8Q/BuShN+gcTXrUlPiGqM2/t/EEaI030bpxMqY8gMlw==}
+    engines: {node: '>= 10.16.0'}
 
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
@@ -532,6 +638,11 @@ packages:
   json5@2.2.3:
     resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
     engines: {node: '>=6'}
+    hasBin: true
+
+  jsonpath-plus@9.0.0:
+    resolution: {integrity: sha512-bqE77VIDStrOTV/czspZhTn+o27Xx9ZJRGVkdVShEtPoqsIx5yALv3lWVU6y+PqYvWPJNWE7ORCQheQkEe0DDA==}
+    engines: {node: '>=14.0.0'}
     hasBin: true
 
   lru-cache@5.1.1:
@@ -860,6 +971,94 @@ snapshots:
   '@esbuild/win32-x64@0.21.5':
     optional: true
 
+  '@introspection/config@https://pkg.pr.new/bigmistqke/introspection/@introspection/config@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/playwright@https://pkg.pr.new/bigmistqke/introspection/@introspection/playwright@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/config': https://pkg.pr.new/bigmistqke/introspection/@introspection/config@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/write': https://pkg.pr.new/bigmistqke/introspection/@introspection/write@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@playwright/test': 1.59.1
+
+  '@introspection/plugin-console@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-console@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/plugin-debugger@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-debugger@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/plugin-defaults@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-defaults@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/plugin-console': https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-console@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/plugin-debugger': https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-debugger@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/plugin-js-error': https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-js-error@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/plugin-network': https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-network@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/plugin-js-error@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-js-error@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/plugin-network@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-network@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/plugin-performance@https://pkg.pr.new/bigmistqke/introspection/@introspection/plugin-performance@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/read@https://pkg.pr.new/bigmistqke/introspection/@introspection/read@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/serve@https://pkg.pr.new/bigmistqke/introspection/@introspection/serve@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/types@https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@playwright/test': 1.59.1
+
+  '@introspection/utils@https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
+  '@introspection/write@https://pkg.pr.new/bigmistqke/introspection/@introspection/write@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)':
+    dependencies:
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+    transitivePeerDependencies:
+      - '@playwright/test'
+
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -878,6 +1077,14 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@jsep-plugin/assignment@1.3.0(jsep@1.4.0)':
+    dependencies:
+      jsep: 1.4.0
+
+  '@jsep-plugin/regex@1.0.4(jsep@1.4.0)':
+    dependencies:
+      jsep: 1.4.0
 
   '@playwright/test@1.59.1':
     dependencies:
@@ -1028,6 +1235,10 @@ snapshots:
 
   caniuse-lite@1.0.30001791: {}
 
+  chalk@5.6.2: {}
+
+  commander@12.1.0: {}
+
   convert-source-map@2.0.0: {}
 
   csstype@3.2.3: {}
@@ -1078,13 +1289,35 @@ snapshots:
 
   html-entities@2.3.3: {}
 
+  introspect@https://pkg.pr.new/bigmistqke/introspection/introspect@841407b73c12a7c82fcbbad7afc8a791ecaa8492:
+    dependencies:
+      '@introspection/config': https://pkg.pr.new/bigmistqke/introspection/@introspection/config@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/playwright': https://pkg.pr.new/bigmistqke/introspection/@introspection/playwright@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/read': https://pkg.pr.new/bigmistqke/introspection/@introspection/read@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/serve': https://pkg.pr.new/bigmistqke/introspection/@introspection/serve@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/types': https://pkg.pr.new/bigmistqke/introspection/@introspection/types@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/utils': https://pkg.pr.new/bigmistqke/introspection/@introspection/utils@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@introspection/write': https://pkg.pr.new/bigmistqke/introspection/@introspection/write@841407b73c12a7c82fcbbad7afc8a791ecaa8492(@playwright/test@1.59.1)
+      '@playwright/test': 1.59.1
+      chalk: 5.6.2
+      commander: 12.1.0
+      jsonpath-plus: 9.0.0
+
   is-what@4.1.16: {}
 
   js-tokens@4.0.0: {}
 
+  jsep@1.4.0: {}
+
   jsesc@3.1.0: {}
 
   json5@2.2.3: {}
+
+  jsonpath-plus@9.0.0:
+    dependencies:
+      '@jsep-plugin/assignment': 1.3.0(jsep@1.4.0)
+      '@jsep-plugin/regex': 1.0.4(jsep@1.4.0)
+      jsep: 1.4.0
 
   lru-cache@5.1.1:
     dependencies:

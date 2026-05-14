@@ -1,5 +1,35 @@
-import type { JSX } from "solid-js"
+import { createSignal, type JSX } from "solid-js"
 import type { AppContext, Container, Entity, Node, Rgb } from "./types"
+
+/**
+ * Module-level error sink. Async handlers in the UI are fire-and-forget
+ * (JSX onClick can't await), so rejections vanish unless routed somewhere
+ * visible. `run()` is the wrapper for those call sites; `lastError` is
+ * the accessor the HUD error strip reads.
+ */
+const [lastError, setLastError] = createSignal<{ scope: string; error: Error } | null>(null)
+export { lastError }
+
+export function dismissError(): void {
+  setLastError(null)
+}
+
+export function logError(scope: string, error: unknown): void {
+  const wrapped = error instanceof Error ? error : new Error(String(error))
+  console.error("[error]", JSON.stringify({ scope, message: wrapped.message }), wrapped)
+  setLastError({ scope, error: wrapped })
+}
+
+/**
+ * Run a fire-and-forget async action and route any rejection to
+ * `logError`. Use for JSX onClick / setTimeout callbacks that invoke an
+ * async function whose rejections would otherwise be swallowed.
+ */
+export function run(scope: string, action: () => Promise<unknown>): void {
+  action().catch(error => {
+    logError(scope, error)
+  })
+}
 
 /** Pastel RGB triple — each channel in [~0.59, ~0.98]. Stored on
  *  Entity directly so renderers don't have to parse a string. */
@@ -81,6 +111,18 @@ export function selectedCellId(context: AppContext): string | null {
  */
 export function logAction(type: string, payload?: Record<string, unknown>): void {
   console.log("[action]", JSON.stringify({ type, ...payload }))
+}
+
+/**
+ * Diagnostic breadcrumb. Lines have the form
+ *   [trace] {"step":"...", ...}
+ * for grep-friendly tailing during device debugging. Intended to be
+ * sprinkled at every await/branch in async chains that have no UI
+ * surface (recording, decoding, persistence). Remove or thin once the
+ * codepath is stable.
+ */
+export function logTrace(step: string, payload?: Record<string, unknown>): void {
+  console.log("[trace]", JSON.stringify({ step, ...payload }))
 }
 
 export function pathEquals(first: number[], second: number[]) {

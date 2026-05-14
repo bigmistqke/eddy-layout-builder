@@ -1,3 +1,4 @@
+import { ErrorStrip } from "./components/error-strip"
 import { Context } from "./context"
 import { LayoutBuilder } from "./layout-builder"
 import { createAppState } from "./state"
@@ -12,6 +13,7 @@ export function App() {
     <Context value={state}>
       <div style={{ width: "100vw", height: "100vh", position: "relative" }}>
         <LayoutBuilder />
+        <ErrorStrip />
       </div>
     </Context>
   )

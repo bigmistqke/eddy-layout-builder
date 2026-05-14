@@ -1,4 +1,5 @@
 import { createSignal, untrack, type Accessor } from "solid-js"
+import { logError } from "../utils"
 
 export interface Preview {
   /** Writable async signal. Reading triggers the underlying
@@ -26,21 +27,32 @@ export function createPreview(): Preview {
   // gUM fires when something needs the stream. setStream(null) lets
   // disable() reset back to an idle state.
   const [stream, setStream] = createSignal<MediaStream | null>(async () => {
-    const next = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    element.srcObject = next
-    const { promise, resolve } = Promise.withResolvers<void>()
-    const controller = new AbortController()
-    element.addEventListener(
-      "loadedmetadata",
-      () => {
-        controller.abort()
-        resolve()
-      },
-      controller,
-    )
-    await promise
-    await element.play()
-    return next
+    try {
+      const next = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      // Strip the audio track from the preview element's srcObject so
+      // Android Chrome treats it as autoplayable (an HTMLVideoElement
+      // with audio in its source is blocked by the autoplay policy
+      // even when `muted = true`). The full stream — including audio —
+      // is still returned by the signal, so capture and monitor routing
+      // are unaffected.
+      element.srcObject = new MediaStream(next.getVideoTracks())
+      const { promise, resolve } = Promise.withResolvers<void>()
+      const controller = new AbortController()
+      element.addEventListener(
+        "loadedmetadata",
+        () => {
+          controller.abort()
+          resolve()
+        },
+        controller,
+      )
+      await promise
+      await element.play()
+      return next
+    } catch (error) {
+      logError("preview-getusermedia", error)
+      return null
+    }
   })
 
   function disable() {

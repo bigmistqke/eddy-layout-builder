@@ -164,11 +164,9 @@ export function Canvas() {
           if (clip === undefined) {
             continue
           }
-          const sample = clip.video.frameAt(positionMicros)
-          if (sample !== null) {
-            // VideoSample → VideoFrame for texImage2D. Caller closes the
-            // VideoFrame after upload.
-            frames.set(cellId, sample.toVideoFrame())
+          const bitmap = clip.video.frameAt(positionMicros)
+          if (bitmap !== null) {
+            frames.set(cellId, bitmap)
           }
         }
         return frames

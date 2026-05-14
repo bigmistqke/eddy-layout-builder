@@ -1,4 +1,5 @@
 import { BlobSource, Input, ALL_FORMATS, type InputAudioTrack, type InputVideoTrack } from "mediabunny"
+import { logTrace } from "../utils"
 
 export interface DemuxResult {
   input: Input
@@ -18,6 +19,12 @@ export async function demuxBlob(blob: Blob): Promise<DemuxResult> {
     input.getPrimaryAudioTrack(),
     input.getPrimaryVideoTrack(),
   ])
+  logTrace("demux-tracks", {
+    hasAudio: audioTrack !== null,
+    hasVideo: videoTrack !== null,
+    audioCodec: audioTrack?.codec ?? null,
+    videoCodec: videoTrack?.codec ?? null,
+  })
   if (audioTrack === null) {
     throw new Error("demuxBlob: blob has no audio track")
   }

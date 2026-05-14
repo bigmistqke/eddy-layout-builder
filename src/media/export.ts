@@ -74,19 +74,13 @@ export async function exportSong(
     const t = i * frameDuration
     const tMicros = Math.round(t * 1_000_000)
     const frames = new Map<string, TextureSource>()
-    const transientFrames: VideoFrame[] = []
     for (const clip of clips) {
-      const sample = clip.video.frameAt(tMicros)
-      if (sample !== null) {
-        const frame = sample.toVideoFrame()
-        frames.set(clip.cellId, frame)
-        transientFrames.push(frame)
+      const bitmap = clip.video.frameAt(tMicros)
+      if (bitmap !== null) {
+        frames.set(clip.cellId, bitmap)
       }
     }
     renderer.render(VIEWPORT_IDENTITY, leaves, frames.size > 0 ? frames : undefined)
-    for (const frame of transientFrames) {
-      frame.close()
-    }
     await videoSource.add(t, frameDuration)
     onProgress?.((i + 1) / totalFrames)
   }

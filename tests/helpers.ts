@@ -1,6 +1,12 @@
 import { readFileSync } from "fs"
 import { resolve } from "path"
-import { expect, test as base, type Page } from "@playwright/test"
+import { expect, test as playwrightBase, type Page } from "@playwright/test"
+import { androidTest } from "./_android-fixture"
+
+// Swap the base test fixture when running against a USB-connected
+// Android Chrome. Tests are unmodified — they import `test` from here
+// and get whichever flavour the active Playwright config selected.
+const base = process.env.PLAYWRIGHT_ANDROID === "1" ? androidTest : playwrightBase
 
 /**
  * Capture every console.warn/error and page-level error emitted by the
