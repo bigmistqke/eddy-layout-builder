@@ -1,6 +1,5 @@
 import { HANDLE_H, HANDLE_W } from "./constants"
-import type { Node } from "./types"
-import type { SelectedHandlesState } from "./types"
+import type { Node, SelectedHandlesState } from "./types"
 import {
   computeExtends,
   computeSticks,
@@ -30,7 +29,16 @@ const IDENTITY_AFFORDANCES: FrameAffordances = {
  *  pairs to fit non-overlapping on a single axis. */
 const MIN_HANDLE_DIM = HANDLE_W + 2 * HANDLE_H
 
-/** Closed-form fit-scale (ADR-0001 — layout is linearly scalable). */
+/** Closed-form fit-scale. Layout is linearly scalable (ADR-0001), so the
+ *  rect at scale 1 scales directly:
+ *
+ *  - fit-inside (Rule 2): `min` of the axis ratios — frame fits entirely
+ *    inside the canvas, binding axis exactly on target.
+ *  - clamp-overflow (Rule 3): `max` of the axis ratios — used only when
+ *    fit-inside would leave a dimension below `MIN_HANDLE_DIM` (extreme
+ *    aspect ratios); the smaller-by-ratio axis fills target, the other
+ *    overflows.
+ */
 function findFitScale(
   layout: Node,
   path: number[],
@@ -102,6 +110,7 @@ export function computeFrameAffordances(
   // Re-run frameRect at the scaled canvas dims so the division order
   // matches the renderer (scale before divide, not divide then scale)
   // — floating-point differences accumulate across deep trees otherwise.
+  // At scale 1 (the no-zoom path) this re-evaluation just reproduces baseRect — a negligible cost kept so there's a single postRect code path.
   const scaledRect = frameRect(layout, path, {
     width: canvas.width * viewport.scale,
     height: canvas.height * viewport.scale,
