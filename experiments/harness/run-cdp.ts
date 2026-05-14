@@ -11,7 +11,8 @@
 // OS-level app permissions are handled by run.sh via `pm grant`.
 //
 // Invoked by run.sh (which handles the adb plumbing). Standalone usage:
-//   node experiments/harness/run-cdp.mjs <experiment-name> <port>
+//   node experiments/harness/run-cdp.ts <experiment-name> <port>
+// (Node runs .ts directly; the repo is "type": "module".)
 
 import { execSync } from "node:child_process"
 import { writeFileSync } from "node:fs"
@@ -19,7 +20,7 @@ import { dirname, join } from "node:path"
 
 const [, , experiment, portArg] = process.argv
 if (!experiment) {
-  console.error("usage: run-cdp.mjs <experiment-name> [port]")
+  console.error("usage: run-cdp.ts <experiment-name> [port]")
   process.exit(2)
 }
 const port = portArg ?? "5173"
@@ -30,7 +31,7 @@ const RESULT_PREFIX = "[experiment-result] "
 // experiments/harness/ → experiments/
 const EXPERIMENTS_DIR = dirname(import.meta.dirname)
 
-function gitMeta() {
+function gitMeta(): { sha: string | null; dirty: boolean | null } {
   try {
     const sha = execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim()
     const dirty = execSync("git status --porcelain", { encoding: "utf8" }).trim().length > 0
@@ -40,33 +41,41 @@ function gitMeta() {
   }
 }
 
-/** Open a CDP websocket and return a `send(method, params)` helper plus
- *  the raw socket (for event listeners) and a ready promise. */
-function connect(wsUrl) {
-  const ws = new WebSocket(wsUrl)
-  let nextId = 1
-  const pending = new Map()
-  ws.addEventListener("message", ev => {
-    const msg = JSON.parse(ev.data)
-    if (msg.id && pending.has(msg.id)) {
-      const { resolve, reject } = pending.get(msg.id)
-      pending.delete(msg.id)
-      msg.error ? reject(new Error(JSON.stringify(msg.error))) : resolve(msg.result)
-    }
-  })
-  const ready = new Promise((resolve, reject) => {
-    ws.addEventListener("open", resolve)
-    ws.addEventListener("error", reject)
-  })
-  function send(method, params = {}) {
-    const id = nextId++
-    ws.send(JSON.stringify({ id, method, params }))
-    return new Promise((resolve, reject) => pending.set(id, { resolve, reject }))
-  }
-  return { ws, ready, send, close: () => ws.close() }
+interface CdpConnection {
+  ws: WebSocket
+  ready: Promise<void>
+  send(method: string, params?: Record<string, unknown>): Promise<unknown>
+  close(): void
 }
 
-async function pickPageTab() {
+/** Open a CDP websocket and return a `send(method, params)` helper plus
+ *  the raw socket (for event listeners) and a ready promise. */
+function connect(wsUrl: string): CdpConnection {
+  const ws = new WebSocket(wsUrl)
+  let nextId = 1
+  const pending = new Map<number, PromiseWithResolvers<unknown>>()
+  ws.addEventListener("message", ev => {
+    const msg = JSON.parse(ev.data as string)
+    const call = msg.id !== undefined ? pending.get(msg.id) : undefined
+    if (call) {
+      pending.delete(msg.id)
+      msg.error ? call.reject(new Error(JSON.stringify(msg.error))) : call.resolve(msg.result)
+    }
+  })
+  const ready = Promise.withResolvers<void>()
+  ws.addEventListener("open", () => ready.resolve())
+  ws.addEventListener("error", () => ready.reject(new Error("websocket error")))
+  function send(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
+    const id = nextId++
+    const call = Promise.withResolvers<unknown>()
+    pending.set(id, call)
+    ws.send(JSON.stringify({ id, method, params }))
+    return call.promise
+  }
+  return { ws, ready: ready.promise, send, close: () => ws.close() }
+}
+
+async function pickPageTab(): Promise<{ ws: string; fresh: boolean }> {
   // Android Chrome usually disables /json/new — fall back to navigating
   // the first existing page tab.
   try {
@@ -76,26 +85,42 @@ async function pickPageTab() {
     }
   } catch {}
   const tabs = await (await fetch(`${CDP}/json`)).json()
-  const existing = tabs.find(t => t.type === "page" && t.webSocketDebuggerUrl)
+  const existing = tabs.find(
+    (tab: { type: string; webSocketDebuggerUrl?: string }) =>
+      tab.type === "page" && tab.webSocketDebuggerUrl,
+  )
   if (!existing) {
     throw new Error("no usable page tab on the device")
   }
   return { ws: existing.webSocketDebuggerUrl, fresh: false }
 }
 
-const { ws: pageWsUrl, fresh } = await pickPageTab()
+// If Chrome is dead when we start (crashed before run-cdp launched), the
+// CDP endpoint refuses — treat that as a crash (exit 3) so run.sh
+// relaunches and retries, rather than a hard failure.
+const { ws: pageWsUrl, fresh } = await pickPageTab().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error)
+  console.error(`[run-cdp] cannot reach CDP — Chrome crash? (${message})`)
+  process.exit(3)
+})
 console.error(`[run-cdp] ${experiment} → ${PAGE_URL}`)
 console.error(`[run-cdp] target tab (${fresh ? "fresh" : "reused"}): ${pageWsUrl}`)
 const page = connect(pageWsUrl)
+page.ready.catch(() => {
+  console.error("[run-cdp] page socket failed to open — Chrome crash?")
+  process.exit(3)
+})
 
-let resolveDone
-const done = new Promise(resolve => (resolveDone = resolve))
+let captured = false
+const { promise: done, resolve: resolveDone } = Promise.withResolvers<void>()
 page.ws.addEventListener("message", ev => {
-  const msg = JSON.parse(ev.data)
+  const msg = JSON.parse(ev.data as string)
   if (msg.method !== "Runtime.consoleAPICalled") {
     return
   }
-  const text = (msg.params.args || []).map(a => a.value ?? a.description ?? "").join(" ")
+  const text: string = (msg.params.args ?? [])
+    .map((arg: { value?: unknown; description?: string }) => arg.value ?? arg.description ?? "")
+    .join(" ")
   console.error(`[device] ${text}`)
   const at = text.indexOf(RESULT_PREFIX)
   if (at === -1) {
@@ -107,7 +132,18 @@ page.ws.addEventListener("message", ev => {
   writeFileSync(resultPath, `${JSON.stringify(record, null, 2)}\n`)
   console.error(`[run-cdp] wrote ${resultPath}`)
   console.log(JSON.stringify(record, null, 2))
+  captured = true
   resolveDone()
+})
+
+// Chrome crashing mid-run (OOM under many decoders, thermal, etc.) drops
+// the page's DevTools socket. Exit 3 so run.sh knows it was a crash and
+// relaunches Chrome for another attempt — distinct from a clean timeout.
+page.ws.addEventListener("close", () => {
+  if (!captured) {
+    console.error("[run-cdp] target socket closed before a result — Chrome crash?")
+    process.exit(3)
+  }
 })
 
 await page.ready

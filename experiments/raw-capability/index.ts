@@ -14,7 +14,10 @@ import {
 // Experiment parameters — recorded into result.json so the run is
 // reproducible. To vary one, edit here and commit (see README.md).
 const params = {
-  maxDecoders: 64,
+  // At 720p, 64 concurrent decoders OOM-crashed the A15 mid-M1. Kept
+  // low so the run completes and yields M2/M3/M4 at realistic res; M1's
+  // real ceiling at 720p is "crashes above N", measured by bumping this.
+  maxDecoders: 16,
   reconfigureIterations: 30,
   uploadIterations: 60,
   recordSeconds: 6,
