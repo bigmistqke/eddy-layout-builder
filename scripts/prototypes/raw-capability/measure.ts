@@ -1,5 +1,5 @@
-import { detectThroughputCollapse } from "./fallback-detect"
-import type { ProbeInput } from "./input"
+import { detectThroughputCollapse } from "../harness/fallback-detect"
+import type { ProbeInput } from "../harness/input"
 
 /** M1 — how many VideoDecoders can be live at once before the wall. */
 export interface DecoderCeilingResult {

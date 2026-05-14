@@ -1,4 +1,4 @@
-import { recordProbeInput, type ProbeInput } from "./input"
+import { recordProbeInput, type ProbeInput } from "../harness/input"
 import {
   measureDecoderCeiling,
   measureReconfigureCost,
@@ -10,8 +10,8 @@ import {
   type UploadResult,
 } from "./measure"
 
-/** Recognizable prefix so cdp-tail.mjs / a human can grep the result. */
-const RESULT_PREFIX = "[device-probe-result]"
+/** Recognizable prefix so the prototype runner / a human can grep the result. */
+const RESULT_PREFIX = "[prototype-result]"
 
 const MAX_DECODERS = 32
 const RECONFIGURE_ITERATIONS = 30
