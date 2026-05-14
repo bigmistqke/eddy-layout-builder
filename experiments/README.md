@@ -61,7 +61,7 @@ To vary an experiment, edit the `params` block in its `index.ts` and commit.
 | Experiment | Question | Verdict |
 |---|---|---|
 | [smoke](smoke/README.md) | Will the device hand us a camera stream at all? | harness check, not a finding |
-| [raw-capability](raw-capability/README.md) | Raw decode/upload limits? | **2–4 decoder premise falsified** — A15 allows ≥32 |
-| decoder-pools | Is the decoder pool actually dead? (sustained concurrent decode) | _not yet built_ |
+| [raw-capability](raw-capability/README.md) | Raw decode/upload limits? | 2–4 premise falsified, but at 720p one decoder ≈ 3 cells; resolution dominates |
+| [decoder-pools](decoder-pools/README.md) | Is the decoder pool actually dead? (sustained concurrent decode) | Not dead, but aggregate 720p decode ≈ ~4–5 streams regardless of decoder count |
 | windowed-previews | Can per-cell ring buffers give bounded memory at acceptable quality? | _not yet built_ |
 | compositing-full-video | Does 1-decode-1-upload scale to large N; rebuild cost? | _not yet built — kept as fallback comparison_ |

@@ -1,0 +1,46 @@
+{
+  "ranAt": "2026-05-14T20:41:33.861Z",
+  "git": {
+    "sha": "1cf5b18",
+    "dirty": true
+  },
+  "experiment": "decoder-pools",
+  "params": {
+    "poolSize": 8,
+    "recordSeconds": 6,
+    "runSeconds": 8,
+    "resolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "maxQueue": 8,
+    "realtimeFps": 28
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "input": {
+      "requested": "1280x720",
+      "actual": "720x1280"
+    },
+    "elapsedSeconds": 8.82659999999404,
+    "perDecoderFps": [
+      20.506197176729685,
+      19.033376385030866,
+      16.994086058063274,
+      16.994086058063274,
+      16.994086058063274,
+      16.994086058063274,
+      16.994086058063274,
+      16.767498243955764
+    ],
+    "minFps": 16.767498243955764,
+    "aggregateFps": 141.2775020960327,
+    "realtimeOk": false
+  }
+}
