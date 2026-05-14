@@ -110,7 +110,8 @@ export function computeFrameAffordances(
   // Re-run frameRect at the scaled canvas dims so the division order
   // matches the renderer (scale before divide, not divide then scale)
   // — floating-point differences accumulate across deep trees otherwise.
-  // At scale 1 (the no-zoom path) this re-evaluation just reproduces baseRect — a negligible cost kept so there's a single postRect code path.
+  // At scale 1 (the no-zoom path) this re-evaluation just reproduces
+  // baseRect — a negligible cost kept so there's a single postRect path.
   const scaledRect = frameRect(layout, path, {
     width: canvas.width * viewport.scale,
     height: canvas.height * viewport.scale,

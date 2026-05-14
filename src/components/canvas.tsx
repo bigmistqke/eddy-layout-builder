@@ -24,7 +24,8 @@ const HANDLE_DIRECTIONS: Direction[] = ["top", "bottom", "left", "right"]
 /** A signature of the layout topology + selection + tool. Re-fires the
  *  viewport-recompute effect whenever any container's children list, any
  *  container's direction, the selection, or the active tool changes —
- *  the tool affects gap/padding (song mode vs edit mode). */
+ *  the tool gates whether the selection drives a zoom (song mode = no
+ *  zoom; see frame-affordances). */
 function layoutSignature(layout: Node, selection: Selection | null, tool: string | null): string {
   function nodeSignature(node: Node): string {
     if (node.type === "entity") {
