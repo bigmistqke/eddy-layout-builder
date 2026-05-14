@@ -12,78 +12,14 @@ import {
 import { Context } from "../context"
 import type { Node } from "../types"
 import { logAction, rgbToCss } from "../utils"
+import { layoutFrames } from "../viewport"
 import styles from "./breadcrumb.module.css"
 import { Hud } from "./hud"
 
-const COLOR_CONTAINER = "#1a1a1a"
 /** Mirrors --color-red in index.css. Single accent that reads against
  *  both desaturated pastel cell fills and the dark container gutter. */
 const COLOR_HIGHLIGHT = "#e94949"
 const HIGHLIGHT_WIDTH = 2
-const GAP = 0
-
-/** Draw the layout tree onto a canvas, outlining the highlighted node. */
-function drawNode(
-  canvasContext: CanvasRenderingContext2D,
-  node: Node,
-  highlightPath: number[],
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-) {
-  const isHighlighted = highlightPath.length === 0
-  if (node.type === "entity") {
-    // Use each entity's own colour so the breadcrumb minimap visually
-    // matches the WebGL canvas's cell tint.
-    canvasContext.fillStyle = rgbToCss(node.color)
-    canvasContext.fillRect(x, y, width, height)
-  } else {
-    canvasContext.fillStyle = COLOR_CONTAINER
-    canvasContext.fillRect(x, y, width, height)
-    const childCount = node.children.length
-    if (node.direction === "horizontal") {
-      const childWidth = (width - GAP * (childCount - 1)) / childCount
-      for (let index = 0; index < childCount; index++) {
-        const childHighlight = index === highlightPath[0] ? highlightPath.slice(1) : [-1]
-        drawNode(
-          canvasContext,
-          node.children[index],
-          childHighlight,
-          x + index * (childWidth + GAP),
-          y,
-          childWidth,
-          height,
-        )
-      }
-    } else {
-      const childHeight = (height - GAP * (childCount - 1)) / childCount
-      for (let index = 0; index < childCount; index++) {
-        const childHighlight = index === highlightPath[0] ? highlightPath.slice(1) : [-1]
-        drawNode(
-          canvasContext,
-          node.children[index],
-          childHighlight,
-          x,
-          y + index * (childHeight + GAP),
-          width,
-          childHeight,
-        )
-      }
-    }
-  }
-  if (isHighlighted) {
-    canvasContext.strokeStyle = COLOR_HIGHLIGHT
-    canvasContext.lineWidth = HIGHLIGHT_WIDTH
-    const inset = HIGHLIGHT_WIDTH / 2
-    canvasContext.strokeRect(
-      x + inset,
-      y + inset,
-      width - HIGHLIGHT_WIDTH,
-      height - HIGHLIGHT_WIDTH,
-    )
-  }
-}
 
 function Minimap(props: { layout: Node; highlightPath: number[]; aspect: number }) {
   let canvasElement!: HTMLCanvasElement
@@ -116,7 +52,6 @@ function Minimap(props: { layout: Node; highlightPath: number[]; aspect: number 
       canvasElement.height = currentSize.height * devicePixelRatio
       const canvasContext = canvasElement.getContext("2d")!
       canvasContext.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0)
-      canvasContext.clearRect(0, 0, currentSize.width, currentSize.height)
       // Letterbox the layout inside the canvas box — same idea as
       // object-fit: contain, done in the draw call so the bitmap matches
       // the canvas's actual pixel size with no wasted resolution.
@@ -130,9 +65,29 @@ function Minimap(props: { layout: Node; highlightPath: number[]; aspect: number 
       }
       const drawX = (currentSize.width - drawWidth) / 2
       const drawY = (currentSize.height - drawHeight) / 2
-      untrack(() =>
-        drawNode(canvasContext, layout, highlightPath, drawX, drawY, drawWidth, drawHeight),
+      canvasContext.clearRect(0, 0, currentSize.width, currentSize.height)
+      const { leaves, selectedRect } = untrack(() =>
+        layoutFrames(layout, { width: drawWidth, height: drawHeight }, {
+          path: highlightPath,
+          depth: 0,
+          preview: false,
+        }),
       )
+      for (const leaf of leaves) {
+        canvasContext.fillStyle = rgbToCss(leaf.color)
+        canvasContext.fillRect(drawX + leaf.rect.x, drawY + leaf.rect.y, leaf.rect.width, leaf.rect.height)
+      }
+      if (selectedRect) {
+        canvasContext.strokeStyle = COLOR_HIGHLIGHT
+        canvasContext.lineWidth = HIGHLIGHT_WIDTH
+        const inset = HIGHLIGHT_WIDTH / 2
+        canvasContext.strokeRect(
+          drawX + selectedRect.x + inset,
+          drawY + selectedRect.y + inset,
+          selectedRect.width - HIGHLIGHT_WIDTH,
+          selectedRect.height - HIGHLIGHT_WIDTH,
+        )
+      }
     },
   )
   return <canvas ref={canvasElement} style={{ width: "100%", height: "100%", display: "block" }} />
