@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>prototype · smoke</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font: 15px/1.5 ui-monospace, monospace;
+        background: #111;
+        color: #eee;
+      }
+      #status {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      #grant {
+        display: block;
+        margin-top: 16px;
+        padding: 16px;
+        font: inherit;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <pre id="status">smoke — checking camera + mic access...</pre>
+    <button id="grant">tap to request camera + mic</button>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
