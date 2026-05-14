@@ -6,7 +6,7 @@ import { Hud } from "./hud"
  *  own HUD underneath, mounted only in edit mode. */
 export function Menu() {
   return (
-    <Hud kind="menu" position="top-right" orientation="vertical">
+    <Hud position="top-right" orientation="vertical">
       <ProjectMenu />
     </Hud>
   )

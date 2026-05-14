@@ -157,7 +157,7 @@ export function Main() {
   }
 
   return (
-    <Hud kind="main" position="bottom-center" orientation="horizontal">
+    <Hud position="bottom-center" orientation="horizontal">
       <Show
         when={context.transport.state() === "stopped"}
         fallback={

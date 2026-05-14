@@ -1,7 +1,7 @@
 import { omit, useContext, type ComponentProps, type JSX } from "solid-js"
 import { ArrowIcon } from "../components/icons"
 import { Context } from "../context"
-import type { Direction, HudKind, HudOrientation } from "../types"
+import type { Direction, HudOrientation } from "../types"
 import styles from "./hud.module.css"
 
 /** A directional notch with the arrow icon — used for the four edge
@@ -56,7 +56,6 @@ const ORIENTATION_CLASS: Record<HudOrientation, string> = {
  *  HUDs is exposed as `Hud.Button` (see attachment at the bottom of
  *  this file). */
 export function Hud(props: {
-  kind: HudKind
   position: HudPosition
   orientation: HudOrientation
   /** Extra class applied to the outer wrapper — for HUD-specific
@@ -77,7 +76,7 @@ export function Hud(props: {
         props.class,
       ]}
       onClick={event => event.stopPropagation()}
-      ref={context.setHudElement(props.kind, props.orientation)}
+      ref={context.setHudElement(props.orientation)}
     >
       <div
         ref={props.contentRef}

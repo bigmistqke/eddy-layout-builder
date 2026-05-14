@@ -146,7 +146,6 @@ export function Breadcrumb(props: { canvasAspect: Accessor<number> }) {
     >
       {selection => (
         <Hud
-          kind="breadcrumb"
           position="top-left"
           orientation="horizontal"
           contentClass={styles.content}

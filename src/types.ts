@@ -38,7 +38,6 @@ export type AppState = {
 }
 
 export type Direction = "top" | "bottom" | "left" | "right"
-export type HudKind = "main" | "breadcrumb" | "menu" | "contextual"
 /** A HUD's long axis — the direction along which it extends. Horizontal
  *  HUDs (e.g. a breadcrumb across the top edge) attach to the top/bottom
  *  edges; vertical HUDs attach to the left/right edges. Used by viewport
@@ -72,21 +71,22 @@ export type AppContext = {
   app: AppState
   setSelection: (next: Selection | null) => void
 
-  isCanvasZoomed: Accessor<boolean>
-  setIsCanvasZoomed: (zoomed: boolean) => void
-
-  /** Returns a ref-setter for the named HUD slot. Wire as
-   *  `ref={context.setHudElement("breadcrumb", "horizontal")}` etc.
-   *  The orientation is the HUD's long axis (see `HudOrientation`). */
+  /** Returns a ref-setter for a HUD slot. Wire as
+   *  `ref={context.setHudElement("horizontal")}`. The orientation is
+   *  the HUD's long axis (see `HudOrientation`). Solid calls the setter
+   *  with the element on mount and `undefined` on unmount. */
   setHudElement: (
-    kind: HudKind,
     orientation: HudOrientation,
-  ) => (el: HTMLElement | undefined) => void
+  ) => (element: HTMLElement | undefined) => void
 
   /** Bounding rects of all mounted HUDs in canvas-relative coords, each
-   *  tagged with its long-axis orientation. Used by viewport math to
-   *  decide handle extend vs zoom-to-fit on handle/HUD overlap. */
-  computeHudRects: (canvasRect: DOMRect) => HudRect[]
+   *  tagged with its long-axis orientation. Driven by a single
+   *  ResizeObserver over every HUD element plus the canvas viewport
+   *  element. */
+  hudRects: Accessor<HudRect[]>
+  /** Ref-setter for the canvas viewport element — the box HUD rects are
+   *  measured relative to, and the second input to the HUD ResizeObserver. */
+  setCanvasViewportElement: (element: HTMLElement | undefined) => void
 
   /** True while the canvas viewport is mid-transition. Frames hide their
    *  handles during this window so ResizeObserver-driven collision rechecks

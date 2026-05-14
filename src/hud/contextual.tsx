@@ -23,7 +23,6 @@ export function Contextual() {
   return (
     <Show when={context.app.tool !== null}>
       <Hud
-        kind="contextual"
         position="middle-right"
         orientation="vertical"
         contentClass={styles.content}
