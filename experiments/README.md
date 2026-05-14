@@ -67,6 +67,6 @@ To vary an experiment, edit the `params` block in its `index.ts` and commit.
 | 00 | [smoke](00_smoke/README.md) | Will the device hand us a camera stream at all? | harness check, not a finding |
 | 01 | [raw-capability](01_raw-capability/README.md) | Raw decode/upload limits? | 2–4 premise falsified, but at 720p one decoder ≈ 3 cells; resolution dominates |
 | 02 | [decoder-pools](02_decoder-pools/README.md) | Is the decoder pool actually dead? (sustained concurrent decode) | Not dead, but aggregate 720p decode ≈ ~4–5 streams regardless of decoder count |
-| 03 | [grid-streaming](03_grid-streaming/README.md) | Does the real workload (N cells = one viewport) sustain realtime? | _pending first run_ |
+| 03 | [grid-streaming](03_grid-streaming/README.md) | Does the real workload (N cells = one viewport) sustain realtime? | Inconclusive — camera clamps resolution; needs a downscale step. N≥9 not realtime so far |
 | — | windowed-previews | Can per-cell ring buffers give bounded memory at acceptable quality? | _not yet built_ |
 | — | compositing-full-video | Does one big atlas decode beat N small streams? | _not yet built — promoted from "fallback" by decoder-pools_ |
