@@ -7,7 +7,7 @@ import { chromium } from "@playwright/test"
 export default async function globalSetup() {
   const browser = await chromium.launch()
   const page = await browser.newPage()
-  await page.goto("http://localhost:5184")
+  await page.goto("http://localhost:5174")
   await page.waitForTimeout(500)
   await browser.close()
 }
