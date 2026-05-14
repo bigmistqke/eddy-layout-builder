@@ -24,38 +24,41 @@ latest run.
 
 ## Verdict (2026-05-14 · Galaxy A15 · Android 10 · Chrome 148)
 
-The original design's load-bearing premise — **"Android caps concurrent
-decoders at 2–4, therefore a composite is mandatory"** — is **falsified**
-on a budget device. Two runs:
+Resolution dominates everything. The headline run is **720p**
+(`result.json`); the toy-resolution runs are kept only to show how
+misleading low res was.
 
-| | run @ maxDecoders=64 (`result.json`) | earlier run @ 32 |
+| | **720p** (current) | 320×240 (toy) |
 |---|---|---|
-| **M1 ceiling** | 64 — `max-reached` | 32 — `max-reached` |
-| **M2 reconfigure** | 8.1 ms mean | 6.3 ms mean |
-| **M3** hi-res / lo-res | 410 / 581 fps | 549 / 1466 fps |
-| **M4** hi-res / lo-res | 0.86 / 0.10 ms | 0.21 / 0.075 ms |
+| capture (actual) | 720×1280 / 480×640 | 240×320 / 132×176 |
+| **M1 ceiling** | 16 ok; **64 OOM-crashed Chrome** | 32–64, no break |
+| **M2 reconfigure** | **79 ms** mean (399 ms warmup) | ~6–8 ms |
+| **M3** hi / lo | **2.9 / 4.7** cells per decoder | 14–49 cells |
+| **M4** upload hi / lo | 1.20 / 1.35 ms | 0.1–0.9 ms |
 
-- **M1** hit the probe cap *both times* with zero errors / no throughput
-  collapse — the device's true ceiling is **> 64**, still unmeasured.
-- **M2** ~6–8 ms (after a ~50 ms warmup). Time-slicing one decoder
-  across streams is cheap.
-- **M3 / M4 swing 2–3× between runs** — thermal throttling, memory
-  pressure (a 450-tab Brave was resident), and/or decoder-cleanup lag.
-  Single runs are not trustworthy; repeat and compare `result.json`s.
+**The "Android caps decoders at 2–4" premise is still falsified** — 16
+concurrent `VideoDecoder`s ran fine at 720p. But the realistic-resolution
+numbers are far more constrained than the toy ones implied:
 
-Per the design doc's decision rule (`M1 ≥ ~16 AND M4 cheap → streaming
-viable, revisit family`), this **reopens the architecture question in
-favour of streaming**.
+- **M1** — 16 decoders fine; 64 at 720p *crashed the tab* (OOM). True
+  720p ceiling is somewhere in 16–64, and it manifests as a **crash**,
+  not a catchable error.
+- **M3** — one decoder feeds only **~3–5 realtime cells** at 480–720p,
+  not the 14–49 the toy resolutions suggested.
+- **M2** — reconfigure is **~80 ms** at 720p (vs ~6 ms at toy res). Far
+  too slow to switch streams per frame; time-slicing must be
+  **GOP-batched**.
+- **M4** — ~1.2 ms/upload. ~16 uploads/frame ≈ 19 ms — fits the 33 ms
+  budget, but not with much headroom.
 
-**Caveat:** M1 only proves *instantiation* — each decoder decoded one
-keyframe, not sustained concurrent decode. The **decoder-pools**
-experiment must confirm sustained N-decoder throughput before the
-composite is fully ruled out.
+**Net:** streaming is still viable, but "unbounded N" at full resolution
+is genuinely bounded — ballpark ~50–100 cells before you must drop
+per-cell resolution or fall back to a composite. **Resolution is the
+biggest lever.** The toy-res runs should not inform the design.
 
-**Caveat:** the runs above used unrealistically low capture resolutions
-(320×240 / 160×120 — actually 240×320 / 132×176). M3/M4, and possibly
-M1's memory ceiling, depend heavily on resolution. Re-run at realistic
-camera resolutions (≥720p) before trusting these numbers.
+**Caveat:** M1 still only proves *instantiation* — each decoder decoded
+one keyframe, not sustained concurrent decode. The **decoder-pools**
+experiment (sustained N-decoder throughput) remains the decisive test.
 
 ## Reproduce
 
