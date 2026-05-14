@@ -127,6 +127,8 @@ export function createAppState(): AppContext {
         rebuildHudRects()
         return
       }
+      // Solid removes the element from the DOM before the ref cleanup
+      // fires, so the !isConnected sweep above reliably finds it.
       hudRegistry.set(element, orientation)
       hudResizeObserver.observe(element)
       rebuildHudRects()
@@ -138,6 +140,9 @@ export function createAppState(): AppContext {
     }
     canvasViewportElement = element
     if (element !== undefined) {
+      // The canvas wrapper is also observed by a local ResizeObserver in
+      // canvas.tsx; a canvas resize therefore recomputes viewport math
+      // twice (imperative + reactive). Idempotent — intentional, harmless.
       hudResizeObserver.observe(element)
     }
     rebuildHudRects()

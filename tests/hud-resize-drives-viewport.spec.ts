@@ -1,5 +1,4 @@
-import { test, expect } from "./helpers"
-import { activateTool, clickFrame } from "./helpers"
+import { test, expect, activateTool, clickFrame } from "./helpers"
 
 test("a HUD growing taller re-runs handle/viewport math", async ({ page }) => {
   await page.goto("/")

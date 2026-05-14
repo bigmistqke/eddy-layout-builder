@@ -49,7 +49,7 @@ const ORIENTATION_CLASS: Record<HudOrientation, string> = {
 }
 
 /** A HUD-level Notch instance. Wires the canonical HUD-element ref via
- *  context.setHudElement(kind), applies the shared positioning class
+ *  context.setHudElement(orientation), applies the shared positioning class
  *  for the chosen edge, and wraps children in a flex content div.
  *  Per-HUD layout details (column/row, padding, scroll behaviour) go
  *  in the `contentClass` the caller passes. The button used inside
