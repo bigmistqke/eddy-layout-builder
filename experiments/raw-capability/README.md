@@ -26,17 +26,22 @@ latest run.
 
 The original design's load-bearing premise — **"Android caps concurrent
 decoders at 2–4, therefore a composite is mandatory"** — is **falsified**
-on a budget device.
+on a budget device. Two runs:
 
-- **M1 = 32, `max-reached`** — 32 concurrent `VideoDecoder`s allocated,
-  zero errors, no throughput collapse. We hit the probe's cap, not the
-  device's; true ceiling still unknown.
-- **M2 ≈ 6.3 ms** mean (43 ms warmup, then ~4–6 ms). Time-slicing one
-  decoder across streams is cheap.
-- **M3** — hi-res 240×320: 549 fps → 18.3 realtime cells/decoder;
-  lo-res 132×176: 1466 fps → 48.9 cells/decoder.
-- **M4** — 0.21 ms hi-res / 0.075 ms lo-res. Negligible; even 50
-  uploads/frame fits the 33 ms budget.
+| | run @ maxDecoders=64 (`result.json`) | earlier run @ 32 |
+|---|---|---|
+| **M1 ceiling** | 64 — `max-reached` | 32 — `max-reached` |
+| **M2 reconfigure** | 8.1 ms mean | 6.3 ms mean |
+| **M3** hi-res / lo-res | 410 / 581 fps | 549 / 1466 fps |
+| **M4** hi-res / lo-res | 0.86 / 0.10 ms | 0.21 / 0.075 ms |
+
+- **M1** hit the probe cap *both times* with zero errors / no throughput
+  collapse — the device's true ceiling is **> 64**, still unmeasured.
+- **M2** ~6–8 ms (after a ~50 ms warmup). Time-slicing one decoder
+  across streams is cheap.
+- **M3 / M4 swing 2–3× between runs** — thermal throttling, memory
+  pressure (a 450-tab Brave was resident), and/or decoder-cleanup lag.
+  Single runs are not trustworthy; repeat and compare `result.json`s.
 
 Per the design doc's decision rule (`M1 ≥ ~16 AND M4 cheap → streaming
 viable, revisit family`), this **reopens the architecture question in
@@ -47,8 +52,10 @@ keyframe, not sustained concurrent decode. The **decoder-pools**
 experiment must confirm sustained N-decoder throughput before the
 composite is fully ruled out.
 
-**Open:** the `maxDecoders=128` run hung after recording (device
-flakiness, not a measured limit) — re-run to find the true M1 ceiling.
+**Caveat:** the runs above used unrealistically low capture resolutions
+(320×240 / 160×120 — actually 240×320 / 132×176). M3/M4, and possibly
+M1's memory ceiling, depend heavily on resolution. Re-run at realistic
+camera resolutions (≥720p) before trusting these numbers.
 
 ## Reproduce
 

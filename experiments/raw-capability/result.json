@@ -1,0 +1,104 @@
+{
+  "ranAt": "2026-05-14T20:21:09.659Z",
+  "git": {
+    "sha": "403b963",
+    "dirty": true
+  },
+  "experiment": "raw-capability",
+  "params": {
+    "maxDecoders": 64,
+    "reconfigureIterations": 30,
+    "uploadIterations": 60,
+    "recordSeconds": 6,
+    "highRes": {
+      "width": 320,
+      "height": 240
+    },
+    "lowRes": {
+      "width": 160,
+      "height": 120
+    }
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "highRes": {
+      "input": {
+        "requested": "320x240",
+        "actual": "240x320"
+      },
+      "throughput": {
+        "width": 240,
+        "height": 320,
+        "framesPerSecond": 409.94807323737774,
+        "realtimeCellBudget": 13.664935774579257
+      },
+      "upload": {
+        "width": 240,
+        "height": 320,
+        "meanMs": 0.8599999999006589
+      }
+    },
+    "lowRes": {
+      "input": {
+        "requested": "160x120",
+        "actual": "132x176"
+      },
+      "throughput": {
+        "width": 132,
+        "height": 176,
+        "framesPerSecond": 581.3953488372093,
+        "realtimeCellBudget": 19.379844961240313
+      },
+      "upload": {
+        "width": 132,
+        "height": 176,
+        "meanMs": 0.09999999950329462
+      }
+    },
+    "decoderCeiling": {
+      "ceiling": 64,
+      "stoppedBy": "max-reached"
+    },
+    "reconfigure": {
+      "meanMs": 8.116666666666667,
+      "samplesMs": [
+        56.80000001192093,
+        4.800000011920929,
+        5.299999982118607,
+        4.300000011920929,
+        6.199999988079071,
+        5,
+        7.700000017881393,
+        6.9000000059604645,
+        7,
+        7.199999988079071,
+        5.4000000059604645,
+        6.4000000059604645,
+        4.5,
+        6.399999976158142,
+        5.9000000059604645,
+        5.5,
+        4.800000011920929,
+        4.800000011920929,
+        6.199999988079071,
+        8.099999994039536,
+        5.5,
+        6.800000011920929,
+        6.5999999940395355,
+        6.4000000059604645,
+        9.5,
+        6,
+        9.599999994039536,
+        5.5999999940395355,
+        8.799999982118607,
+        9.5
+      ]
+    }
+  }
+}
