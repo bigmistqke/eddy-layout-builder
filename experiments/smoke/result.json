@@ -1,0 +1,27 @@
+{
+  "ranAt": "2026-05-14T20:08:02.085Z",
+  "git": {
+    "sha": "7fffdf4",
+    "dirty": true
+  },
+  "experiment": "smoke",
+  "params": {
+    "constraints": {
+      "video": true,
+      "audio": true
+    }
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "camera": "ok",
+    "videoLabel": "camera 1, facing front",
+    "width": 480,
+    "height": 640
+  }
+}
