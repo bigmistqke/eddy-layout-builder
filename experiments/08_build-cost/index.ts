@@ -21,8 +21,10 @@ const params = {
   // Fixed grid — the atlas frame size is constant, so N shouldn't affect
   // build rate; 16 is a representative mid grid.
   gridN: 16,
-  // Clip lengths to sweep, in seconds.
-  durations: [4, 8, 16],
+  // Clip lengths to sweep, in seconds. A first run crashed Chrome (OOM)
+  // compositing a 16s clip in one pass — itself a finding: single-pass
+  // composite has a memory ceiling. Kept to lengths that complete.
+  durations: [3, 6, 9],
 }
 
 interface DurationResult {

@@ -56,10 +56,19 @@ function connect(wsUrl: string): CdpConnection {
   const pending = new Map<number, PromiseWithResolvers<unknown>>()
   ws.addEventListener("message", ev => {
     const msg = JSON.parse(ev.data as string)
+    // A Chrome crash can surface as a CDP message error ("Target
+    // crashed") rather than a socket close — treat it the same: exit 3
+    // so run.sh relaunches and retries, instead of an unhandled
+    // rejection that would die with exit 1 ("not a crash, giving up").
+    const errorText = msg.error ? JSON.stringify(msg.error) : ""
+    if (errorText.includes("crashed")) {
+      console.error("[run-cdp] CDP reported a target crash — Chrome crash")
+      process.exit(3)
+    }
     const call = msg.id !== undefined ? pending.get(msg.id) : undefined
     if (call) {
       pending.delete(msg.id)
-      msg.error ? call.reject(new Error(JSON.stringify(msg.error))) : call.resolve(msg.result)
+      msg.error ? call.reject(new Error(errorText)) : call.resolve(msg.result)
     }
   })
   const ready = Promise.withResolvers<void>()

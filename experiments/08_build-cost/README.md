@@ -18,10 +18,16 @@ against it. If it's super-linear, even chunking won't save it.
 
 ## Setup
 
-Records clips of several lengths (`durations` — 4, 8, 16 s), composites
+Records clips of several lengths (`durations` — 3, 6, 9 s), composites
 each into the same fixed-N atlas (N=16; atlas frame size is constant so
 N shouldn't matter), and reports `compositeMs` and `buildRateVsRealtime`
 (build-seconds ÷ content-seconds) for each.
+
+> **Finding before the sweep even ran:** a first attempt with a 16 s
+> clip **OOM-crashed Chrome** during the composite. Single-pass
+> compositing has a memory ceiling well under a full song — so chunking
+> isn't just for pipelining, it's *mandatory*. Durations kept to lengths
+> that complete.
 
 (Required bumping `harness/input.ts`'s `MAX_CHUNKS` 150 → 600 so longer
 clips aren't truncated.)
