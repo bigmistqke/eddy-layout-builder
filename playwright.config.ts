@@ -17,7 +17,10 @@ export default defineConfig({
   workers: 1,
   reporter: "list",
   use: {
-    baseURL: "http://localhost:5174",
+    // Port 5184 (not the default 5174) so this worktree's test server
+    // never collides with the main checkout or another worktree —
+    // avoids stale-server ERR_CONNECTION_REFUSED flakes.
+    baseURL: "http://localhost:5184",
     headless: true,
     viewport: { width: 1280, height: 800 },
     trace: "on-first-retry",
@@ -43,7 +46,7 @@ export default defineConfig({
     // deterministic. `pnpm test` runs `vite build && playwright test`,
     // so the build is fresh on every test run.
     command: "pnpm run preview:test",
-    url: "http://localhost:5174",
+    url: "http://localhost:5184",
     reuseExistingServer: false,
     timeout: 30_000,
   },

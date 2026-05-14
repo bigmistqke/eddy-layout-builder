@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "dev:test": "vite --port 5174 --strictPort",
+    "dev:test": "vite --port 5184 --strictPort",
     "build": "vite build",
     "build:test": "NODE_ENV=development vite build --mode development",
-    "preview:test": "vite preview --port 5174 --strictPort",
+    "preview:test": "vite preview --port 5184 --strictPort",
     "test": "pnpm run build:test && playwright test",
     "test:fast": "playwright test",
     "test:android": "pnpm run build:test && playwright test --config=playwright.android.config.ts",
