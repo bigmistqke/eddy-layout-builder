@@ -14,7 +14,7 @@ import {
 // Experiment parameters — recorded into result.json so the run is
 // reproducible. To vary one, edit here and commit (see README.md).
 const params = {
-  maxDecoders: 128,
+  maxDecoders: 64,
   reconfigureIterations: 30,
   uploadIterations: 60,
   recordSeconds: 6,
