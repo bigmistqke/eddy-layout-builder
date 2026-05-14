@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>experiment</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 12px;
+        font: 13px/1.4 ui-monospace, monospace;
+        background: #111;
+        color: #eee;
+      }
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <pre id="status">experiment harness — pass ?experiment=&lt;name&gt;</pre>
+    <script type="module">
+      // Shared shell. Each experiment is just experiments/<name>/index.ts;
+      // this loads the one named in the query string. harness/run-cdp.mjs
+      // navigates here with ?experiment=<name>.
+      const name = new URLSearchParams(location.search).get("experiment")
+      if (name && /^[a-z0-9-]+$/.test(name)) {
+        document.title = `experiment · ${name}`
+        import(`./${name}/index.ts`)
+      } else {
+        document.querySelector("#status").textContent =
+          "missing or invalid ?experiment=<name> in the URL"
+      }
+    </script>
+  </body>
+</html>

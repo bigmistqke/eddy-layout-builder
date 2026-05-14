@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test"
 import {
   detectThroughputCollapse,
   DEFAULT_COLLAPSE_OPTIONS,
-} from "../scripts/prototypes/harness/fallback-detect"
+} from "../experiments/harness/fallback-detect"
 
 test("returns null when there are too few samples", () => {
   expect(detectThroughputCollapse([1, 1, 1])).toBe(null)

@@ -1,5 +1,5 @@
 import { ALL_FORMATS, BlobSource, EncodedPacketSink, Input } from "mediabunny"
-import { wait } from "../../../src/utils"
+import { wait } from "../../src/utils"
 
 /** Everything one measurement run needs from a single recorded clip. */
 export interface ProbeInput {

@@ -1,26 +1,25 @@
 #!/usr/bin/env bash
-# Run a prototype page on a USB-connected Android phone end-to-end:
+# Run an experiment on a USB-connected Android phone end-to-end:
 #
 #   1. adb reverse so the phone reaches the desktop vite dev server.
-#   2. Grant Chrome the OS-level CAMERA + RECORD_AUDIO permissions —
-#      CDP's Browser.grantPermissions handles the *site* permission but
-#      NOT the Android app permission; without this getUserMedia throws
-#      NotAllowedError.
-#   3. adb forward the Chrome DevTools socket to localhost:9222.
-#   4. Hand off to run-cdp.mjs, which grants the site permission,
-#      navigates to the prototype page, and prints its [prototype-result].
+#   2. Grant Chrome the OS-level CAMERA + RECORD_AUDIO permissions
+#      (the Android app permission; the per-site grant is separate and
+#      must be tapped once on the device — see experiments/README.md).
+#   3. adb forward Chrome's DevTools socket to localhost:9222.
+#   4. Hand off to run-cdp.mjs, which navigates to the experiment and
+#      writes experiments/<name>/result.json.
 #
 # Usage:
-#   scripts/prototypes/run.sh <prototype-name>          # PORT defaults to 5173
-#   PORT=5174 scripts/prototypes/run.sh raw-capability
+#   experiments/harness/run.sh <experiment-name>          # PORT defaults to 5173
+#   PORT=5174 experiments/harness/run.sh raw-capability
 #
 # The vite dev server (`pnpm dev`) must already be running.
 
 set -euo pipefail
 
-PROTOTYPE="${1:-}"
-if [ -z "$PROTOTYPE" ]; then
-  echo "usage: scripts/prototypes/run.sh <prototype-name>" >&2
+EXPERIMENT="${1:-}"
+if [ -z "$EXPERIMENT" ]; then
+  echo "usage: experiments/harness/run.sh <experiment-name>" >&2
   exit 2
 fi
 PORT="${PORT:-5173}"
@@ -73,4 +72,4 @@ adb forward --remove tcp:"$CDP_PORT" >/dev/null 2>&1 || true
 adb forward tcp:"$CDP_PORT" localabstract:"$socket" >/dev/null
 
 echo "[run] handing off to run-cdp.mjs"
-exec node "$(dirname "$0")/run-cdp.mjs" "$PROTOTYPE" "$PORT"
+exec node "$(dirname "$0")/run-cdp.mjs" "$EXPERIMENT" "$PORT"
