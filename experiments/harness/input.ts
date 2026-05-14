@@ -15,8 +15,10 @@ export interface ProbeInput {
   requestedHeight: number
 }
 
-/** ~5s at 30fps — enough delta chunks for a throughput measurement. */
-const MAX_CHUNKS = 150
+/** Cap on chunks pulled from a recording (~20s at 30fps). High enough
+ *  for the build-cost sweep, which needs clips of varying length;
+ *  shorter-clip experiments never approach it. */
+const MAX_CHUNKS = 600
 
 /**
  * Record a fresh VP8 clip from the device camera at the requested
