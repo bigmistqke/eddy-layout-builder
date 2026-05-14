@@ -1,23 +1,29 @@
-// grid-streaming — does the *real* streaming workload sustain realtime?
+// grid-streaming-transcoded — the corrected grid-streaming experiment.
 //
-// decoder-pools tested K decoders each on a full 720p stream — but the
-// real product isn't N full-res streams. It's ONE ~viewport-sized image
-// subdivided into N cells, so each cell is ~viewport/N and the total
-// decoded pixels stay roughly constant regardless of N.
+// 03_grid-streaming recorded each cell directly from the camera, but the
+// camera only offers a few discrete sensor modes — it won't hand back a
+// 270×491 stream just because you asked. So 03's cross-N comparison was
+// confounded by resolution.
 //
-// This sweeps grid sizes N: for each, record a clip at the cell size
-// (viewport / √N per axis), run N decoders looping it concurrently, and
-// measure per-decoder sustained fps. It isolates the question
+// This records ONCE at capture resolution, then transcodes (downscales +
+// re-encodes, snapped to 16-px macroblock alignment) to each grid's true
+// cell size — a step a real streaming pipeline needs anyway — and runs N
+// decoders on the transcoded clip concurrently. It isolates the question
 // decoder-pools left ambiguous: is the bottleneck per-stream OVERHEAD
 // (fixed per decoder → N small streams still bad → composite wins) or
 // pixel BANDWIDTH (∝ pixels → N small streams summing to a viewport are
-// fine → streaming works)?
+// fine → streaming works)? — and it measures the transcode cost itself.
 
 import { recordProbeInput, type ProbeInput } from "../harness/input"
 import { reportResult, status } from "../harness/report"
+import { transcode } from "../harness/transcode"
 import { wait } from "../../src/utils"
 
 const params = {
+  // Requested capture resolution — the camera clamps to its nearest
+  // sensor mode; everything below is transcoded down from whatever it
+  // actually gives.
+  captureResolution: { width: 1280, height: 720 },
   // The A15's screen in device pixels (~384×699 CSS × ~2.8 dpr).
   totalResolution: { width: 1080, height: 1965 },
   // Square grids: cell = total / √N per axis.
@@ -63,25 +69,28 @@ async function runOneDecoder(input: ProbeInput, deadline: number): Promise<numbe
 
 interface GridResult {
   n: number
-  cell: { requested: string; actual: string }
+  cell: { target: string; actual: string }
+  transcodeMs: number
   perDecoderFps: number[]
   minFps: number
   aggregateFps: number
   realtimeOk: boolean
 }
 
-async function measureGrid(n: number): Promise<GridResult> {
+async function measureGrid(source: ProbeInput, n: number): Promise<GridResult> {
   const side = Math.sqrt(n)
   const cellWidth = Math.round(params.totalResolution.width / side)
   const cellHeight = Math.round(params.totalResolution.height / side)
-  status(`N=${n}: recording ${cellWidth}x${cellHeight} cell clip...`)
-  const input = await recordProbeInput(cellWidth, cellHeight, params.recordSeconds)
-  status(`  got ${input.width}x${input.height}, ${input.chunks.length} chunks — running ${n} decoders...`)
+  status(`N=${n}: transcoding ${source.width}x${source.height} → ${cellWidth}x${cellHeight}...`)
+  const { output: cellClip, transcodeMs } = await transcode(source, cellWidth, cellHeight)
+  status(
+    `  transcoded in ${transcodeMs.toFixed(0)}ms (${cellClip.chunks.length} chunks) — running ${n} decoders...`,
+  )
 
   const deadline = performance.now() + params.runSeconds * 1000
   const start = performance.now()
   const counts = await Promise.all(
-    Array.from({ length: n }, () => runOneDecoder(input, deadline)),
+    Array.from({ length: n }, () => runOneDecoder(cellClip, deadline)),
   )
   const elapsedSeconds = (performance.now() - start) / 1000
 
@@ -95,9 +104,10 @@ async function measureGrid(n: number): Promise<GridResult> {
   return {
     n,
     cell: {
-      requested: `${cellWidth}x${cellHeight}`,
-      actual: `${input.width}x${input.height}`,
+      target: `${cellWidth}x${cellHeight}`,
+      actual: `${cellClip.width}x${cellClip.height}`,
     },
+    transcodeMs,
     perDecoderFps,
     minFps,
     aggregateFps,
@@ -106,17 +116,28 @@ async function measureGrid(n: number): Promise<GridResult> {
 }
 
 async function run(): Promise<void> {
+  status(`recording capture clip (${params.captureResolution.width}x${params.captureResolution.height})...`)
+  const source = await recordProbeInput(
+    params.captureResolution.width,
+    params.captureResolution.height,
+    params.recordSeconds,
+  )
+  status(`  got ${source.width}x${source.height}, ${source.chunks.length} chunks`)
+
   const grids: GridResult[] = []
   for (const n of params.gridSizes) {
-    grids.push(await measureGrid(n))
+    grids.push(await measureGrid(source, n))
   }
   status("done.")
-  reportResult("grid-streaming", params, { grids })
+  reportResult("grid-streaming-transcoded", params, {
+    source: { requested: `${source.requestedWidth}x${source.requestedHeight}`, actual: `${source.width}x${source.height}` },
+    grids,
+  })
 }
 
 run().catch((error: unknown) => {
   status(`ERROR: ${error instanceof Error ? error.message : String(error)}`)
-  reportResult("grid-streaming", params, {
+  reportResult("grid-streaming-transcoded", params, {
     error: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
   })
 })

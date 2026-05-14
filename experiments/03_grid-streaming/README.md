@@ -2,12 +2,16 @@
 
 **Question:** does the *real* streaming workload sustain realtime? — N
 cells that together fill one ~viewport-sized image (each cell ≈
-viewport/N), all decoded concurrently.
+viewport/√N), all decoded concurrently.
+
+This is the **naive first attempt** — it records each cell directly from
+the camera. It turned out the camera won't cooperate (see Verdict); the
+corrected version is [04_grid-streaming-transcoded](../04_grid-streaming-transcoded/README.md).
 
 ## Why
 
-[decoder-pools](../decoder-pools/README.md) ran K decoders each on a
-full 720p stream and found sub-linear scaling — but that's not the
+[02_decoder-pools](../02_decoder-pools/README.md) ran K decoders each on
+a full 720p stream and found sub-linear scaling — but that's not the
 product's workload. The real grid is **one ~viewport image subdivided
 into N cells**: each cell is ~viewport/√N per axis, and total decoded
 pixels stay roughly constant as N grows.
@@ -18,57 +22,41 @@ That isolates the question decoder-pools left open:
   instance), N small streams are still bad → the composite (one decode)
   wins.
 - If it's **pixel bandwidth** (∝ total pixels), N small streams summing
-  to a viewport are fine → streaming works, and the composite is
-  unnecessary.
+  to a viewport are fine → streaming works.
 
 ## Setup
 
-`totalResolution` = the A15's screen (~1080×1965 device px). Records
-**once** at `captureResolution`, then for each N in `gridSizes` (4, 9,
-16, 25 — square grids) **transcodes** that clip down to the cell size
-(`total / √N` per axis) via `harness/transcode.ts` — the camera won't
-hand back arbitrary small resolutions, so a real pipeline must downscale
-itself. Then runs N decoders looping the transcoded clip concurrently
-for `runSeconds`, reporting per-decoder sustained fps, the min, the
-aggregate, `realtimeOk` (min ≥ 28), and the per-grid `transcodeMs`.
-
-**Read it as:** if `minFps` stays ≥ ~30 as N grows, streaming an N-cell
-grid is bandwidth-bound and viable. If it falls off well before the
-pixel budget says it should, per-stream overhead is the wall.
-
-To vary, edit `params` in `index.ts` and commit.
+`totalResolution` = the A15's screen (~1080×1965 device px). For each N
+in `gridSizes` (4, 9, 16, 25 — square grids), records a clip at the cell
+size (`total / √N` per axis) directly from the camera, runs N decoders
+looping it concurrently for `runSeconds`, and reports per-decoder
+sustained fps, min, aggregate, and `realtimeOk` (min ≥ 28).
 
 ## Verdict (2026-05-14 · Galaxy A15 · Android 10 · Chrome 148)
 
-**Partly inconclusive — the experiment has a flaw.** `getUserMedia`
-ignored the requested cell resolutions and clamped to the camera's
-discrete sensor modes:
+**The camera ignores requested cell resolutions** — it clamps to its
+discrete sensor modes. Two runs (original + a reproducibility re-run)
+agree closely:
 
-| N | requested cell | actual | min fps | realtime? |
+| N | requested cell | actual | min fps (run 1 / run 2) | realtime? |
 |---|---|---|---|---|
-| 4 | 540×983 | 1088×598 | 34.3 | ✅ |
-| 9 | 360×655 | 720×396 | 19.6 | ❌ |
-| 16 | 270×491 | 720×396 *(same as N=9)* | 12.6 | ❌ |
-| 25 | 216×393 | 480×264 | 17.6 | ❌ |
+| 4 | 540×983 | 1088×598 | 34.3 / 33.6 | ✅ |
+| 9 | 360×655 | 720×396 | 19.6 / 21.3 | ❌ |
+| 16 | 270×491 | 720×396 *(same as N=9!)* | 12.6 / 12.1 | ❌ |
+| 25 | 216×393 | 480×264 | 17.6 / 17.5 | ❌ |
 
-So "cell = viewport/√N" never took effect — N=9 and N=16 ran the
-*identical* clip. The cross-N comparison is confounded by resolution.
+- **Results reproduce** within run-to-run noise — the harness is
+  reliable.
+- But "cell = viewport/√N" never took effect: **N=9 and N=16 ran the
+  identical 720×396 clip**, so the cross-N comparison is confounded.
+- What still holds: only **N=4** sustained realtime; the clean N=9-vs-16
+  pair (same clip) shows more decoders → lower per-decoder fps, neither
+  realtime.
 
-**What's still valid:**
-
-- **N=9 vs N=16 is a clean pair** (same 720×396 clip): 9 concurrent
-  decoders → 19.6 fps min; 16 → 12.6 fps min. More decoders, less
-  per-decoder throughput, **neither realtime**.
-- Only **N=4** (largest cells, fewest decoders) sustained 30 fps.
-- Aggregate fps rises with N (143 → 197 → 250 → 440) but **sub-linearly
-  vs the N×30 needed** — N=25 needs 750 fps aggregate, got 440.
-
-**The real lesson:** a streaming pipeline cannot get small per-cell
-clips from the camera — it **must downscale after capture**. The
-experiment needs a downscale step (decode → draw to a smaller canvas →
-re-encode), which also measures that downscale cost — itself a real
-pipeline cost. **Re-run with that step before trusting any cross-N
-conclusion.**
+**Conclusion:** a streaming pipeline cannot get small per-cell clips
+from the camera — it must **downscale after capture**. That's not a
+workaround, it's a real pipeline step (and cost). Continued, correctly,
+in [04_grid-streaming-transcoded](../04_grid-streaming-transcoded/README.md).
 
 ## Reproduce
 

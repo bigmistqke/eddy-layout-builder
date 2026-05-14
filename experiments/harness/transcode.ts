@@ -20,7 +20,15 @@ export async function transcode(
   targetHeight: number,
 ): Promise<TranscodeResult> {
   const start = performance.now()
-  const canvas = new OffscreenCanvas(targetWidth, targetHeight)
+  // VP8 encodes in 16×16 macroblocks — dimensions that aren't multiples
+  // of 16 force the encoder to pad, and the padded result decodes
+  // measurably slower. Snap to the nearest multiple of 16. (Not
+  // power-of-2: that would distort the target cell size far more than
+  // macroblock alignment requires — e.g. 540 → 512 vs 544.)
+  const snap16 = (value: number): number => Math.max(16, Math.round(value / 16) * 16)
+  const width = snap16(targetWidth)
+  const height = snap16(targetHeight)
+  const canvas = new OffscreenCanvas(width, height)
   const context = canvas.getContext("2d")
   if (context === null) {
     throw new Error("transcode: no 2d context")
@@ -41,11 +49,16 @@ export async function transcode(
       throw error
     },
   })
+  // Scale bitrate with resolution. A fixed bitrate over-bitrates small
+  // cells, making their decode bitrate-bound rather than resolution-
+  // bound — so smaller cells would (wrongly) decode *slower*. ~0.1 bits
+  // per pixel per frame is a reasonable VP8 target.
+  const bitrate = Math.round(width * height * 30 * 0.1)
   encoder.configure({
     codec: "vp8",
-    width: targetWidth,
-    height: targetHeight,
-    bitrate: 2_000_000,
+    width,
+    height,
+    bitrate,
     framerate: 30,
   })
 
@@ -55,7 +68,7 @@ export async function transcode(
   const decoder = new VideoDecoder({
     output(frame) {
       const timestamp = frame.timestamp
-      context.drawImage(frame, 0, 0, targetWidth, targetHeight)
+      context.drawImage(frame, 0, 0, width, height)
       frame.close()
       const scaled = new VideoFrame(canvas, { timestamp })
       encoder.encode(scaled, { keyFrame: frameIndex === 0 })
@@ -86,8 +99,8 @@ export async function transcode(
     output: {
       config: decoderConfig,
       chunks,
-      width: targetWidth,
-      height: targetHeight,
+      width,
+      height,
       requestedWidth: targetWidth,
       requestedHeight: targetHeight,
     },
