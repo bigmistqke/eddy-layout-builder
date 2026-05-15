@@ -14,8 +14,10 @@ test("layout edits survive page reload", async ({ page }) => {
     JSON.stringify(window.__appContext?.app.layout ?? null),
   )
 
-  // Wait for the auto-save effect to flush its manifest write.
-  await page.waitForTimeout(300)
+  // Force a manifest write deterministically — the auto-save effect
+  // would do the same on a microtask, but waiting wall-clock for it
+  // races with CPU contention. Reload sees the new state on disk.
+  await page.evaluate(() => window.__appContext?.projects.saveCurrent())
   await page.reload()
   await page.waitForFunction(
     () => {
