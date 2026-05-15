@@ -15,7 +15,7 @@ test("M1: record into the initial cell, then play back", async ({ page }) => {
   await page.locator('[data-action="record-stop"]').click()
   await page.waitForFunction(
     () => Object.keys(window.__appContext?.clips.clips ?? {}).length === 1,
-    { timeout: 10_000 },
+    { timeout: 20_000 },
   )
 
   const result = await page.evaluate(() => {

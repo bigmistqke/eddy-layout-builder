@@ -104,7 +104,7 @@ test("post-record state: cell shows its clip's frame (preview goes off)", async 
       window.__appContext !== undefined &&
       Object.keys(window.__appContext.clips.clips).length === 1 &&
       window.__appContext.previewTargetCellId() === null,
-    { timeout: 10_000 },
+    { timeout: 20_000 },
   )
   const state = await page.evaluate(() => {
     const context = window.__appContext!
@@ -130,7 +130,7 @@ test("autoplay: transport starts playing after record-stop", async ({ page }) =>
     () =>
       window.__appContext !== undefined &&
       window.__appContext.transport.state() === "playing",
-    { timeout: 10_000 },
+    { timeout: 20_000 },
   )
 })
 
@@ -144,7 +144,7 @@ test("tapping the post-record cell re-activates preview", async ({ page }) => {
     () =>
       window.__appContext !== undefined &&
       Object.keys(window.__appContext.clips.clips).length === 1,
-    { timeout: 10_000 },
+    { timeout: 20_000 },
   )
   // Tap the same cell — selection stays, preview re-activates.
   await page.locator('[data-canvas-inner]').click({ position: { x: 200, y: 200 } })

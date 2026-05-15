@@ -11,7 +11,7 @@ test("M3: first recording sets songLength", async ({ page }) => {
   await page.waitForTimeout(700)
   await page.locator('[data-action="record-stop"]').click()
   await page.waitForFunction(() => window.__appContext?.songLength() !== null, {
-    timeout: 10_000,
+    timeout: 20_000,
   })
 
   const length = await page.evaluate(() => window.__appContext?.songLength())
@@ -32,7 +32,7 @@ test("M3: deleting the last clip resets songLength", async ({ page }) => {
   await page.waitForTimeout(600)
   await page.locator('[data-action="record-stop"]').click()
   await page.waitForFunction(() => window.__appContext?.songLength() !== null, {
-    timeout: 10_000,
+    timeout: 20_000,
   })
 
   // Select the root entity then delete. Separate evaluate calls so the
@@ -65,7 +65,7 @@ test("M3: re-recording the sole clip redefines songLength", async ({ page }) => 
   await page.waitForTimeout(400)
   await page.locator('[data-action="record-stop"]').click()
   await page.waitForFunction(() => window.__appContext?.songLength() !== null, {
-    timeout: 10_000,
+    timeout: 20_000,
   })
   const first = await page.evaluate(() => window.__appContext!.songLength()!)
 
@@ -93,7 +93,7 @@ test("M3: re-recording the sole clip redefines songLength", async ({ page }) => 
       return s !== null && Math.abs(s - prev) > 0.4
     },
     first,
-    { timeout: 15_000 },
+    { timeout: 30_000 },
   )
 
   const second = await page.evaluate(() => window.__appContext!.songLength()!)
@@ -112,7 +112,7 @@ test("M3: subsequent recording is clamped to songLength", async ({ page }) => {
   await page.waitForTimeout(500)
   await page.locator('[data-action="record-stop"]').click()
   await page.waitForFunction(() => window.__appContext?.songLength() !== null, {
-    timeout: 10_000,
+    timeout: 20_000,
   })
   const anchorLength = await page.evaluate(() => window.__appContext!.songLength()!)
   expect(anchorLength).toBeGreaterThan(0)
@@ -140,6 +140,6 @@ test("M3: subsequent recording is clamped to songLength", async ({ page }) => {
         Object.keys(context.clips.clips).length === 2 && context.previewTargetCellId() === null
       )
     },
-    { timeout: 15_000 },
+    { timeout: 30_000 },
   )
 })

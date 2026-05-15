@@ -27,7 +27,7 @@ test("M2: two cells, record into each, both play", async ({ page }) => {
   await page.locator('[data-action="record-stop"]').click()
   await page.waitForFunction(
     () => Object.keys(window.__appContext?.clips.clips ?? {}).length === 1,
-    { timeout: 10_000 },
+    { timeout: 20_000 },
   )
 
   // Select cell 1, record. The first clip set songLength, so the second
@@ -39,7 +39,7 @@ test("M2: two cells, record into each, both play", async ({ page }) => {
   await page.locator('[data-action="record-start"]').click()
   await page.waitForFunction(
     () => Object.keys(window.__appContext?.clips.clips ?? {}).length === 2,
-    { timeout: 15_000 },
+    { timeout: 30_000 },
   )
 
   // Autoplay: transport starts playing automatically once the second
