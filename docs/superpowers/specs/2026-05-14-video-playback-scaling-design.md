@@ -57,7 +57,7 @@ not merely validate.
 **Form.** `scripts/device-probe.html`, served by the existing vite dev
 server, opened in Chrome on the A15 via `scripts/android-debug.sh`, results
 `console.log`'d as one JSON object and tailed back over CDP with
-`scripts/cdp-tail.mjs`. Lives in `scripts/`, not shipped.
+`scripts/cdp-tail.ts`. Lives in `scripts/`, not shipped.
 
 **Input.** The probe first records a fresh VP8 clip on the A15 using the same
 `getUserMedia` + `MediaRecorder` path as `src/media/capture.ts`, so every
@@ -184,7 +184,7 @@ surprise.
 - `src/clips/transport.ts` — playback scheduling, per-cell gain/mute (audio sub-tree).
 - `src/webgl/renderer.ts` — video pass: N-uploads → 1-atlas-upload + tile rects.
 - `src/types.ts` — `Node`, `Container`, `Entity` (the layout tree).
-- `scripts/android-debug.sh`, `scripts/cdp-tail.mjs` — the probe's run harness.
+- `scripts/android-debug.sh`, `scripts/cdp-tail.ts` — the probe's run harness.
 
 ## Out of scope / follow-up specs
 

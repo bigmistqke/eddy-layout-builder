@@ -7,7 +7,7 @@
 #      to http://localhost:<CDP_PORT>. The socket name is suffixed with
 #      Chrome's PID, so we look it up dynamically.
 #   3. Print the open tabs (id, url, webSocketDebuggerUrl) so the next
-#      tool (e.g. scripts/cdp-tail.mjs) can attach.
+#      tool (e.g. scripts/cdp-tail.ts) can attach.
 #
 # Usage:
 #   scripts/android-debug.sh              # defaults: DEV_PORT=5173 CDP_PORT=9222

@@ -9,8 +9,8 @@
 // the phone has http://localhost:5173/ open.
 //
 // Usage:
-//   pnpm exec node scripts/android-repro.mjs
-//   HOLD_MS=2000 pnpm exec node scripts/android-repro.mjs   # record duration
+//   pnpm exec node scripts/android-repro.ts
+//   HOLD_MS=2000 pnpm exec node scripts/android-repro.ts   # record duration
 
 import { chromium } from "@playwright/test"
 

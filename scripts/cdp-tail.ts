@@ -5,9 +5,9 @@
 // without needing chrome://inspect open.
 //
 // Usage:
-//   scripts/cdp-tail.mjs                                 # pick tab matching $URL_MATCH (default: 'eddy') from http://localhost:9222
-//   URL_MATCH=localhost scripts/cdp-tail.mjs             # pick first tab whose URL contains 'localhost'
-//   scripts/cdp-tail.mjs ws://localhost:9222/devtools/page/161   # explicit ws URL
+//   scripts/cdp-tail.ts                                 # pick tab matching $URL_MATCH (default: 'eddy') from http://localhost:9222
+//   URL_MATCH=localhost scripts/cdp-tail.ts             # pick first tab whose URL contains 'localhost'
+//   scripts/cdp-tail.ts ws://localhost:9222/devtools/page/161   # explicit ws URL
 
 const CDP_PORT = process.env.CDP_PORT ?? "9222"
 const URL_MATCH = process.env.URL_MATCH ?? "eddy"

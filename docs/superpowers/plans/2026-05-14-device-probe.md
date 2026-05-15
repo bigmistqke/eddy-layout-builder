@@ -4,7 +4,7 @@
 
 **Goal:** Build a throwaway on-device measurement harness that captures the four numbers (concurrent decoder ceiling, reset/reconfigure cost, single-decoder throughput, `texImage2D` upload cost) needed to choose and tune the video-playback-scaling architecture.
 
-**Architecture:** A standalone page (`scripts/device-probe.html`) served by the existing vite dev server, opened in Chrome on a USB-connected Android phone via `scripts/android-debug.sh`, with results `console.log`'d as one JSON object and tailed back over CDP with `scripts/cdp-tail.mjs`. The probe records a fresh VP8 clip on-device (same `getUserMedia` + `MediaRecorder` path as `src/media/capture.ts`), demuxes it to `EncodedVideoChunk`s with mediabunny, then runs four measurement functions. One pure helper — throughput-collapse detection — is unit-tested; the device-bound I/O is verified by the actual device run.
+**Architecture:** A standalone page (`scripts/device-probe.html`) served by the existing vite dev server, opened in Chrome on a USB-connected Android phone via `scripts/android-debug.sh`, with results `console.log`'d as one JSON object and tailed back over CDP with `scripts/cdp-tail.ts`. The probe records a fresh VP8 clip on-device (same `getUserMedia` + `MediaRecorder` path as `src/media/capture.ts`), demuxes it to `EncodedVideoChunk`s with mediabunny, then runs four measurement functions. One pure helper — throughput-collapse detection — is unit-tested; the device-bound I/O is verified by the actual device run.
 
 **Tech Stack:** TypeScript, WebCodecs (`VideoDecoder`), WebGL2, mediabunny (demux), vite (dev server), Playwright (unit test runner), adb + CDP (device harness).
 
@@ -548,7 +548,7 @@ git commit -m "feat: device-probe measurement functions M1-M4"
 
 ## Task 4: Orchestrator + page shell
 
-Wire the measurements together: record inputs at two resolutions, run M1–M4, render progress to the page, and log the result JSON with a recognizable prefix for `cdp-tail.mjs`.
+Wire the measurements together: record inputs at two resolutions, run M1–M4, render progress to the page, and log the result JSON with a recognizable prefix for `cdp-tail.ts`.
 
 **Files:**
 - Create: `scripts/device-probe/main.ts`
@@ -571,7 +571,7 @@ import {
   type UploadResult,
 } from "./measure"
 
-/** Recognizable prefix so cdp-tail.mjs / a human can grep the result. */
+/** Recognizable prefix so cdp-tail.ts / a human can grep the result. */
 const RESULT_PREFIX = "[device-probe-result]"
 
 const MAX_DECODERS = 32
@@ -748,7 +748,7 @@ Grant camera + mic when prompted. The on-screen log should start advancing.
 
 - [ ] **Step 4: Tail the results over CDP**
 
-Run: `URL_MATCH=device-probe scripts/cdp-tail.mjs`
+Run: `URL_MATCH=device-probe scripts/cdp-tail.ts`
 Expected: streams the `[device-probe]` progress lines, then one `[device-probe-result] {...}` JSON line. Copy that JSON.
 
 - [ ] **Step 5: Record results in the design doc**
@@ -769,7 +769,7 @@ git commit -m "docs: device-probe results on Galaxy A15"
 **Spec coverage:**
 - Spec §1 "Device probe" — form, on-device recording, M1–M4, JSON output → Tasks 2 (input/recording), 3 (M1–M4), 4 (orchestrator/JSON), 5 (run). ✓
 - Spec §1 software-fallback detection "by throughput collapse" → Task 1 (`fallback-detect`), consumed in Task 3's `measureDecoderCeiling`. ✓
-- Spec §1 run harness (`android-debug.sh`, `cdp-tail.mjs`) → Task 5. ✓
+- Spec §1 run harness (`android-debug.sh`, `cdp-tail.ts`) → Task 5. ✓
 - Spec §4 decision/tuning rule → applied in Task 5 Step 5 (reading the numbers against the rule). ✓
 - Spec §2/§3 (Architecture A/B) — explicitly out of scope for this plan; they become their own spec→plan cycle once probe data exists. ✓
 
