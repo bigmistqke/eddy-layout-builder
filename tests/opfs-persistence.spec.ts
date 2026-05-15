@@ -50,7 +50,8 @@ test("deep layout edits survive page reload", async ({ page }) => {
   const before = await page.evaluate(() =>
     JSON.stringify(window.__appContext?.app.layout ?? null),
   )
-  await page.waitForTimeout(300)
+  // Same explicit save as the first test — see comment there.
+  await page.evaluate(() => window.__appContext?.projects.saveCurrent())
   await page.reload()
   await page.waitForFunction(
     () => {
