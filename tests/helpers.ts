@@ -1,7 +1,13 @@
 import { readFileSync } from "fs"
-import { resolve } from "path"
+import { dirname, resolve } from "path"
+import { fileURLToPath } from "url"
 import { expect, test as playwrightBase, type Page } from "@playwright/test"
 import { androidTest } from "./_android-fixture"
+
+// package.json has `"type": "module"`, so this file loads as ESM — and
+// ESM has no `__dirname`. Reconstruct it from `import.meta.url` so
+// `mockGetUserMedia` below can locate the webm fixture.
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Swap the base test fixture when running against a USB-connected
 // Android Chrome. Tests are unmodified — they import `test` from here
