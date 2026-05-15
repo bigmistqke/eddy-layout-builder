@@ -10,10 +10,10 @@ import {
   useContext,
 } from "solid-js"
 import { Context } from "../context"
-import { ArrowButton } from "../hud/hud"
+import { computeFrameAffordances } from "../frame-affordances"
+import { ArrowButton } from "../hud/arrow-button"
 import type { Direction, Node, Selection } from "../types"
 import { logAction, track } from "../utils"
-import { computeFrameAffordances } from "../frame-affordances"
 import { layoutFrames, type LeafFrame, type Rect } from "../viewport"
 import { animateViewport } from "../webgl/animation"
 import { createRenderer, type TextureSource, type ViewportState } from "../webgl/renderer"
@@ -257,10 +257,7 @@ export function Canvas() {
         const path =
           selection === null || context.app.tool === null
             ? null
-            : selection.path.slice(
-                0,
-                Math.max(0, selection.path.length - selection.depth),
-              )
+            : selection.path.slice(0, Math.max(0, selection.path.length - selection.depth))
         const affordances = computeFrameAffordances(
           context.app.layout,
           path,
@@ -423,11 +420,7 @@ export function Canvas() {
 
   createEffect(
     () => {
-      const signature = layoutSignature(
-        context.app.layout,
-        context.app.selection,
-        context.app.tool,
-      )
+      const signature = layoutSignature(context.app.layout, context.app.selection, context.app.tool)
       // Track HUD geometry too — a HUD resizing on its own must
       // re-run handle/viewport math (see candidate #2).
       const rects = context.hudRects()
