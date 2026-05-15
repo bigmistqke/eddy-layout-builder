@@ -281,16 +281,29 @@ export function parseActionLog(raw: string): Action[] {
   return actions
 }
 
+/** Wait for the app to settle after a UI action: any in-flight viewport
+ *  animation completes. Replaces wall-clock `page.waitForTimeout(300)`
+ *  — under CPU contention an animation can take longer than 300ms, so
+ *  a wall-clock wait races; this waits for the actual `isAnimating`
+ *  signal.
+ *
+ *  The leading `requestAnimationFrame` flush gives the Solid recompute
+ *  effect one tick to fire after the triggering event handler returned
+ *  (so it can flip `isAnimating` to true before we start polling for
+ *  false). When the action doesn't trigger an animation at all,
+ *  `isAnimating` stays false and the polling returns on the first tick. */
+export async function waitForSettled(page: Page, timeoutMs = 5000) {
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => resolve(null))))
+  await page.waitForFunction(() => !(window.__appContext?.isAnimating() ?? true), {
+    timeout: timeoutMs,
+  })
+}
+
 /** Replay a sequence of actions against the page using the same helpers
- *  individual tests use. Waits `delayMs` after each step (default 300ms,
- *  matching the app's animation+settle window). String input is parsed
- *  via parseActionLog so a raw console log can be replayed verbatim. */
-export async function runActions(
-  page: Page,
-  actions: Action[] | string,
-  options: { delayMs?: number } = {},
-) {
-  const delayMs = options.delayMs ?? 300
+ *  individual tests use. Waits for `isAnimating` to settle after each
+ *  step (see `waitForSettled`). String input is parsed via
+ *  parseActionLog so a raw console log can be replayed verbatim. */
+export async function runActions(page: Page, actions: Action[] | string) {
   const list = typeof actions === "string" ? parseActionLog(actions) : actions
   for (const action of list) {
     switch (action.type) {
@@ -333,7 +346,7 @@ export async function runActions(
         await page.evaluate(() => window.__appContext?.deleteSelection())
         break
     }
-    await page.waitForTimeout(delayMs)
+    await waitForSettled(page)
   }
 }
 
