@@ -22,13 +22,4 @@ declare global {
   }
 }
 
-// @introspection/plugin-performance's published `src/index.ts` imports
-// its prebuilt `dist/browser.iife.js` directly, which ships without a
-// declaration file. tsc follows the import despite skipLibCheck and
-// emits TS7016. Declaring the asset as a string blob keeps tsc happy.
-declare module "@introspection/plugin-performance/dist/browser.iife.js" {
-  const value: string
-  export default value
-}
-
 export {}
