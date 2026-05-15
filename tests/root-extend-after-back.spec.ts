@@ -1,5 +1,5 @@
 import { expect, test } from "./helpers"
-import { activateTool, clickBreadcrumb, clickFrame, clickHandle } from "./helpers"
+import { activateTool, clickBreadcrumb, clickFrame, clickHandle, waitForSettled } from "./helpers"
 
 /**
  * After clicking through some splits and then navigating back to the root
@@ -11,21 +11,21 @@ import { activateTool, clickBreadcrumb, clickFrame, clickHandle } from "./helper
 test("root's bottom handle is extended after breadcrumb-back to root", async ({ page }) => {
   await page.goto("/")
   await activateTool(page, "append")
-  await page.waitForTimeout(100)
+  await waitForSettled(page)
 
   // Build a few splits so there's a breadcrumb to navigate.
   await clickFrame(page, [])
-  await page.waitForTimeout(200)
+  await waitForSettled(page)
   await clickHandle(page, [], "top")
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
   await clickHandle(page, [0], "left")
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
   await clickHandle(page, [0, 0], "top")
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
 
   // Navigate to root via breadcrumb (leftmost segment = root, depth = path.length).
   await clickBreadcrumb(page, 0)
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
 
   // Root frame's bottom handle. Only one selection at a time, so direction
   // alone identifies the handle.

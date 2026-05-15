@@ -1,5 +1,5 @@
 import { expect, test } from "./helpers"
-import { activateTool, clickFrame, clickHandle, frameRect } from "./helpers"
+import { activateTool, clickFrame, clickHandle, frameRect, waitForSettled } from "./helpers"
 
 /**
  * Repro: after this sequence, frame [0,1,0,1] is half-out on the left side.
@@ -19,28 +19,28 @@ test("[0,1,0,1] is centered, not half-out on the left", async ({ page }) => {
   await page.goto("/")
 
   await activateTool(page, "append")
-  await page.waitForTimeout(50)
+  await waitForSettled(page)
 
   // Initial layout is a single Entity at root.
   await clickFrame(page, [])
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
 
   // Build the layout via append handles. First split happens at root.
   await clickHandle(page, [], "left")
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
 
   await clickHandle(page, [0], "bottom")
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
 
   await clickHandle(page, [0, 1], "left")
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
 
   await clickHandle(page, [0, 1, 0], "bottom")
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
 
   // Tap the target frame to select and animate to it.
   await clickFrame(page, [0, 1, 0, 1])
-  await page.waitForTimeout(400)
+  await waitForSettled(page)
 
   const rect = await frameRect(page, [0, 1, 0, 1])
   const canvasSize = await page.evaluate(() => {

@@ -1,5 +1,5 @@
 import { expect, test } from "./helpers"
-import { activateTool, clickFrame, frameRect, readViewport } from "./helpers"
+import { activateTool, clickFrame, frameRect, readViewport, waitForSettled } from "./helpers"
 
 test("dev server boots; edit toggle reveals the sub-mode cycle button", async ({ page }) => {
   await page.goto("/")
@@ -25,7 +25,7 @@ test("clicking the root frame keeps it inside the canvas", async ({ page }) => {
   await activateTool(page, "append")
   // Initial layout is a single Entity at root (path = []).
   await clickFrame(page, [])
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
   const rect = await frameRect(page, [])
   expect(rect).not.toBeNull()
   expect(rect!.x).toBeGreaterThanOrEqual(-1)

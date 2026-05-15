@@ -1,5 +1,5 @@
 import { expect, test } from "./helpers"
-import { activateTool, clickFrame } from "./helpers"
+import { activateTool, clickFrame, waitForSettled } from "./helpers"
 
 /**
  * Activating a tool and selecting the root entity shows handles on the
@@ -13,7 +13,7 @@ test("top handle is not extended when no actual HUD overlap", async ({ page }) =
   await activateTool(page, "append")
   // Initial layout is a single Entity at root (path = []).
   await clickFrame(page, [])
-  await page.waitForTimeout(200)
+  await waitForSettled(page)
 
   // Only one selection at a time, so direction alone identifies the handle.
   const topNotch = page.locator(`[data-direction="top"]`).last()

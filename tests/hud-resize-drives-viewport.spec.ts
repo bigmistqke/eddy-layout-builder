@@ -1,11 +1,11 @@
-import { test, expect, activateTool, clickFrame } from "./helpers"
+import { test, expect, activateTool, clickFrame, waitForSettled } from "./helpers"
 
 test("a HUD growing taller re-runs handle/viewport math", async ({ page }) => {
   await page.goto("/")
   // Enter a tool so handles render and viewport math is active.
   await activateTool(page, "split")
   await clickFrame(page, [])
-  await page.waitForTimeout(300)
+  await waitForSettled(page)
 
   // Read the bottom handle's --extend value before the HUD grows.
   // The extend value encodes the handle/viewport math output for this
@@ -25,7 +25,19 @@ test("a HUD growing taller re-runs handle/viewport math", async ({ page }) => {
     if (!hud) throw new Error("main HUD not found")
     hud.style.minHeight = "240px"
   })
-  await page.waitForTimeout(400)
+
+  // Wait for the bottom handle's --extend to update — the signal that
+  // the ResizeObserver-driven recompute actually ran. Event-based wait
+  // instead of a wall-clock timeout that races under contention.
+  await page.waitForFunction(
+    before => {
+      const h = document.querySelector("[data-direction='bottom']") as HTMLElement | null
+      if (!h) return false
+      return h.style.getPropertyValue("--extend").trim() !== before
+    },
+    beforeExtend,
+    { timeout: 5000 },
+  )
 
   // Read the bottom handle's --extend value after the HUD grows.
   const afterExtend = await page.evaluate(() => {
@@ -35,8 +47,7 @@ test("a HUD growing taller re-runs handle/viewport math", async ({ page }) => {
   })
 
   // The bottom handle must have a larger extend now — the taller HUD
-  // pushed the handle further up to clear it. A change here proves the
-  // ResizeObserver-driven recompute actually ran and updated handle state.
+  // pushed the handle further up to clear it.
   expect(afterExtend).not.toBe("")
   expect(afterExtend).not.toBe(beforeExtend)
 })
