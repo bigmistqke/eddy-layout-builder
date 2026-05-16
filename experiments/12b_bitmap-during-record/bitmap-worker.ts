@@ -45,3 +45,5 @@ self.onmessage = async (event: MessageEvent<StartRequest>) => {
   const finalMessage: DoneMessage = { type: "done", bitmapsEmitted }
   self.postMessage(finalMessage)
 }
+
+export {}

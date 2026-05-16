@@ -1,0 +1,245 @@
+{
+  "ranAt": "2026-05-16T12:58:08.741Z",
+  "git": {
+    "sha": "476380f",
+    "dirty": true
+  },
+  "experiment": "opfs-bitmaps",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "canvasResolution": {
+      "width": 540,
+      "height": 982
+    },
+    "takeSeconds": 6,
+    "stages": 9,
+    "bitmapResolution": {
+      "width": 128,
+      "height": 232
+    },
+    "assumedFps": 30
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "stages": [
+      {
+        "stage": 1,
+        "cellCount": 1,
+        "bitmapKeepUpRatio": 0.9776536312849162,
+        "rebuildMs": 0,
+        "rebuildRateVsRealtime": 0,
+        "gapBeforeThisTakeMs": 0,
+        "atlasReadyDelayMs": 0,
+        "recordRenderFps": 58.741440301228394,
+        "recordRenderP95Ms": 25.200000017881393,
+        "recordRenderMaxMs": 31.30000001192093,
+        "recordFramesOver33ms": 0,
+        "integrity": {
+          "framesActual": 179,
+          "framesExpected": 179,
+          "framesDropped": 1,
+          "meanIntervalMs": 33.550561797752806,
+          "maxIntervalMs": 63,
+          "measuredFps": 29.80576021433356
+        },
+        "opfsBytes": 20787200,
+        "opfsWriteTotalMs": 108.89999985694885
+      },
+      {
+        "stage": 2,
+        "cellCount": 2,
+        "bitmapKeepUpRatio": 0.4222222222222222,
+        "rebuildMs": 0,
+        "rebuildRateVsRealtime": 0,
+        "gapBeforeThisTakeMs": 2.9000000059604645,
+        "atlasReadyDelayMs": 0,
+        "recordRenderFps": 28.517569723096,
+        "recordRenderP95Ms": 150.09999999403954,
+        "recordRenderMaxMs": 1032.4000000059605,
+        "recordFramesOver33ms": 27,
+        "integrity": {
+          "framesActual": 135,
+          "framesExpected": 136,
+          "framesDropped": 25,
+          "meanIntervalMs": 44.1865671641791,
+          "maxIntervalMs": 142,
+          "measuredFps": 22.631312278331364
+        },
+        "opfsBytes": 6770688,
+        "opfsWriteTotalMs": 210.00000005960464
+      },
+      {
+        "stage": 3,
+        "cellCount": 3,
+        "bitmapKeepUpRatio": 0.6818181818181818,
+        "rebuildMs": 0,
+        "rebuildRateVsRealtime": 0,
+        "gapBeforeThisTakeMs": 17.100000023841858,
+        "atlasReadyDelayMs": 0,
+        "recordRenderFps": 44.00867229723042,
+        "recordRenderP95Ms": 77,
+        "recordRenderMaxMs": 130.40000000596046,
+        "recordFramesOver33ms": 24,
+        "integrity": {
+          "framesActual": 176,
+          "framesExpected": 179,
+          "framesDropped": 1,
+          "meanIntervalMs": 33.502857142857145,
+          "maxIntervalMs": 66,
+          "measuredFps": 29.848200579907896
+        },
+        "opfsBytes": 14254080,
+        "opfsWriteTotalMs": 64.59999990463257
+      },
+      {
+        "stage": 4,
+        "cellCount": 4,
+        "bitmapKeepUpRatio": 0.70625,
+        "rebuildMs": 0,
+        "rebuildRateVsRealtime": 0,
+        "gapBeforeThisTakeMs": 0.9000000059604645,
+        "atlasReadyDelayMs": 0,
+        "recordRenderFps": 43.08681672025724,
+        "recordRenderP95Ms": 69.69999998807907,
+        "recordRenderMaxMs": 225.30000001192093,
+        "recordFramesOver33ms": 20,
+        "integrity": {
+          "framesActual": 160,
+          "framesExpected": 160,
+          "framesDropped": 20,
+          "meanIntervalMs": 37.39622641509434,
+          "maxIntervalMs": 108,
+          "measuredFps": 26.74066599394551
+        },
+        "opfsBytes": 13422592,
+        "opfsWriteTotalMs": 89.90000000596046
+      },
+      {
+        "stage": 5,
+        "cellCount": 5,
+        "bitmapKeepUpRatio": 0.503030303030303,
+        "rebuildMs": 0,
+        "rebuildRateVsRealtime": 0,
+        "gapBeforeThisTakeMs": 4.299999982118607,
+        "atlasReadyDelayMs": 0,
+        "recordRenderFps": 31.774924953634354,
+        "recordRenderP95Ms": 112.5,
+        "recordRenderMaxMs": 187,
+        "recordFramesOver33ms": 40,
+        "integrity": {
+          "framesActual": 165,
+          "framesExpected": 167,
+          "framesDropped": 11,
+          "meanIntervalMs": 35.98170731707317,
+          "maxIntervalMs": 149,
+          "measuredFps": 27.791899678020673
+        },
+        "opfsBytes": 9859072,
+        "opfsWriteTotalMs": 91.99999994039536
+      },
+      {
+        "stage": 6,
+        "cellCount": 6,
+        "bitmapKeepUpRatio": 0.5375722543352601,
+        "rebuildMs": 0,
+        "rebuildRateVsRealtime": 0,
+        "gapBeforeThisTakeMs": 0.7999999821186066,
+        "atlasReadyDelayMs": 0,
+        "recordRenderFps": 35.540260199664914,
+        "recordRenderP95Ms": 99.40000000596046,
+        "recordRenderMaxMs": 145.80000001192093,
+        "recordFramesOver33ms": 31,
+        "integrity": {
+          "framesActual": 173,
+          "framesExpected": 174,
+          "framesDropped": 8,
+          "meanIntervalMs": 34.56395348837209,
+          "maxIntervalMs": 100,
+          "measuredFps": 28.931875525651808
+        },
+        "opfsBytes": 11046912,
+        "opfsWriteTotalMs": 62.19999974966049
+      },
+      {
+        "stage": 7,
+        "cellCount": 7,
+        "bitmapKeepUpRatio": 0.41317365269461076,
+        "rebuildMs": 0,
+        "rebuildRateVsRealtime": 0,
+        "gapBeforeThisTakeMs": 0.9000000059604645,
+        "atlasReadyDelayMs": 0,
+        "recordRenderFps": 26.82324463128831,
+        "recordRenderP95Ms": 115.89999997615814,
+        "recordRenderMaxMs": 414.89999997615814,
+        "recordFramesOver33ms": 40,
+        "integrity": {
+          "framesActual": 167,
+          "framesExpected": 169,
+          "framesDropped": 9,
+          "meanIntervalMs": 35.45180722891566,
+          "maxIntervalMs": 110,
+          "measuredFps": 28.20730671197961
+        },
+        "opfsBytes": 8196096,
+        "opfsWriteTotalMs": 61.40000009536743
+      },
+      {
+        "stage": 8,
+        "cellCount": 8,
+        "bitmapKeepUpRatio": 0.5705521472392638,
+        "rebuildMs": 0,
+        "rebuildRateVsRealtime": 0,
+        "gapBeforeThisTakeMs": 3.300000011920929,
+        "atlasReadyDelayMs": 0,
+        "recordRenderFps": 38.259359879186604,
+        "recordRenderP95Ms": 87,
+        "recordRenderMaxMs": 140.09999999403954,
+        "recordFramesOver33ms": 32,
+        "integrity": {
+          "framesActual": 163,
+          "framesExpected": 166,
+          "framesDropped": 15,
+          "meanIntervalMs": 36.05555555555556,
+          "maxIntervalMs": 138,
+          "measuredFps": 27.73497688751926
+        },
+        "opfsBytes": 11046912,
+        "opfsWriteTotalMs": 87.2000000178814
+      },
+      {
+        "stage": 9,
+        "cellCount": 9,
+        "bitmapKeepUpRatio": 0.30057803468208094,
+        "rebuildMs": 14057.59999999404,
+        "rebuildRateVsRealtime": 2.34293333333234,
+        "gapBeforeThisTakeMs": 3.699999988079071,
+        "atlasReadyDelayMs": 19028.09999999404,
+        "recordRenderFps": 25.01936983463853,
+        "recordRenderP95Ms": 124.40000000596046,
+        "recordRenderMaxMs": 200.19999998807907,
+        "recordFramesOver33ms": 42,
+        "integrity": {
+          "framesActual": 173,
+          "framesExpected": 173,
+          "framesDropped": 7,
+          "meanIntervalMs": 34.61046511627907,
+          "maxIntervalMs": 132,
+          "measuredFps": 28.892995128506634
+        },
+        "opfsBytes": 6176768,
+        "opfsWriteTotalMs": 46.89999994635582
+      }
+    ],
+    "sessionSeconds": 75.03,
+    "peakHeapMb": 10
+  }
+}
