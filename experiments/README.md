@@ -79,5 +79,6 @@ To vary an experiment, edit the `params` block in its `index.ts` and commit.
 | 12 | [bitmap-series](12_bitmap-series/README.md) | Does the gap-filler bitmap-series approach hold end-to-end (build, paint, contend)? | **Yes** at K≤4 — build 0.34× realtime, paint K-indep, atlas holds at K=4 |
 | 12b | [bitmap-during-record](12b_bitmap-during-record/README.md) | Can bitmaps be generated DURING recording (via MediaStreamTrackProcessor), so the series is ready at stop? | **Yes** — 100% keep-up, mean latency 3.6ms — `pending-bitmaps` state goes to zero |
 | 13 | [cold-start](13_cold-start/README.md) | How fast can persisted sub-atlases be read from OPFS, decoded, and ready (target ~1s)? | **Yes** — single 219ms, K=4 parallel 561ms |
-| 14 | [atlas-swap](14_atlas-swap/README.md) | How big is the handoff gap when an atlas decoder is swapped at a loop boundary? Can pre-warming make it frame-accurate? | _not yet run_ |
+| 14 | [atlas-swap](14_atlas-swap/README.md) | How big is the handoff gap when an atlas decoder is swapped at a loop boundary? Can pre-warming make it frame-accurate? | **Yes** — cold 270ms, hot (pre-warmed + held VideoFrame) 0ms |
+| 15 | [distinct-content](15_distinct-content/README.md) | Does the K=4 sub-atlas verdict hold when each cell holds DIFFERENT content (real-session entropy)? | _not yet run_ |
 | — | windowed-previews | Can per-cell ring buffers give bounded memory at acceptable quality? | _likely obsolete — memory was never the wall_ |
