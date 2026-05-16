@@ -1,0 +1,207 @@
+{
+  "ranAt": "2026-05-16T14:01:28.169Z",
+  "git": {
+    "sha": "f1cfa90",
+    "dirty": true
+  },
+  "experiment": "yielding-build",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "canvasResolution": {
+      "width": 540,
+      "height": 982
+    },
+    "atlasCols": 2,
+    "atlasRows": 2,
+    "atlasResolution": {
+      "width": 540,
+      "height": 982
+    },
+    "sourceSeconds": 6,
+    "passSeconds": 12,
+    "renderCells": 8,
+    "renderCellWidth": 128,
+    "renderCellHeight": 232
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "label": "baseline",
+        "jank": {
+          "framesObserved": 753,
+          "meanMs": 16.67569721113163,
+          "medianMs": 16.69999998807907,
+          "p95Ms": 19.69999998807907,
+          "p99Ms": 22.799999982118607,
+          "maxMs": 31.099999994039536,
+          "over16ms": 524,
+          "over33ms": 0,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0,
+          "longestJankStreak": 0,
+          "jankScore": 0,
+          "histogramMs": [
+            3,
+            719,
+            30,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "buildEvents": [],
+        "totalBuildMs": 0,
+        "captureFrames": 358
+      },
+      {
+        "label": "mono",
+        "jank": {
+          "framesObserved": 802,
+          "meanMs": 18.064837905236907,
+          "medianMs": 16.69999998807907,
+          "p95Ms": 20.5,
+          "p99Ms": 58.20000001788139,
+          "maxMs": 266.7999999821186,
+          "over16ms": 593,
+          "over33ms": 16,
+          "over50ms": 12,
+          "over100ms": 5,
+          "over33msRatio": 0.0199501246882793,
+          "longestJankStreak": 2,
+          "jankScore": 145.99268079230762,
+          "histogramMs": [
+            14,
+            737,
+            34,
+            1,
+            4,
+            4,
+            1,
+            1,
+            1,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            1
+          ]
+        },
+        "buildEvents": [
+          {
+            "atMsSincePassStart": 4471.200000017881,
+            "atlasBytes": 1155873,
+            "buildMs": 4445.300000011921,
+            "frameStart": 0,
+            "frameEnd": 177
+          }
+        ],
+        "totalBuildMs": 4471.800000011921,
+        "captureFrames": 350
+      },
+      {
+        "label": "chunked",
+        "jank": {
+          "framesObserved": 796,
+          "meanMs": 16.6821608040201,
+          "medianMs": 16.69999998807907,
+          "p95Ms": 19.599999994039536,
+          "p99Ms": 23.100000023841858,
+          "maxMs": 29.200000017881393,
+          "over16ms": 563,
+          "over33ms": 0,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0,
+          "longestJankStreak": 0,
+          "jankScore": 0,
+          "histogramMs": [
+            7,
+            757,
+            32,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "buildEvents": [
+          {
+            "atMsSincePassStart": 1174.2999999821186,
+            "atlasBytes": 324623,
+            "buildMs": 1173.4000000059605,
+            "frameStart": 0,
+            "frameEnd": 59
+          },
+          {
+            "atMsSincePassStart": 2352,
+            "atlasBytes": 336152,
+            "buildMs": 1176.5999999940395,
+            "frameStart": 59,
+            "frameEnd": 118
+          },
+          {
+            "atMsSincePassStart": 3501.399999976158,
+            "atlasBytes": 350009,
+            "buildMs": 1144.5999999940395,
+            "frameStart": 118,
+            "frameEnd": 177
+          }
+        ],
+        "totalBuildMs": 3501.399999976158,
+        "captureFrames": 355
+      }
+    ],
+    "longtasks": {
+      "observed": 1,
+      "totalDurationMs": 55,
+      "longestMs": 55
+    }
+  }
+}
