@@ -1,0 +1,410 @@
+{
+  "ranAt": "2026-05-16T09:01:19.990Z",
+  "git": {
+    "sha": "70e50be",
+    "dirty": true
+  },
+  "experiment": "container-aligned-atlases",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "atlasResolution": {
+      "width": 540,
+      "height": 983
+    },
+    "layouts": [
+      {
+        "name": "4-uniform",
+        "containers": [
+          {
+            "cols": 2,
+            "rows": 2,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.5
+          },
+          {
+            "cols": 2,
+            "rows": 2,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.5
+          },
+          {
+            "cols": 2,
+            "rows": 2,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.5
+          },
+          {
+            "cols": 2,
+            "rows": 2,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.5
+          }
+        ]
+      },
+      {
+        "name": "6-mixed",
+        "containers": [
+          {
+            "cols": 2,
+            "rows": 2,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.5
+          },
+          {
+            "cols": 2,
+            "rows": 2,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.5
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.25
+          }
+        ]
+      },
+      {
+        "name": "8-mixed",
+        "containers": [
+          {
+            "cols": 2,
+            "rows": 2,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.5
+          },
+          {
+            "cols": 4,
+            "rows": 1,
+            "fractionWidth": 1,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "fractionWidth": 0.5,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 1,
+            "rows": 1,
+            "fractionWidth": 0.25,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 1,
+            "rows": 1,
+            "fractionWidth": 0.25,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 1,
+            "rows": 1,
+            "fractionWidth": 0.25,
+            "fractionHeight": 0.25
+          },
+          {
+            "cols": 1,
+            "rows": 1,
+            "fractionWidth": 0.25,
+            "fractionHeight": 0.25
+          }
+        ]
+      }
+    ],
+    "recordSeconds": 4,
+    "runSeconds": 4,
+    "maxQueue": 8,
+    "realtimeFps": 28
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "layouts": [
+      {
+        "layout": "4-uniform",
+        "k": 4,
+        "containers": [
+          {
+            "cols": 2,
+            "rows": 2,
+            "width": 272,
+            "height": 496,
+            "prebuildMs": 2414.5999999940395
+          },
+          {
+            "cols": 2,
+            "rows": 2,
+            "width": 272,
+            "height": 496,
+            "prebuildMs": 2469.4000000059605
+          },
+          {
+            "cols": 2,
+            "rows": 2,
+            "width": 272,
+            "height": 496,
+            "prebuildMs": 2519.9000000059605
+          },
+          {
+            "cols": 2,
+            "rows": 2,
+            "width": 272,
+            "height": 496,
+            "prebuildMs": 2620.9000000059605
+          }
+        ],
+        "largestSubAtlas": {
+          "cols": 2,
+          "rows": 2,
+          "width": 272,
+          "height": 496
+        },
+        "baselinePlayback": {
+          "perDecoderFps": [
+            66.67137842504648,
+            63.37314769023853,
+            58.66138949765574,
+            58.89697740728488
+          ],
+          "minFps": 58.66138949765574,
+          "aggregateFps": 247.60289302022562,
+          "realtimeOk": true
+        },
+        "contended": {
+          "captureFrames": 100,
+          "captureBytes": 1143235,
+          "perDecoderFps": [
+            43.336470485180605,
+            40.49114666544653,
+            36.55146753043011,
+            34.14388583680896
+          ],
+          "minFps": 34.14388583680896,
+          "buildMs": 4584.4000000059605,
+          "buildRateVsRealtime": 1.16497500000149,
+          "buildCompletedInWindow": false,
+          "realtimeOk": true
+        }
+      },
+      {
+        "layout": "6-mixed",
+        "k": 6,
+        "containers": [
+          {
+            "cols": 2,
+            "rows": 2,
+            "width": 272,
+            "height": 496,
+            "prebuildMs": 2319
+          },
+          {
+            "cols": 2,
+            "rows": 2,
+            "width": 272,
+            "height": 496,
+            "prebuildMs": 2541.9000000059605
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "width": 272,
+            "height": 240,
+            "prebuildMs": 1753.7999999821186
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "width": 272,
+            "height": 240,
+            "prebuildMs": 1612.0999999940395
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "width": 272,
+            "height": 240,
+            "prebuildMs": 2014.300000011921
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "width": 272,
+            "height": 240,
+            "prebuildMs": 1946.2000000178814
+          }
+        ],
+        "largestSubAtlas": {
+          "cols": 2,
+          "rows": 2,
+          "width": 272,
+          "height": 496
+        },
+        "baselinePlayback": {
+          "perDecoderFps": [
+            173.54642611919365,
+            173.54642611919365,
+            497.1075595617581,
+            497.1075595617581,
+            497.1075595617581,
+            496.61731542017844
+          ],
+          "minFps": 173.54642611919365,
+          "aggregateFps": 2335.03284634384,
+          "realtimeOk": true
+        },
+        "contended": {
+          "captureFrames": 98,
+          "captureBytes": 1144952,
+          "perDecoderFps": [
+            46.756538268199286,
+            43.04223382633298,
+            201.66488234368194,
+            201.44639384710158,
+            201.2279053505212,
+            201.2279053505212
+          ],
+          "minFps": 43.04223382633298,
+          "buildMs": 4432.5999999940395,
+          "buildRateVsRealtime": 1.144375,
+          "buildCompletedInWindow": false,
+          "realtimeOk": true
+        }
+      },
+      {
+        "layout": "8-mixed",
+        "k": 8,
+        "containers": [
+          {
+            "cols": 2,
+            "rows": 2,
+            "width": 272,
+            "height": 496,
+            "prebuildMs": 2420.699999988079
+          },
+          {
+            "cols": 4,
+            "rows": 1,
+            "width": 544,
+            "height": 240,
+            "prebuildMs": 2648.4000000059605
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "width": 272,
+            "height": 240,
+            "prebuildMs": 2033.199999988079
+          },
+          {
+            "cols": 2,
+            "rows": 1,
+            "width": 272,
+            "height": 240,
+            "prebuildMs": 2041.1000000238419
+          },
+          {
+            "cols": 1,
+            "rows": 1,
+            "width": 128,
+            "height": 240,
+            "prebuildMs": 1204.699999988079
+          },
+          {
+            "cols": 1,
+            "rows": 1,
+            "width": 128,
+            "height": 240,
+            "prebuildMs": 1395.2000000178814
+          },
+          {
+            "cols": 1,
+            "rows": 1,
+            "width": 128,
+            "height": 240,
+            "prebuildMs": 1165.4000000059605
+          },
+          {
+            "cols": 1,
+            "rows": 1,
+            "width": 128,
+            "height": 240,
+            "prebuildMs": 1331.199999988079
+          }
+        ],
+        "largestSubAtlas": {
+          "cols": 2,
+          "rows": 2,
+          "width": 272,
+          "height": 496
+        },
+        "baselinePlayback": {
+          "perDecoderFps": [
+            306.41565518949716,
+            394.10453306911074,
+            394.3522417636859,
+            394.10453306911074,
+            394.10453306911074,
+            394.10453306911074,
+            393.6091156799604,
+            393.6091156799604
+          ],
+          "minFps": 306.41565518949716,
+          "aggregateFps": 3064.404260589547,
+          "realtimeOk": true
+        },
+        "contended": {
+          "captureFrames": 91,
+          "captureBytes": 1066584,
+          "perDecoderFps": [
+            67.46031746031747,
+            161.81657848324517,
+            161.81657848324517,
+            161.81657848324517,
+            161.81657848324517,
+            161.81657848324517,
+            161.59611992945327,
+            161.3756613756614
+          ],
+          "minFps": 67.46031746031747,
+          "buildMs": 4054.2999999821186,
+          "buildRateVsRealtime": 1.1341499999985099,
+          "buildCompletedInWindow": false,
+          "realtimeOk": true
+        }
+      }
+    ]
+  }
+}
