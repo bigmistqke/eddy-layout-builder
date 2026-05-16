@@ -1,0 +1,63 @@
+{
+  "ranAt": "2026-05-16T10:03:03.314Z",
+  "git": {
+    "sha": "7d8caa0",
+    "dirty": true
+  },
+  "experiment": "swap-with-bitmap-hold",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "atlasResolution": {
+      "width": 540,
+      "height": 983
+    },
+    "recordSeconds": 4,
+    "bitmapResolution": {
+      "width": 96,
+      "height": 174
+    },
+    "holdMsList": [
+      500,
+      5000,
+      30000
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "holds": [
+      {
+        "holdMs": 500,
+        "bitmapPaintOk": true,
+        "decoderStateOk": true,
+        "postIdleDecodeMs": 12.5,
+        "postIdleFrameWidth": 544,
+        "postIdleFrameHeight": 976
+      },
+      {
+        "holdMs": 5000,
+        "bitmapPaintOk": true,
+        "decoderStateOk": true,
+        "postIdleDecodeMs": 33.29999998211861,
+        "postIdleFrameWidth": 544,
+        "postIdleFrameHeight": 976
+      },
+      {
+        "holdMs": 30000,
+        "bitmapPaintOk": true,
+        "decoderStateOk": true,
+        "postIdleDecodeMs": 33.60000002384186,
+        "postIdleFrameWidth": 544,
+        "postIdleFrameHeight": 976
+      }
+    ]
+  }
+}

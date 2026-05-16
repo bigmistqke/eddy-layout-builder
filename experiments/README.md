@@ -8,6 +8,21 @@ they test: `docs/superpowers/specs/2026-05-14-video-playback-scaling-design.md`.
 **These are throwaway.** When an experiment has answered its question,
 record the verdict in its `README.md` and delete or absorb the code.
 
+**README sections.** Each experiment's `README.md` should carry:
+
+- **Question** — the single thing the experiment answers
+- **Setup / Why** — the shape of the test and the prior unknown it
+  closes
+- **Verdict** (post-run) — the numbers and the call they support
+- **Note for eddy implementation** — any production-relevant
+  technique or gotcha that surfaced during the run (e.g. "pre-warm
+  the decoder 1 frame ahead of the boundary"). These are how
+  experiment learnings flow into the eventual `src/` work without
+  being lost in commit messages. Add them when you spot one, even if
+  it's small.
+- **Caveats** — what wasn't tested or remains uncertain
+- **Reproduce** — the command + git SHA
+
 ## Layout
 
 Experiment directories are **numbered in investigative order** (`00_`,
@@ -80,5 +95,6 @@ To vary an experiment, edit the `params` block in its `index.ts` and commit.
 | 12b | [bitmap-during-record](12b_bitmap-during-record/README.md) | Can bitmaps be generated DURING recording (via MediaStreamTrackProcessor), so the series is ready at stop? | **Yes** — 100% keep-up, mean latency 3.6ms — `pending-bitmaps` state goes to zero |
 | 13 | [cold-start](13_cold-start/README.md) | How fast can persisted sub-atlases be read from OPFS, decoded, and ready (target ~1s)? | **Yes** — single 219ms, K=4 parallel 561ms |
 | 14 | [atlas-swap](14_atlas-swap/README.md) | How big is the handoff gap when an atlas decoder is swapped at a loop boundary? Can pre-warming make it frame-accurate? | **Yes** — cold 270ms, hot (pre-warmed + held VideoFrame) 0ms |
-| 15 | [distinct-content](15_distinct-content/README.md) | Does the K=4 sub-atlas verdict hold when each cell holds DIFFERENT content (real-session entropy)? | _not yet run_ |
+| 15 | [distinct-content](15_distinct-content/README.md) | Does the K=4 sub-atlas verdict hold when each cell holds DIFFERENT content (real-session entropy)? | **Yes** — +4% bytes, −5% fps (noise); cross-cell entropy not load-bearing |
+| 16 | [swap-with-bitmap-hold](16_swap-with-bitmap-hold/README.md) | Can the atlas-swap pattern use ImageBitmap-hold (durable) instead of VideoFrame-hold (opaque GC), surviving 5s / 30s? | **Yes** — bitmap & decoder state both survive 30s; post-idle delta decode 12-34ms |
 | — | windowed-previews | Can per-cell ring buffers give bounded memory at acceptable quality? | _likely obsolete — memory was never the wall_ |
