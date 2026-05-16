@@ -1,0 +1,188 @@
+{
+  "ranAt": "2026-05-16T13:05:49.851Z",
+  "git": {
+    "sha": "880b50a",
+    "dirty": true
+  },
+  "experiment": "progressive-streams",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "canvasResolution": {
+      "width": 540,
+      "height": 982
+    },
+    "takeSeconds": 6,
+    "stages": 9,
+    "maxQueue": 8,
+    "targetFps": 30
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 755
+    }
+  },
+  "result": {
+    "stages": [
+      {
+        "stage": 1,
+        "cellCount": 1,
+        "gapBeforeThisTakeMs": 0,
+        "recordRenderFps": 60.22402011885292,
+        "recordRenderP95Ms": 19.5,
+        "recordRenderMaxMs": 35.900000005960464,
+        "recordFramesOver33ms": 1,
+        "integrity": {
+          "framesActual": 179,
+          "framesExpected": 180,
+          "framesDropped": 0,
+          "meanIntervalMs": 33.41011235955056,
+          "maxIntervalMs": 43,
+          "measuredFps": 29.931057676139233
+        }
+      },
+      {
+        "stage": 2,
+        "cellCount": 2,
+        "gapBeforeThisTakeMs": 1.7999999821186066,
+        "recordRenderFps": 59.90203865483996,
+        "recordRenderP95Ms": 19.5,
+        "recordRenderMaxMs": 23.900000005960464,
+        "recordFramesOver33ms": 0,
+        "integrity": {
+          "framesActual": 179,
+          "framesExpected": 180,
+          "framesDropped": 0,
+          "meanIntervalMs": 33.41011235955056,
+          "maxIntervalMs": 46,
+          "measuredFps": 29.931057676139233
+        }
+      },
+      {
+        "stage": 3,
+        "cellCount": 3,
+        "gapBeforeThisTakeMs": 0.9000000059604645,
+        "recordRenderFps": 59.91889431432591,
+        "recordRenderP95Ms": 20.299999982118607,
+        "recordRenderMaxMs": 32.400000005960464,
+        "recordFramesOver33ms": 0,
+        "integrity": {
+          "framesActual": 177,
+          "framesExpected": 178,
+          "framesDropped": 1,
+          "meanIntervalMs": 33.61363636363637,
+          "maxIntervalMs": 75,
+          "measuredFps": 29.749830966869503
+        }
+      },
+      {
+        "stage": 4,
+        "cellCount": 4,
+        "gapBeforeThisTakeMs": 1.0999999940395355,
+        "recordRenderFps": 50.4168451576267,
+        "recordRenderP95Ms": 34.29999998211861,
+        "recordRenderMaxMs": 44.89999997615814,
+        "recordFramesOver33ms": 24,
+        "integrity": {
+          "framesActual": 173,
+          "framesExpected": 175,
+          "framesDropped": 5,
+          "meanIntervalMs": 34.22674418604651,
+          "maxIntervalMs": 68,
+          "measuredFps": 29.216918634278922
+        }
+      },
+      {
+        "stage": 5,
+        "cellCount": 5,
+        "gapBeforeThisTakeMs": 1,
+        "recordRenderFps": 43.601770496264066,
+        "recordRenderP95Ms": 36.099999994039536,
+        "recordRenderMaxMs": 63.80000001192093,
+        "recordFramesOver33ms": 45,
+        "integrity": {
+          "framesActual": 175,
+          "framesExpected": 178,
+          "framesDropped": 3,
+          "meanIntervalMs": 33.770114942528735,
+          "maxIntervalMs": 65,
+          "measuredFps": 29.61198093941457
+        }
+      },
+      {
+        "stage": 6,
+        "cellCount": 6,
+        "gapBeforeThisTakeMs": 9.400000005960464,
+        "recordRenderFps": 40.11887072808321,
+        "recordRenderP95Ms": 38,
+        "recordRenderMaxMs": 57.5,
+        "recordFramesOver33ms": 55,
+        "integrity": {
+          "framesActual": 175,
+          "framesExpected": 176,
+          "framesDropped": 4,
+          "meanIntervalMs": 34.17816091954023,
+          "maxIntervalMs": 98,
+          "measuredFps": 29.258449638473177
+        }
+      },
+      {
+        "stage": 7,
+        "cellCount": 7,
+        "gapBeforeThisTakeMs": 1.199999988079071,
+        "recordRenderFps": 40.8548082965882,
+        "recordRenderP95Ms": 38.69999998807907,
+        "recordRenderMaxMs": 54.79999998211861,
+        "recordFramesOver33ms": 56,
+        "integrity": {
+          "framesActual": 177,
+          "framesExpected": 180,
+          "framesDropped": 0,
+          "meanIntervalMs": 33.40909090909091,
+          "maxIntervalMs": 48,
+          "measuredFps": 29.931972789115648
+        }
+      },
+      {
+        "stage": 8,
+        "cellCount": 8,
+        "gapBeforeThisTakeMs": 1.5,
+        "recordRenderFps": 35.00660501981506,
+        "recordRenderP95Ms": 46.900000005960464,
+        "recordRenderMaxMs": 70,
+        "recordFramesOver33ms": 79,
+        "integrity": {
+          "framesActual": 176,
+          "framesExpected": 177,
+          "framesDropped": 4,
+          "meanIntervalMs": 33.93714285714286,
+          "maxIntervalMs": 99,
+          "measuredFps": 29.466240107762246
+        }
+      },
+      {
+        "stage": 9,
+        "cellCount": 9,
+        "gapBeforeThisTakeMs": 1.199999988079071,
+        "recordRenderFps": 34.363125722782094,
+        "recordRenderP95Ms": 46.20000001788139,
+        "recordRenderMaxMs": 66.5,
+        "recordFramesOver33ms": 83,
+        "integrity": {
+          "framesActual": 178,
+          "framesExpected": 179,
+          "framesDropped": 0,
+          "meanIntervalMs": 33.429378531073446,
+          "maxIntervalMs": 48,
+          "measuredFps": 29.913807672807167
+        }
+      }
+    ],
+    "sessionSeconds": 54.48980000001192,
+    "peakHeapMb": 10
+  }
+}
