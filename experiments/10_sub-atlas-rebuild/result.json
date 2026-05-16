@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-05-16T08:48:50.171Z",
+  "ranAt": "2026-05-16T08:57:16.111Z",
   "git": {
-    "sha": "24a0881",
+    "sha": "2899964",
     "dirty": true
   },
   "experiment": "sub-atlas-rebuild",
@@ -11,8 +11,8 @@
       "height": 720
     },
     "atlasResolution": {
-      "width": 1080,
-      "height": 1965
+      "width": 540,
+      "height": 983
     },
     "totalCells": 16,
     "subAtlasCounts": [
@@ -37,30 +37,30 @@
       {
         "k": 1,
         "subAtlas": {
-          "width": 1080,
-          "height": 1965,
+          "width": 540,
+          "height": 983,
           "cells": "4×4"
         },
         "prebuildMsEach": [
-          9845.399999976158
+          6154
         ],
         "baselinePlayback": {
           "perDecoderFps": [
-            109.10781123891203
+            119.50367425611373
           ],
-          "minFps": 109.10781123891203,
-          "aggregateFps": 109.10781123891203,
+          "minFps": 119.50367425611373,
+          "aggregateFps": 119.50367425611373,
           "realtimeOk": true
         },
         "contended": {
-          "captureFrames": 58,
-          "captureBytes": 683029,
+          "captureFrames": 118,
+          "captureBytes": 1305554,
           "perDecoderFps": [
-            41.769925653579214
+            28.702426659676615
           ],
-          "minFps": 41.769925653579214,
-          "buildMs": 10796.199999988079,
-          "buildRateVsRealtime": 2.73695000000298,
+          "minFps": 28.702426659676615,
+          "buildMs": 7822.5,
+          "buildRateVsRealtime": 1.99125,
           "buildCompletedInWindow": false,
           "realtimeOk": true
         }
@@ -68,33 +68,33 @@
       {
         "k": 2,
         "subAtlas": {
-          "width": 1080,
-          "height": 982.5,
+          "width": 540,
+          "height": 491.5,
           "cells": "4×2"
         },
         "prebuildMsEach": [
-          3986.699999988079,
-          4157.5
+          3621,
+          3447.0999999940395
         ],
         "baselinePlayback": {
           "perDecoderFps": [
-            43.24468915099033,
-            39.45520608105819
+            94.41499019563888,
+            89.3311061081814
           ],
-          "minFps": 39.45520608105819,
-          "aggregateFps": 82.69989523204853,
+          "minFps": 89.3311061081814,
+          "aggregateFps": 183.74609630382028,
           "realtimeOk": true
         },
         "contended": {
-          "captureFrames": 109,
-          "captureBytes": 1242586,
+          "captureFrames": 116,
+          "captureBytes": 1288471,
           "perDecoderFps": [
-            32.77717862500891,
-            32.77717862500891
+            40.382110290924885,
+            33.651758575770735
           ],
-          "minFps": 32.77717862500891,
-          "buildMs": 6440.899999976158,
-          "buildRateVsRealtime": 1.6305249999985099,
+          "minFps": 33.651758575770735,
+          "buildMs": 4859.4000000059605,
+          "buildRateVsRealtime": 1.2334249999970197,
           "buildCompletedInWindow": false,
           "realtimeOk": true
         }
@@ -102,39 +102,39 @@
       {
         "k": 4,
         "subAtlas": {
-          "width": 540,
-          "height": 982.5,
+          "width": 270,
+          "height": 491.5,
           "cells": "2×2"
         },
         "prebuildMsEach": [
-          3524.4000000059605,
-          3374.300000011921,
-          3594.7999999821186,
-          3608.2999999821186
+          2398.0999999940395,
+          2578.0999999940395,
+          2556.4000000059605,
+          2438.4000000059605
         ],
         "baselinePlayback": {
           "perDecoderFps": [
-            37.18610552109144,
-            33.68623676616519,
-            32.155044185884954,
-            30.84259340278761
+            62.030299415483725,
+            55.82726947393535,
+            53.44148872718598,
+            53.20291065251104
           ],
-          "minFps": 30.84259340278761,
-          "aggregateFps": 133.86997987592918,
+          "minFps": 53.20291065251104,
+          "aggregateFps": 224.50196826911608,
           "realtimeOk": true
         },
         "contended": {
-          "captureFrames": 88,
-          "captureBytes": 1028624,
+          "captureFrames": 100,
+          "captureBytes": 1122568,
           "perDecoderFps": [
-            39.309371267238575,
-            36.70322510587469,
-            33.662721250950156,
-            32.359648170268215
+            43.48960598405705,
+            38.05340523604992,
+            37.40106114628907,
+            33.9218926675645
           ],
-          "minFps": 32.359648170268215,
-          "buildMs": 5239.9000000059605,
-          "buildRateVsRealtime": 1.329,
+          "minFps": 33.9218926675645,
+          "buildMs": 4623.5,
+          "buildRateVsRealtime": 1.175,
           "buildCompletedInWindow": false,
           "realtimeOk": true
         }

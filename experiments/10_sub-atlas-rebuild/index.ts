@@ -18,7 +18,13 @@ import { reportResult, status } from "../harness/report"
 
 const params = {
   captureResolution: { width: 1280, height: 720 },
-  atlasResolution: { width: 1080, height: 1965 },
+  // CSS-pixel-sized atlas (~viewport × √2). Full physical-pixel res
+  // (1080x1965, DPR ~2.8) is sharper but contention-bound; viewport
+  // (384x699) has enormous headroom but is visibly blurry on camera
+  // footage. Half-res sits in the sweet spot: 1:1 with CSS pixels (no
+  // visible blur), enough budget to make all three contended numbers
+  // comfortable. See README for the full sweep.
+  atlasResolution: { width: 540, height: 983 },
   // Fixed cell count — the user's grid. K varies how it's packed.
   totalCells: 16,
   // K = sub-atlas count. K=1 reproduces 09's baseline; K=4 is the

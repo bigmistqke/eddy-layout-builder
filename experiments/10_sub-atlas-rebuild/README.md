@@ -63,6 +63,42 @@ If even K=4 doesn't satisfy all three, the next move is K higher
 (K=8 = 1 cell per sub-atlas = pure streaming — already known to wall),
 or deferring the rebuild to after the take stops.
 
+### Resolution is the second lever
+
+Initial verdict above ran at **physical-pixel** atlas size (1080×1965,
+matching the A15's display). Re-running at lower atlas resolutions
+revealed contention is heavily resolution-bound:
+
+| K | metric | physical (1080×1965) | CSS-px (540×983) | viewport (384×699) |
+|---|---|---|---|---|
+| 4 | contended capture | 88f | 99f | 117f / 118 baseline |
+| 4 | contended min fps | 32.4 | 34.7 | 281.7 |
+| 4 | contended build × | 1.33 | **1.18** | 1.15 |
+| 4 | baseline aggregate fps | 140 | 212 | 1881 |
+| 1 | contended capture | 58f | 118f | 118f |
+| 1 | contended min fps | 41.8 | 25.6 ❌ | 31.7 |
+
+**CSS-pixel resolution is the sweet spot.** Viewport-size (384×699) has
+huge headroom but visibly blurs camera footage (~2.8× upscale to
+physical pixels). CSS-pixel (540×983) is 1:1 with the rendered canvas —
+no visible blur — and already pulls all three K=4 contended numbers
+into the comfort zone (build 1.18× ≈ 08's idle 1.2×; the contention
+penalty essentially vanishes).
+
+Two surprises worth filing:
+
+1. **K=1 contended min fps got *worse* at half-res** (41.8 → 25.6).
+   Capture recovered fully (no longer starving) and that freed budget
+   was absorbed by the encode pipeline, squeezing the atlas decoder.
+   *Freeing one workload soaks budget elsewhere.* Doesn't affect K=4
+   but invalidates "smaller atlas = better everywhere".
+2. **K=2 was flaky at full-res** (min fps flipped 27.3 → 32.8 across
+   runs); at half-res it's solidly 36.6 — the resolution headroom
+   removed the noise.
+
+Architecture: **K=4 sub-atlases at CSS-pixel resolution** (here ~540×983;
+in production, `viewport × DPR_floor`-ish).
+
 ## Caveats
 
 - Sub-atlas tiling here uses the same source clip in every cell (same
