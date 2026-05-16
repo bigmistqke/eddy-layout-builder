@@ -1,0 +1,65 @@
+{
+  "ranAt": "2026-05-16T10:22:50.821Z",
+  "git": {
+    "sha": "becf6c9",
+    "dirty": true
+  },
+  "experiment": "render-loop-paced",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "subAtlasResolution": {
+      "width": 270,
+      "height": 491
+    },
+    "subAtlasCols": 2,
+    "subAtlasRows": 2,
+    "layoutCols": 4,
+    "layoutRows": 4,
+    "canvasResolution": {
+      "width": 540,
+      "height": 982
+    },
+    "recordSeconds": 4,
+    "runSeconds": 4,
+    "maxQueue": 8
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "baseline": {
+      "framesRendered": 241,
+      "renderedFps": 60.19281682428601,
+      "meanFrameTimeMs": 6.317012449641445,
+      "p95FrameTimeMs": 10.599999994039536,
+      "maxFrameTimeMs": 14.599999994039536,
+      "framesUnder16ms": 1,
+      "framesUnder33ms": 1
+    },
+    "contended": {
+      "framesRendered": 91,
+      "renderedFps": 22.73919888066722,
+      "meanFrameTimeMs": 5.742857143119141,
+      "p95FrameTimeMs": 16.599999994039536,
+      "maxFrameTimeMs": 27.700000017881393,
+      "framesUnder16ms": 0.945054945054945,
+      "framesUnder33ms": 1
+    },
+    "capture": {
+      "frames": 102,
+      "bytes": 1145464
+    },
+    "rebuild": {
+      "ms": 4552.800000011921,
+      "wallClockSeconds": 4.6180999999940395,
+      "rateVsRealtime": 1.1545249999985099
+    }
+  }
+}
