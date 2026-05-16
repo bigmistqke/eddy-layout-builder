@@ -53,6 +53,22 @@ Two passes:
 If `t1`/`t2` dominate, OPFS read is the bottleneck. If `t3`/`t4`
 dominate, decoder init is. Each suggests a different optimization.
 
+## Note for eddy implementation
+
+- **Load atlases in parallel, not sequentially.** K=4 parallel was
+  561ms vs 4× single = 876ms. Hardware decode is contended (per 02
+  / 06) so it's not fully parallel, but the speedup is real.
+  `Promise.all(containers.map(loadAtlas))` at cold-start, not a
+  for-loop.
+- **Decode-to-first-frame (~130ms) is proportional to first GOP, not
+  whole clip length.** A 30s atlas's first-frame timing should match
+  a 4s atlas's — only the OPFS read grows with file size (linearly).
+  Don't structure load to wait for the full file before configuring
+  the decoder; stream the file into the decoder as bytes arrive.
+- **Production version should use a real container** (mediabunny mux
+  for WebM) so atlases are valid standalone files for export reuse,
+  not a custom format. The cold-start cost won't shift meaningfully.
+
 ## Caveats
 
 - Atlas serialization uses a custom binary format (length-prefixed

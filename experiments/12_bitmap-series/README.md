@@ -51,6 +51,22 @@ The bitmap path is viable if all four hold:
 - **Contended paint doesn't drop frames.** Capture + atlas + K bitmap
   paints all sustain realtime.
 
+## Note for eddy implementation
+
+- **Hard cap on pending-bitmap cells at K=4.** Beyond K=4 simultaneous
+  bitmap paints, the atlas decoder slips below realtime under
+  contention (24fps at K=8). The renderer should treat K=4 as a soft
+  cap on the "pending atlas rebuild" queue. Practically: at most 4
+  cells in `playing-bitmaps` state at once; if more cells need it
+  (unlikely with full-song loops + 3-8 takes), degrade the oldest to
+  a single static frame until its rebuild lands.
+- **Replaced by 12b for the rebuild-on-record case.** This experiment
+  measured "build bitmaps post-stop" which is 0.34× realtime (~10s
+  for 30s clip). 12b shows generating bitmaps DURING recording is
+  free and instant-on-stop. Post-stop build is only needed for the
+  layout-edit / cold-start dirty-atlas paths (where there's no live
+  camera frame stream to tap).
+
 ## Caveats
 
 - Source clip tiled identically (same as 05/07/09/10/11) — optimistic

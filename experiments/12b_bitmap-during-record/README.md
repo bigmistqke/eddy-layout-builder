@@ -51,6 +51,23 @@ Reports:
 If all three hold, `pending-bitmaps` goes away and the design's gap
 disappears.
 
+## Note for eddy implementation
+
+- **This is THE recording path.** Use `MediaStreamTrackProcessor` +
+  Worker for bitmap generation alongside `MediaRecorder`. Do NOT
+  defer bitmap building to a post-stop step — 12 measured that at
+  0.34× realtime, so a 30s clip → 10s gap before `playing-bitmaps`
+  starts. Generating during-record is essentially free (3.6ms mean
+  latency, 100% keep-up) and collapses that gap to zero.
+- **Clone the track** so MediaRecorder gets the original and the
+  bitmap worker gets a copy. Both consume from the same camera
+  source independently; neither blocks the other.
+- **Compatibility fallback:** if `MediaStreamTrackProcessor` is ever
+  unavailable on a target browser, fall back to `requestVideoFrame-
+  Callback` on the existing preview `<video>` element. That path
+  stays on the main thread (+30ms/s overhead) but still meets the
+  contract — bitmaps ready at stop.
+
 ## Caveats
 
 - `MediaStreamTrackProcessor` is Chrome-only and behind no flag on

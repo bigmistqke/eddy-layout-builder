@@ -56,6 +56,24 @@ If hot swap is sub-frame, the cell renderer in production can simply
 hold a "next" decoder + first frame whenever a rebuild lands, and the
 swap at the next boundary is a pointer flip.
 
+## Note for eddy implementation
+
+**SUPERSEDED by [16](../16_swap-with-bitmap-hold/README.md).** This
+experiment held a `VideoFrame` across a 500ms wait, which worked, but
+`VideoFrame`s are GPU-backed and the spec is intentionally vague
+about lifetime. 16 redid the test with `ImageBitmap`-hold instead
+(durable across 30s) + verified the `VideoDecoder` keeps its internal
+state across the same idle. Use 16's pattern in production:
+
+- Pre-warm decoder + decode chunk 0 → `drawImage` to canvas →
+  `transferToImageBitmap` → close `VideoFrame` → hold the bitmap
+- At swap boundary, paint the bitmap (single `texImage2D`) + feed
+  the next chunks; decoder state was retained, so frame 1 decodes
+  in ~33ms (see 16's note for the pre-decode-ahead trick)
+
+The 0ms-swap *measurement* here remains correct; only the storage
+mechanism for the held frame changes.
+
 ## Caveats
 
 - Single source clip tiled into both atlases — they have identical
