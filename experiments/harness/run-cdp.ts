@@ -26,7 +26,9 @@ if (!experiment) {
 const port = portArg ?? "5173"
 const CDP = "http://localhost:9222"
 const PAGE_URL = `http://localhost:${port}/experiments/index.html?experiment=${experiment}`
-const TIMEOUT_MS = 180_000
+// Override with TIMEOUT_MS=300000 etc. for long-running experiments
+// (e.g. 18_progressive-record runs ~120s for the 9-stage session).
+const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 180_000)
 const RESULT_PREFIX = "[experiment-result] "
 // experiments/harness/ → experiments/
 const EXPERIMENTS_DIR = dirname(import.meta.dirname)

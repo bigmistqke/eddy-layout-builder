@@ -1,0 +1,129 @@
+{
+  "ranAt": "2026-05-16T10:31:37.946Z",
+  "git": {
+    "sha": "55cdd81",
+    "dirty": true
+  },
+  "experiment": "progressive-record",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "canvasResolution": {
+      "width": 540,
+      "height": 982
+    },
+    "takeSeconds": 6,
+    "stages": 9,
+    "bitmapResolution": {
+      "width": 270,
+      "height": 491
+    },
+    "maxQueue": 8
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 755
+    }
+  },
+  "result": {
+    "stages": [
+      {
+        "stage": 1,
+        "cellCount": 1,
+        "bitmapKeepUpRatio": 0.9829545454545454,
+        "rebuildMs": 7127.800000011921,
+        "rebuildRateVsRealtime": 1.1879666666686535,
+        "recordRenderFps": 57.72171882445953,
+        "rebuildRenderFps": 37.21226206279831,
+        "stageWallClockSeconds": 13.95909999999404
+      },
+      {
+        "stage": 2,
+        "cellCount": 2,
+        "bitmapKeepUpRatio": 0.9830508474576272,
+        "rebuildMs": 4960.4000000059605,
+        "rebuildRateVsRealtime": 0.8267333333343267,
+        "recordRenderFps": 53.904428904480916,
+        "rebuildRenderFps": 45.888948744093994,
+        "stageWallClockSeconds": 11.424
+      },
+      {
+        "stage": 3,
+        "cellCount": 3,
+        "bitmapKeepUpRatio": 1.0064102564102564,
+        "rebuildMs": 5680.299999982119,
+        "rebuildRateVsRealtime": 0.9467166666636864,
+        "recordRenderFps": 58.60468178980498,
+        "rebuildRenderFps": 51.45558249468991,
+        "stageWallClockSeconds": 11.99180000001192
+      },
+      {
+        "stage": 4,
+        "cellCount": 4,
+        "bitmapKeepUpRatio": 1.0057471264367817,
+        "rebuildMs": 6885.399999976158,
+        "rebuildRateVsRealtime": 1.1475666666626931,
+        "recordRenderFps": 58.2827121983254,
+        "rebuildRenderFps": 50.95431384420285,
+        "stageWallClockSeconds": 13.21830000001192
+      },
+      {
+        "stage": 5,
+        "cellCount": 5,
+        "bitmapKeepUpRatio": 1.0112359550561798,
+        "rebuildMs": 8127.100000023842,
+        "rebuildRateVsRealtime": 1.3545166666706405,
+        "recordRenderFps": 59.25340707067406,
+        "rebuildRenderFps": 50.589396949934404,
+        "stageWallClockSeconds": 14.502099999994039
+      },
+      {
+        "stage": 6,
+        "cellCount": 6,
+        "bitmapKeepUpRatio": 1.005586592178771,
+        "rebuildMs": 9439.800000011921,
+        "rebuildRateVsRealtime": 1.5733000000019868,
+        "recordRenderFps": 59.35305173601844,
+        "rebuildRenderFps": 49.152203429107466,
+        "stageWallClockSeconds": 15.74470000001788
+      },
+      {
+        "stage": 7,
+        "cellCount": 7,
+        "bitmapKeepUpRatio": 1.005586592178771,
+        "rebuildMs": 10767.09999999404,
+        "rebuildRateVsRealtime": 1.7945166666656733,
+        "recordRenderFps": 59.22124068493428,
+        "rebuildRenderFps": 49.42171969100952,
+        "stageWallClockSeconds": 17.16369999998808
+      },
+      {
+        "stage": 8,
+        "cellCount": 8,
+        "bitmapKeepUpRatio": 0.9888268156424581,
+        "rebuildMs": 12061.800000011921,
+        "rebuildRateVsRealtime": 2.010300000001987,
+        "recordRenderFps": 59.29049046399638,
+        "rebuildRenderFps": 54.70703270034043,
+        "stageWallClockSeconds": 18.399599999994038
+      },
+      {
+        "stage": 9,
+        "cellCount": 9,
+        "bitmapKeepUpRatio": 1.025974025974026,
+        "rebuildMs": 13019.699999988079,
+        "rebuildRateVsRealtime": 2.169949999998013,
+        "recordRenderFps": 55.94451351185417,
+        "rebuildRenderFps": 50.02405737114768,
+        "stageWallClockSeconds": 19.431599999994038
+      }
+    ],
+    "sessionSeconds": 135.87470000001787,
+    "minRecordFps": 53.904428904480916,
+    "minRebuildFps": 37.21226206279831
+  }
+}
