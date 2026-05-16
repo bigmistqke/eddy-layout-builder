@@ -1,0 +1,74 @@
+{
+  "ranAt": "2026-05-16T08:42:18.239Z",
+  "git": {
+    "sha": "24a0881",
+    "dirty": true
+  },
+  "experiment": "concurrent-build",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "atlasResolution": {
+      "width": 1080,
+      "height": 1965
+    },
+    "gridSizes": [
+      9,
+      16
+    ],
+    "recordSeconds": 4,
+    "runSeconds": 4,
+    "maxQueue": 8
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "grids": [
+      {
+        "n": 9,
+        "prebakedAtlas": "1088x1968",
+        "prebakeMs": 7348.5999999940395,
+        "baseline": {
+          "captureFrames": 118,
+          "captureBytes": 1309623,
+          "playbackFps": 76.21951219490211
+        },
+        "contended": {
+          "captureFrames": 54,
+          "captureBytes": 641179,
+          "playbackFps": 34.342521464075915,
+          "buildCompletedInWindow": false,
+          "buildMs": 9582.200000017881,
+          "buildRateVsRealtime": 2.4244250000044705,
+          "atlas": "1088x1968"
+        }
+      },
+      {
+        "n": 16,
+        "prebakedAtlas": "1088x1968",
+        "prebakeMs": 8098.699999988079,
+        "baseline": {
+          "captureFrames": 118,
+          "captureBytes": 1306756,
+          "playbackFps": 95.24969549330085
+        },
+        "contended": {
+          "captureFrames": 87,
+          "captureBytes": 987942,
+          "playbackFps": 59.906487434162024,
+          "buildCompletedInWindow": false,
+          "buildMs": 10446,
+          "buildRateVsRealtime": 2.632,
+          "atlas": "1088x1968"
+        }
+      }
+    ]
+  }
+}

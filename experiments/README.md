@@ -73,4 +73,6 @@ To vary an experiment, edit the `params` block in its `index.ts` and commit.
 | 06 | [grid-streaming-workers](06_grid-streaming-workers/README.md) | Is streaming's poor scaling partly main-thread contention? (decoders in Web Workers) | **No** — workers ≈ main thread; it's hardware-decode-bound |
 | 07 | [compositing-workers](07_compositing-workers/README.md) | Can the composite build + decode run off the main thread? | **Yes** — worker-safe; build can be backgrounded |
 | 08 | [build-cost](08_build-cost/README.md) | How does atlas build time scale with clip length? | **~1.2× realtime, linear** (not ~2×); but 16s single-pass OOM-crashed → chunking mandatory |
+| 09 | [concurrent-build](09_concurrent-build/README.md) | Can the atlas build run during recording without degrading capture or playback? | **No** — build slips 1.2× → 2.4–2.6× realtime under contention; capture drops 26–54% |
+| 10 | [sub-atlas-rebuild](10_sub-atlas-rebuild/README.md) | Does splitting into K sub-atlases make rebuild-during-recording fit (1/K build cost, K decoders)? | _not yet run_ |
 | — | windowed-previews | Can per-cell ring buffers give bounded memory at acceptable quality? | _likely obsolete — memory was never the wall_ |

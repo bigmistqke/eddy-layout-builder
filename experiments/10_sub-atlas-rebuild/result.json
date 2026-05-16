@@ -1,0 +1,144 @@
+{
+  "ranAt": "2026-05-16T08:48:50.171Z",
+  "git": {
+    "sha": "24a0881",
+    "dirty": true
+  },
+  "experiment": "sub-atlas-rebuild",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "atlasResolution": {
+      "width": 1080,
+      "height": 1965
+    },
+    "totalCells": 16,
+    "subAtlasCounts": [
+      1,
+      2,
+      4
+    ],
+    "recordSeconds": 4,
+    "runSeconds": 4,
+    "maxQueue": 8,
+    "realtimeFps": 28
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "ks": [
+      {
+        "k": 1,
+        "subAtlas": {
+          "width": 1080,
+          "height": 1965,
+          "cells": "4×4"
+        },
+        "prebuildMsEach": [
+          9845.399999976158
+        ],
+        "baselinePlayback": {
+          "perDecoderFps": [
+            109.10781123891203
+          ],
+          "minFps": 109.10781123891203,
+          "aggregateFps": 109.10781123891203,
+          "realtimeOk": true
+        },
+        "contended": {
+          "captureFrames": 58,
+          "captureBytes": 683029,
+          "perDecoderFps": [
+            41.769925653579214
+          ],
+          "minFps": 41.769925653579214,
+          "buildMs": 10796.199999988079,
+          "buildRateVsRealtime": 2.73695000000298,
+          "buildCompletedInWindow": false,
+          "realtimeOk": true
+        }
+      },
+      {
+        "k": 2,
+        "subAtlas": {
+          "width": 1080,
+          "height": 982.5,
+          "cells": "4×2"
+        },
+        "prebuildMsEach": [
+          3986.699999988079,
+          4157.5
+        ],
+        "baselinePlayback": {
+          "perDecoderFps": [
+            43.24468915099033,
+            39.45520608105819
+          ],
+          "minFps": 39.45520608105819,
+          "aggregateFps": 82.69989523204853,
+          "realtimeOk": true
+        },
+        "contended": {
+          "captureFrames": 109,
+          "captureBytes": 1242586,
+          "perDecoderFps": [
+            32.77717862500891,
+            32.77717862500891
+          ],
+          "minFps": 32.77717862500891,
+          "buildMs": 6440.899999976158,
+          "buildRateVsRealtime": 1.6305249999985099,
+          "buildCompletedInWindow": false,
+          "realtimeOk": true
+        }
+      },
+      {
+        "k": 4,
+        "subAtlas": {
+          "width": 540,
+          "height": 982.5,
+          "cells": "2×2"
+        },
+        "prebuildMsEach": [
+          3524.4000000059605,
+          3374.300000011921,
+          3594.7999999821186,
+          3608.2999999821186
+        ],
+        "baselinePlayback": {
+          "perDecoderFps": [
+            37.18610552109144,
+            33.68623676616519,
+            32.155044185884954,
+            30.84259340278761
+          ],
+          "minFps": 30.84259340278761,
+          "aggregateFps": 133.86997987592918,
+          "realtimeOk": true
+        },
+        "contended": {
+          "captureFrames": 88,
+          "captureBytes": 1028624,
+          "perDecoderFps": [
+            39.309371267238575,
+            36.70322510587469,
+            33.662721250950156,
+            32.359648170268215
+          ],
+          "minFps": 32.359648170268215,
+          "buildMs": 5239.9000000059605,
+          "buildRateVsRealtime": 1.329,
+          "buildCompletedInWindow": false,
+          "realtimeOk": true
+        }
+      }
+    ]
+  }
+}
