@@ -43,7 +43,7 @@ Each cell is in exactly one of six states at any time:
 ```
 empty              black, selectable
 live-preview       camera in this cell (selected-empty)
-armed              live-preview + visual pulse on loop position
+queued              live-preview + visual pulse on loop position
 recording          live-preview + MediaRecorder writing the new clip
 playing-bitmaps    bitmap series @ 30fps, no decoder used
 playing-atlas      sub-atlas decoder paints this cell at its tile rect
@@ -56,13 +56,13 @@ complete the moment recording stops. There is no gap.
 Cell transitions:
 
 ```
-empty → armed (via tap on the cell)
+empty → queued (via tap on the cell)
 empty → live-preview (via selection)
-live-preview → armed (via tap record / arm)
-armed → recording (at next loop boundary 0)
+live-preview → queued (via tap record)
+queued → recording (at next loop boundary 0)
 recording → playing-bitmaps (at next loop boundary 0 after auto-stop)
 playing-bitmaps → playing-atlas (at next loop boundary 0 after sub-atlas rebuild lands)
-playing-atlas → armed (re-record: drops clip on arm, atlas becomes
+playing-atlas → queued (re-record: drops clip when queued, atlas becomes
                        stale; cell goes silent + live-preview)
 any → empty (via delete)
 ```
@@ -79,7 +79,7 @@ paint right now?" The answer is determined by cell state:
 | state | source |
 |---|---|
 | `empty` | black |
-| `live-preview` / `armed` / `recording` | the persistent preview `<video>` element |
+| `live-preview` / `queued` / `recording` | the persistent preview `<video>` element |
 | `playing-bitmaps` | `bitmaps[ floor((position - cellStartOffset) * 30) ]` |
 | `playing-atlas` | the sub-atlas `VideoDecoder`'s current frame, sampled at the cell's sub-rect |
 
@@ -92,7 +92,7 @@ total (12 baseline measurement).
 `Transport` emits `onLoopBoundary` at each cycle start. A queue of
 pending cell-state transitions is drained at every boundary:
 
-- `armed → recording`: MediaRecorder starts, AudioBufferSourceNode
+- `queued → recording`: MediaRecorder starts, AudioBufferSourceNode
   for the previous clip (if any) is dropped, bitmap pipeline (12b)
   starts capturing
 - `recording → playing-bitmaps`: bitmap series is already complete
@@ -109,7 +109,7 @@ visually atomic video transitions.
 ## Two background builders
 
 When a cell changes (new take, re-record, layout edit affecting its
-container), two Workers fire in parallel, both decoding the same raw
+container), two Workers start in parallel, both decoding the same raw
 source clips from OPFS:
 
 ### Builder A — bitmap-series
@@ -184,7 +184,7 @@ loop pass. Instead:
 1. The new atlas is persisted to OPFS.
 2. A new `VideoDecoder` is created, configured, fed its first chunk.
    The resulting `VideoFrame` is **held** in memory.
-3. The cell sits in a "pre-warmed" sub-state, still painting from
+3. The cell sits in a "pre-wqueued" sub-state, still painting from
    bitmaps or the old atlas.
 4. At the next loop boundary, the cell's source pointer flips. The
    held `VideoFrame` paints this frame; the new decoder feeds
@@ -208,7 +208,7 @@ Longer holds untested; not expected to be a problem at this scale.
 | Atlas resolution | CSS-pixel (~540×983) | sweet spot per 10's sweep: sharp at standard density, contention-free |
 | Gap during rebuild | bitmap series | sidesteps decoder budget (12), generated during record (12b) so no gap |
 | Cold start | persisted atlas + sourceHash | under 1s open into loop (13) |
-| Atlas handoff | pre-warmed decoder + held VideoFrame | 0ms swap (14) |
+| Atlas handoff | pre-wqueued decoder + held VideoFrame | 0ms swap (14) |
 
 ## Validation summary
 
@@ -224,7 +224,7 @@ Longer holds untested; not expected to be a problem at this scale.
 | Bitmap-series gap-filler works (K≤4 safe) | 12 |
 | Bitmaps can be generated during recording at 100% keep-up | 12b |
 | Cold-start from OPFS is under 1s (single 219ms, K=4 561ms) | 13 |
-| Atlas swap at loop boundary is 0ms with pre-warmed decoder | 14 |
+| Atlas swap at loop boundary is 0ms with pre-wqueued decoder | 14 |
 
 ## Not yet validated / explicitly deferred
 
@@ -250,20 +250,30 @@ Longer holds untested; not expected to be a problem at this scale.
 
 ## Next step
 
-Hand off to writing-plans to break this into implementation tickets.
-The natural decomposition follows the module boundaries already
-discussed:
+**Experiments-first.** No `src/` implementation until every "not yet
+validated" item above is closed by a concrete `experiments/NN_*` run.
+The full design is plausible, but several pieces are still
+hypotheses: distinct-content overhead, long-held VideoFrame
+lifetime, layout-edit interaction with rebuild-in-flight, the
+single-cell-container streaming code path.
 
-1. `src/playback/cell-source.ts` — the state machine + per-frame
-   resolver (the single source of truth for "what does this cell
-   paint")
-2. `transport.ts` extension — `onLoopBoundary` event + pending clips
-3. `src/builders/bitmap-builder.ts` (Worker, MediaStreamTrackProcessor
-   path) + `src/builders/atlas-builder.ts` (Worker, productionised
-   `harness/composite.ts`)
-4. `src/playback/atlas-decoder.ts` — wraps one `VideoDecoder` per
-   leaf container; pre-warm + handoff logic from 14
-5. `src/state/projects.ts` extension — atlas manifest + sourceHash
-6. `src/components/canvas.tsx` extension — call `cell-source.frameFor`
-   per cell per frame
-7. Retire `src/media/video-decoder.ts`'s pre-decoded-ImageBitmap path
+Suggested experiment order:
+
+1. **15_distinct-content** — re-run a representative subset of 11
+   (K=4 contended) with K *distinct* source clips per sub-atlas
+   instead of identical tiles. Closes the biggest remaining unknown
+   and confirms (or invalidates) the K=4 CSS-pixel verdict under
+   realistic content entropy.
+2. **16_long-hold-videoframe** — pre-warm a `VideoDecoder`, hold its
+   first `VideoFrame` for 1s / 5s / 30s, paint at end; confirm the
+   frame is still valid and GPU memory hasn't grown unboundedly.
+3. **17_rebuild-queue-dynamics** — multiple cells changed in quick
+   succession; measure the queue-policy behaviour (FIFO drain,
+   "cancel-and-replace" when the same container is dirtied twice
+   before its rebuild finishes).
+4. **18_single-cell-stream** — 1-cell container streamed directly
+   vs. as a 1×1 sub-atlas; compare per-take cost, latency, and
+   whether the special-case is worth a code path.
+
+Each closes one open question. Once 15-17 land cleanly (18 is
+optional), the design has the evidence base to support `src/` work.
