@@ -1,0 +1,721 @@
+{
+  "ranAt": "2026-05-16T14:41:16.181Z",
+  "git": {
+    "sha": "6a9ee1e",
+    "dirty": true
+  },
+  "experiment": "progressive-overlap-chunked",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "canvasResolution": {
+      "width": 540,
+      "height": 982
+    },
+    "takeSeconds": 6,
+    "stages": 9,
+    "bitmapResolution": {
+      "width": 128,
+      "height": 232
+    },
+    "chunkCount": 3,
+    "atlasResolutionWidth": 540,
+    "atlasCellWidth": 540,
+    "atlasCellHeight": 100
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 755
+    }
+  },
+  "result": {
+    "stages": [
+      {
+        "stage": 1,
+        "cellCount": 1,
+        "bitmapKeepUpRatio": 1.0057471264367817,
+        "gapBeforeThisTakeMs": 0,
+        "recordRenderFps": 58.832157233193286,
+        "recordJank": {
+          "framesObserved": 361,
+          "meanMs": 16.816343490271688,
+          "medianMs": 16.599999994039536,
+          "p95Ms": 23.099999994039536,
+          "p99Ms": 28.900000005960464,
+          "maxMs": 31.5,
+          "over16ms": 221,
+          "over33ms": 0,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0,
+          "longestJankStreak": 0,
+          "jankScore": 0,
+          "histogramMs": [
+            7,
+            307,
+            44,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 174,
+          "framesDropped": 3,
+          "measuredFps": 29.517147244497522
+        },
+        "opfsBytes": 20787200,
+        "opfsWriteTotalMs": 89.40000012516975,
+        "decodeMs": 1323.300000011921,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1488.0999999940395,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 1459.7999999821186,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 1663.199999988079,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 4616.4000000059605,
+        "buildCompletedBeforeStageEnd": true
+      },
+      {
+        "stage": 2,
+        "cellCount": 2,
+        "bitmapKeepUpRatio": 0.9273743016759777,
+        "gapBeforeThisTakeMs": 1332,
+        "recordRenderFps": 56.50269486932903,
+        "recordJank": {
+          "framesObserved": 347,
+          "meanMs": 17.642939481250835,
+          "medianMs": 16.799999982118607,
+          "p95Ms": 25.599999994039536,
+          "p99Ms": 47.400000005960464,
+          "maxMs": 52.400000005960464,
+          "over16ms": 228,
+          "over33ms": 9,
+          "over50ms": 2,
+          "over100ms": 0,
+          "over33msRatio": 0.025936599423631124,
+          "longestJankStreak": 4,
+          "jankScore": 3.390086456135302,
+          "histogramMs": [
+            1,
+            298,
+            36,
+            8,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 179,
+          "framesDropped": 0,
+          "measuredFps": 29.920995125231133
+        },
+        "opfsBytes": 19718144,
+        "opfsWriteTotalMs": 86.79999965429306,
+        "decodeMs": 1277,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1615.5,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 1187.699999988079,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 1630.4000000059605,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 4437.700000017881,
+        "buildCompletedBeforeStageEnd": true
+      },
+      {
+        "stage": 3,
+        "cellCount": 3,
+        "bitmapKeepUpRatio": 0.9382022471910112,
+        "gapBeforeThisTakeMs": 1280.800000011921,
+        "recordRenderFps": 56.67608561515695,
+        "recordJank": {
+          "framesObserved": 349,
+          "meanMs": 17.556446991455246,
+          "medianMs": 16.69999998807907,
+          "p95Ms": 23.100000023841858,
+          "p99Ms": 47.599999994039536,
+          "maxMs": 78.19999998807907,
+          "over16ms": 243,
+          "over33ms": 6,
+          "over50ms": 3,
+          "over100ms": 0,
+          "over33msRatio": 0.017191977077363897,
+          "longestJankStreak": 1,
+          "jankScore": 15.405472778153623,
+          "histogramMs": [
+            5,
+            302,
+            33,
+            5,
+            1,
+            0,
+            1,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 178,
+          "framesDropped": 0,
+          "measuredFps": 29.918864097363084
+        },
+        "opfsBytes": 19836928,
+        "opfsWriteTotalMs": 111.39999997615814,
+        "decodeMs": 1257.3999999761581,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1728.199999988079,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 1597.3999999761581,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 1459.9000000059605,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 4788.5999999940395,
+        "buildCompletedBeforeStageEnd": true
+      },
+      {
+        "stage": 4,
+        "cellCount": 4,
+        "bitmapKeepUpRatio": 0.9497206703910615,
+        "gapBeforeThisTakeMs": 1260.7000000178814,
+        "recordRenderFps": 57.32023782155859,
+        "recordJank": {
+          "framesObserved": 349,
+          "meanMs": 17.30916905445834,
+          "medianMs": 16.700000017881393,
+          "p95Ms": 22.80000001192093,
+          "p99Ms": 38.19999998807907,
+          "maxMs": 53,
+          "over16ms": 247,
+          "over33ms": 5,
+          "over50ms": 1,
+          "over100ms": 0,
+          "over33msRatio": 0.014326647564469915,
+          "longestJankStreak": 1,
+          "jankScore": 2.093151860547954,
+          "histogramMs": [
+            3,
+            296,
+            43,
+            4,
+            2,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 179,
+          "framesDropped": 0,
+          "measuredFps": 29.92602555480834
+        },
+        "opfsBytes": 20193280,
+        "opfsWriteTotalMs": 102.09999993443489,
+        "decodeMs": 1292,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1692.5999999940395,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 1882.7000000178814,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 1822.9000000059605,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 5402.5,
+        "buildCompletedBeforeStageEnd": true
+      },
+      {
+        "stage": 5,
+        "cellCount": 5,
+        "bitmapKeepUpRatio": 0.9217877094972067,
+        "gapBeforeThisTakeMs": 1295.5999999940395,
+        "recordRenderFps": 57.0082832548319,
+        "recordJank": {
+          "framesObserved": 351,
+          "meanMs": 17.47321937320239,
+          "medianMs": 16.799999982118607,
+          "p95Ms": 24.69999998807907,
+          "p99Ms": 41.20000001788139,
+          "maxMs": 63.19999998807907,
+          "over16ms": 223,
+          "over33ms": 7,
+          "over50ms": 2,
+          "over100ms": 0,
+          "over33msRatio": 0.019943019943019943,
+          "longestJankStreak": 2,
+          "jankScore": 4.868148148124374,
+          "histogramMs": [
+            6,
+            280,
+            58,
+            3,
+            2,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 179,
+          "framesDropped": 0,
+          "measuredFps": 29.90591397849462
+        },
+        "opfsBytes": 19599360,
+        "opfsWriteTotalMs": 89.89999988675117,
+        "decodeMs": 1218.9000000059605,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1792.5,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 1674.5,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 1653.5,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 5127.5999999940395,
+        "buildCompletedBeforeStageEnd": true
+      },
+      {
+        "stage": 6,
+        "cellCount": 6,
+        "bitmapKeepUpRatio": 0.9162011173184358,
+        "gapBeforeThisTakeMs": 1221.800000011921,
+        "recordRenderFps": 57.14097518413246,
+        "recordJank": {
+          "framesObserved": 347,
+          "meanMs": 17.36512968304865,
+          "medianMs": 16.799999982118607,
+          "p95Ms": 24.400000005960464,
+          "p99Ms": 44.79999998211861,
+          "maxMs": 73.90000000596046,
+          "over16ms": 206,
+          "over33ms": 5,
+          "over50ms": 3,
+          "over100ms": 0,
+          "over33msRatio": 0.01440922190201729,
+          "longestJankStreak": 1,
+          "jankScore": 7.878501437163835,
+          "histogramMs": [
+            14,
+            261,
+            66,
+            1,
+            2,
+            2,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 179,
+          "framesDropped": 0,
+          "measuredFps": 29.920995125231133
+        },
+        "opfsBytes": 19480576,
+        "opfsWriteTotalMs": 102.70000007748604,
+        "decodeMs": 1236.5,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1399.699999988079,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 1799.7000000178814,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 1613.5,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 4820.5999999940395,
+        "buildCompletedBeforeStageEnd": true
+      },
+      {
+        "stage": 7,
+        "cellCount": 7,
+        "bitmapKeepUpRatio": 0.9217877094972067,
+        "gapBeforeThisTakeMs": 1239,
+        "recordRenderFps": 57.248474736898494,
+        "recordJank": {
+          "framesObserved": 350,
+          "meanMs": 17.305714285714284,
+          "medianMs": 16.700000017881393,
+          "p95Ms": 24.099999994039536,
+          "p99Ms": 34,
+          "maxMs": 49,
+          "over16ms": 223,
+          "over33ms": 6,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0.017142857142857144,
+          "longestJankStreak": 2,
+          "jankScore": 1.0129428570474899,
+          "histogramMs": [
+            6,
+            284,
+            50,
+            8,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 179,
+          "framesDropped": 0,
+          "measuredFps": 29.92602555480834
+        },
+        "opfsBytes": 19599360,
+        "opfsWriteTotalMs": 79.90000006556511,
+        "decodeMs": 1202.5,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1472.0999999940395,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 1660,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 1695.2000000178814,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 4832.5,
+        "buildCompletedBeforeStageEnd": true
+      },
+      {
+        "stage": 8,
+        "cellCount": 8,
+        "bitmapKeepUpRatio": 0.92,
+        "gapBeforeThisTakeMs": 1206.0999999940395,
+        "recordRenderFps": 56.18162105326825,
+        "recordJank": {
+          "framesObserved": 342,
+          "meanMs": 17.666959064310056,
+          "medianMs": 16.799999982118607,
+          "p95Ms": 28,
+          "p99Ms": 38.5,
+          "maxMs": 80.2000000178814,
+          "over16ms": 222,
+          "over33ms": 7,
+          "over50ms": 3,
+          "over100ms": 0,
+          "over33msRatio": 0.02046783625730994,
+          "longestJankStreak": 1,
+          "jankScore": 9.101403514878792,
+          "histogramMs": [
+            11,
+            265,
+            54,
+            9,
+            0,
+            2,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 175,
+          "framesDropped": 2,
+          "measuredFps": 29.54661232806928
+        },
+        "opfsBytes": 19124224,
+        "opfsWriteTotalMs": 100.90000024437904,
+        "decodeMs": 1221.4000000059605,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1706.8999999761581,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 1430,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 1879.300000011921,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 5019.4000000059605,
+        "buildCompletedBeforeStageEnd": true
+      },
+      {
+        "stage": 9,
+        "cellCount": 9,
+        "bitmapKeepUpRatio": 0.9106145251396648,
+        "gapBeforeThisTakeMs": 1226.0999999940395,
+        "recordRenderFps": 55.89889021867769,
+        "recordJank": {
+          "framesObserved": 341,
+          "meanMs": 17.81583577717854,
+          "medianMs": 16.80000001192093,
+          "p95Ms": 26.19999998807907,
+          "p99Ms": 51.29999998211861,
+          "maxMs": 72.60000002384186,
+          "over16ms": 211,
+          "over33ms": 12,
+          "over50ms": 4,
+          "over100ms": 0,
+          "over33msRatio": 0.03519061583577713,
+          "longestJankStreak": 1,
+          "jankScore": 8.721348974872544,
+          "histogramMs": [
+            10,
+            260,
+            57,
+            9,
+            1,
+            3,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "integrity": {
+          "framesActual": 179,
+          "framesDropped": 0,
+          "measuredFps": 29.936091490077363
+        },
+        "opfsBytes": 19361792,
+        "opfsWriteTotalMs": 91.39999982714653,
+        "decodeMs": 1230.9000000059605,
+        "buildChunks": [
+          {
+            "frameStart": 0,
+            "frameEnd": 58,
+            "compositeMs": 1017.1000000238419,
+            "atlasBytes": 40799
+          },
+          {
+            "frameStart": 58,
+            "frameEnd": 116,
+            "compositeMs": 923,
+            "atlasBytes": 43263
+          },
+          {
+            "frameStart": 116,
+            "frameEnd": 174,
+            "compositeMs": 900.5,
+            "atlasBytes": 38405
+          }
+        ],
+        "buildTotalMs": 2845.199999988079,
+        "buildCompletedBeforeStageEnd": true
+      }
+    ],
+    "sessionSeconds": 69.376,
+    "peakHeapMb": 10,
+    "longtasks": {
+      "observed": 0,
+      "totalDurationMs": 0,
+      "longestMs": 0
+    }
+  }
+}
