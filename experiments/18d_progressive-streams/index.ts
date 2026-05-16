@@ -5,6 +5,7 @@
 import { ALL_FORMATS, BlobSource, EncodedPacketSink, Input } from "mediabunny"
 import { wait } from "../../src/utils"
 import type { ProbeInput } from "../harness/input"
+import { JankRecorder, observeLongTasks, type JankReport, type LongTaskReport } from "../harness/jank"
 import { reportResult, status } from "../harness/report"
 
 const params = {
@@ -193,9 +194,8 @@ interface StageStats {
   cellCount: number
   gapBeforeThisTakeMs: number
   recordRenderFps: number
-  recordRenderP95Ms: number
-  recordRenderMaxMs: number
-  recordFramesOver33ms: number
+  /** Full jank report over the recording window (per harness/jank.ts). */
+  recordJank: JankReport
   integrity: IntegrityReport
 }
 
@@ -292,21 +292,23 @@ void main() { outColor = texture(uTex, vUv); }`,
   const cells: CellSource[] = []
   let liveActive: HTMLVideoElement | null = null
   let stop = false
-  let lastFrameTimeMs = performance.now()
-  const frameTimes: number[] = []
   let peakHeapMb = readHeapMb()
   const startWall = performance.now()
+  /** Per-stage jank metrics — sliced at each recording boundary. */
+  const stageJankRecorder = new JankRecorder()
+  /** Whole-session longtask observer — runs across all stages. */
+  const longtaskObserver = observeLongTasks()
 
+  let tickCount = 0
   function tick() {
     if (stop) {
       return
     }
     const now = performance.now()
-    const frameTime = now - lastFrameTimeMs
-    lastFrameTimeMs = now
-    frameTimes.push(frameTime)
+    stageJankRecorder.mark(now)
+    tickCount++
 
-    if (frameTimes.length % 30 === 0) {
+    if (tickCount % 30 === 0) {
       const h = readHeapMb()
       if (h > peakHeapMb) {
         peakHeapMb = h
@@ -361,18 +363,15 @@ void main() { outColor = texture(uTex, vUv); }`,
     status(`STAGE ${stage}/${params.stages}: ${stage} cells, recording into cell ${stage - 1}...`)
     cells.push({ kind: "live" })
     liveActive = liveVideo
-    const recordStartFrameIdx = frameTimes.length
+    // Reset jank recorder so this stage's metrics are isolated to its
+    // recording window.
+    stageJankRecorder.reset()
     const recordStartMs = performance.now()
     const gapBeforeThisTakeMs = lastStopMs === null ? 0 : recordStartMs - lastStopMs
     const result = await recordClip(stream, params.takeSeconds)
     const recordEndMs = performance.now()
-    const recordFrames = frameTimes.slice(recordStartFrameIdx)
-    const sorted = recordFrames.slice().sort((a, b) => a - b)
-    const p95Idx = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))
-    const recordP95 = sorted[p95Idx] ?? 0
-    const recordMax = sorted[sorted.length - 1] ?? 0
-    const framesOver33 = recordFrames.filter(t => t > 33).length
-    const recordRenderFps = recordFrames.length / ((recordEndMs - recordStartMs) / 1000)
+    const recordJank = stageJankRecorder.snapshot()
+    const recordRenderFps = recordJank.framesObserved / ((recordEndMs - recordStartMs) / 1000)
 
     // Flip cell to stream source: spin up its decoder, advance.
     const decoder = makePacedDecoder(result.clip, performance.now())
@@ -390,14 +389,13 @@ void main() { outColor = texture(uTex, vUv); }`,
       cellCount: stage,
       gapBeforeThisTakeMs,
       recordRenderFps,
-      recordRenderP95Ms: recordP95,
-      recordRenderMaxMs: recordMax,
-      recordFramesOver33ms: framesOver33,
+      recordJank,
       integrity,
     })
     status(
       `  recorded ${integrity.framesActual}f (dropped ${integrity.framesDropped}, fps ${integrity.measuredFps.toFixed(1)}); ` +
-        `render fps=${recordRenderFps.toFixed(1)} p95=${recordP95.toFixed(1)}ms max=${recordMax.toFixed(1)}ms over33=${framesOver33}; ` +
+        `render fps=${recordRenderFps.toFixed(1)} p95=${recordJank.p95Ms.toFixed(1)}ms p99=${recordJank.p99Ms.toFixed(1)}ms max=${recordJank.maxMs.toFixed(1)}ms ` +
+        `over33=${recordJank.over33ms}(${(recordJank.over33msRatio * 100).toFixed(0)}%) over50=${recordJank.over50ms} streak=${recordJank.longestJankStreak} score=${recordJank.jankScore.toFixed(1)}; ` +
         `gap=${gapBeforeThisTakeMs.toFixed(1)}ms; heap=${heap.toFixed(1)}MB`,
     )
   }
@@ -415,14 +413,17 @@ void main() { outColor = texture(uTex, vUv); }`,
   document.body.removeChild(canvas)
 
   const sessionSeconds = (performance.now() - startWall) / 1000
+  const longtaskReport = longtaskObserver.stop()
   status(
-    `SESSION COMPLETE: ${sessionSeconds.toFixed(1)}s, peakHeap=${peakHeapMb.toFixed(1)}MB`,
+    `SESSION COMPLETE: ${sessionSeconds.toFixed(1)}s, peakHeap=${peakHeapMb.toFixed(1)}MB, ` +
+      `longtasks=${longtaskReport.observed} (totalMs=${longtaskReport.totalDurationMs.toFixed(0)}, longestMs=${longtaskReport.longestMs.toFixed(0)})`,
   )
   status("done.")
   reportResult("progressive-streams", params, {
     stages: stats,
     sessionSeconds,
     peakHeapMb,
+    longtasks: longtaskReport satisfies LongTaskReport,
   })
 }
 

@@ -7,6 +7,7 @@
 import { ALL_FORMATS, BlobSource, EncodedPacketSink, Input } from "mediabunny"
 import { wait } from "../../src/utils"
 import type { ProbeInput } from "../harness/input"
+import { JankRecorder, observeLongTasks, type JankReport, type LongTaskReport } from "../harness/jank"
 import { reportResult, status } from "../harness/report"
 
 const params = {
@@ -272,9 +273,7 @@ interface StageStats {
   gapBeforeThisTakeMs: number
   atlasReadyDelayMs: number
   recordRenderFps: number
-  recordRenderP95Ms: number
-  recordRenderMaxMs: number
-  recordFramesOver33ms: number
+  recordJank: JankReport
   integrity: IntegrityReport
   opfsBytes: number
   opfsWriteTotalMs: number
@@ -394,10 +393,11 @@ void main() { outColor = texture(uTex, vUv); }`,
   let liveActive: HTMLVideoElement | null = null
   let atlasState: AtlasState | null = null
   let stop = false
-  let lastFrameTimeMs = performance.now()
-  const frameTimes: number[] = []
   let peakHeapMb = readHeapMb()
   const startWall = performance.now()
+  const stageJankRecorder = new JankRecorder()
+  const longtaskObserver = observeLongTasks()
+  let tickCount = 0
 
   let firstOpfsPaintLogged = false
   function tick() {
@@ -405,9 +405,8 @@ void main() { outColor = texture(uTex, vUv); }`,
       return
     }
     const now = performance.now()
-    const frameTime = now - lastFrameTimeMs
-    lastFrameTimeMs = now
-    frameTimes.push(frameTime)
+    stageJankRecorder.mark(now)
+    tickCount++
 
     // Per-frame clear is MANDATORY on Android Chrome — without it the
     // framebuffer doesn't reliably present new draws for cells that
@@ -418,7 +417,7 @@ void main() { outColor = texture(uTex, vUv); }`,
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     // sample heap occasionally
-    if (frameTimes.length % 30 === 0) {
+    if (tickCount % 30 === 0) {
       const h = readHeapMb()
       if (h > peakHeapMb) {
         peakHeapMb = h
@@ -580,18 +579,13 @@ void main() { outColor = texture(uTex, vUv); }`,
 
     cells.push({ kind: "live" })
     liveActive = liveVideo
-    const recordStartFrameIdx = frameTimes.length
+    stageJankRecorder.reset()
     const recordStartMs = performance.now()
     const gapBeforeThisTakeMs = lastStopMs === null ? 0 : recordStartMs - lastStopMs
     const result = await recordWithOpfs(stream, params.takeSeconds, stage - 1)
     const recordEndMs = performance.now()
-    const recordFrames = frameTimes.slice(recordStartFrameIdx)
-    const sorted = recordFrames.slice().sort((a, b) => a - b)
-    const p95Idx = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))
-    const recordP95 = sorted[p95Idx] ?? 0
-    const recordMax = sorted[sorted.length - 1] ?? 0
-    const framesOver33 = recordFrames.filter(t => t > 33).length
-    const recordRenderFps = recordFrames.length / ((recordEndMs - recordStartMs) / 1000)
+    const recordJank = stageJankRecorder.snapshot()
+    const recordRenderFps = recordJank.framesObserved / ((recordEndMs - recordStartMs) / 1000)
 
     // Cell flips to OPFS-backed source. Tell reader about it.
     cells[stage - 1] = { kind: "opfs", cellId: stage - 1 }
@@ -626,24 +620,24 @@ void main() { outColor = texture(uTex, vUv); }`,
       gapBeforeThisTakeMs,
       atlasReadyDelayMs: 0,
       recordRenderFps,
-      recordRenderP95Ms: recordP95,
-      recordRenderMaxMs: recordMax,
-      recordFramesOver33ms: framesOver33,
+      recordJank,
       integrity,
       opfsBytes: result.writerStats.totalBytes,
       opfsWriteTotalMs: result.writerStats.writeTotalMs,
     })
     status(
       `  recorded ${integrity.framesActual}f (dropped ${integrity.framesDropped}, fps ${integrity.measuredFps.toFixed(1)}); ` +
-        `render p95=${recordP95.toFixed(1)}ms max=${recordMax.toFixed(1)}ms over33=${framesOver33}; ` +
-        `gap=${gapBeforeThisTakeMs.toFixed(1)}ms; opfs ${result.writerStats.totalBytes}B in ${result.writerStats.writeTotalMs.toFixed(0)}ms; heap=${heap.toFixed(1)}MB`,
+        `render fps=${recordRenderFps.toFixed(1)} p95=${recordJank.p95Ms.toFixed(1)}ms p99=${recordJank.p99Ms.toFixed(1)}ms max=${recordJank.maxMs.toFixed(1)}ms ` +
+        `over33=${recordJank.over33ms}(${(recordJank.over33msRatio * 100).toFixed(0)}%) streak=${recordJank.longestJankStreak} score=${recordJank.jankScore.toFixed(1)}; ` +
+        `gap=${gapBeforeThisTakeMs.toFixed(1)}ms; heap=${heap.toFixed(1)}MB`,
     )
   }
 
-  status(`session takes complete; draining build queue...`)
-  while (pendingClips !== null || inFlightBuild !== null) {
-    await wait(50)
-  }
+  // Don't wait for the build queue to drain — its `atlasReadyDelayMs`
+  // numbers are nice-to-have but blocking the run is what timed out the
+  // harness. Stage stats are already captured; the in-flight rebuilds
+  // are abandoned at end of session.
+  status(`session takes complete; abandoning queued builds`)
 
   stop = true
   reader.postMessage({ type: "stop" })
@@ -664,14 +658,17 @@ void main() { outColor = texture(uTex, vUv); }`,
   } catch {}
 
   const sessionSeconds = (performance.now() - startWall) / 1000
+  const longtaskReport = longtaskObserver.stop()
   status(
-    `SESSION COMPLETE: ${sessionSeconds.toFixed(1)}s, peakHeap=${peakHeapMb.toFixed(1)}MB`,
+    `SESSION COMPLETE: ${sessionSeconds.toFixed(1)}s, peakHeap=${peakHeapMb.toFixed(1)}MB, ` +
+      `longtasks=${longtaskReport.observed} (total ${longtaskReport.totalDurationMs.toFixed(0)}ms, longest ${longtaskReport.longestMs.toFixed(0)}ms)`,
   )
   status("done.")
   reportResult("opfs-bitmaps", params, {
     stages: stats,
     sessionSeconds,
     peakHeapMb,
+    longtasks: longtaskReport satisfies LongTaskReport,
   })
 }
 
