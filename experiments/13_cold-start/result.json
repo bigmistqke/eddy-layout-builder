@@ -1,0 +1,70 @@
+{
+  "ranAt": "2026-05-16T09:41:06.618Z",
+  "git": {
+    "sha": "34df7fc",
+    "dirty": true
+  },
+  "experiment": "cold-start",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "atlasResolution": {
+      "width": 540,
+      "height": 983
+    },
+    "recordSeconds": 4,
+    "parallelCount": 4
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 755,
+      "height": 298
+    }
+  },
+  "result": {
+    "single": {
+      "bytes": 791091,
+      "openMs": 11.300000011920929,
+      "readMs": 89.59999999403954,
+      "configureMs": 90.2000000178814,
+      "firstFrameMs": 219.40000000596046
+    },
+    "parallel": {
+      "wallClockMs": 565.7000000178814,
+      "maxFirstFrameMs": 561,
+      "perAtlas": [
+        {
+          "bytes": 791091,
+          "openMs": 14.400000005960464,
+          "readMs": 45.79999998211861,
+          "configureMs": 49.69999998807907,
+          "firstFrameMs": 235.59999999403954
+        },
+        {
+          "bytes": 791091,
+          "openMs": 13.799999982118607,
+          "readMs": 56.900000005960464,
+          "configureMs": 57.19999998807907,
+          "firstFrameMs": 329.69999998807907
+        },
+        {
+          "bytes": 791091,
+          "openMs": 13.900000005960464,
+          "readMs": 62.400000005960464,
+          "configureMs": 62.70000001788139,
+          "firstFrameMs": 445.10000002384186
+        },
+        {
+          "bytes": 791091,
+          "openMs": 13.800000011920929,
+          "readMs": 66,
+          "configureMs": 66.2000000178814,
+          "firstFrameMs": 561
+        }
+      ]
+    }
+  }
+}

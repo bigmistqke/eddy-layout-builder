@@ -76,5 +76,7 @@ To vary an experiment, edit the `params` block in its `index.ts` and commit.
 | 09 | [concurrent-build](09_concurrent-build/README.md) | Can the atlas build run during recording without degrading capture or playback? | **No** — build slips 1.2× → 2.4–2.6× realtime under contention; capture drops 26–54% |
 | 10 | [sub-atlas-rebuild](10_sub-atlas-rebuild/README.md) | Does splitting into K sub-atlases make rebuild-during-recording fit (1/K build cost, K decoders)? | **Yes** at K=4 CSS-pixel res — build 1.18× contended, capture −16%, playback realtime |
 | 11 | [container-aligned-atlases](11_container-aligned-atlases/README.md) | Does K=4 hold at K=6/8 with heterogeneous sub-atlas sizes (one per leaf container)? | **Yes** — holds to K=8, gets *better* with K (build 1.13-1.16×, min fps rises) |
-| 12 | [bitmap-series](12_bitmap-series/README.md) | Does the gap-filler bitmap-series approach hold end-to-end (build, paint, contend)? | _not yet run_ |
+| 12 | [bitmap-series](12_bitmap-series/README.md) | Does the gap-filler bitmap-series approach hold end-to-end (build, paint, contend)? | **Yes** at K≤4 — build 0.34× realtime, paint K-indep, atlas holds at K=4 |
+| 12b | [bitmap-during-record](12b_bitmap-during-record/README.md) | Can bitmaps be generated DURING recording (via MediaStreamTrackProcessor), so the series is ready at stop? | **Yes** — 100% keep-up, mean latency 3.6ms — `pending-bitmaps` state goes to zero |
+| 13 | [cold-start](13_cold-start/README.md) | How fast can persisted sub-atlases be read from OPFS, decoded, and ready (target ~1s)? | _not yet run_ |
 | — | windowed-previews | Can per-cell ring buffers give bounded memory at acceptable quality? | _likely obsolete — memory was never the wall_ |
