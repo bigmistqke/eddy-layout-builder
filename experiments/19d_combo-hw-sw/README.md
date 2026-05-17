@@ -58,6 +58,25 @@ Per pass:
 - **SW decoders slow when HW is also running** → memory bandwidth
   contention
 
+## Verdict
+
+**HW and SW pools are fully independent — additive within noise.**
+
+| pass | aggregate fps | hw | sw |
+|---|---|---|---|
+| hw-4 | 156.6 | 156.6 | — |
+| sw-4 | 161.2 | — | 161.2 |
+| **combo-4+4** | **317.7** | 161.6 | 156.1 |
+| combo-2+2 | 238.7 | 90.2 | 148.5 |
+| combo-2+4 | 242.2 | 86.6 | 155.6 |
+
+combo-4+4 ≈ hw-alone + sw-alone (157 + 161 = 318) — no shared bottleneck on this device for VP8. Per-decoder thermal drift small (HW drifts ~10% across the 10s run; SW flat).
+
+Implications:
+- K=10 cells × 30 fps becomes realtime on VP8 without atlas / time-slicing
+- Two-pool architecture is genuinely additive — worth the implementation cost
+- Combined with [20](../20_codec-survey/README.md)'s VP9-SW 263fps, a VP9 combo pool could plausibly hit ~400 fps aggregate
+
 ## Caveats
 
 - VP8 only (per 20's codec survey, other codecs may behave

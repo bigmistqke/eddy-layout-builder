@@ -1,0 +1,323 @@
+{
+  "ranAt": "2026-05-17T16:27:11.751Z",
+  "git": {
+    "sha": "e5794a2",
+    "dirty": true
+  },
+  "experiment": "combo-hw-sw",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 10,
+    "maxQueue": 8,
+    "passes": [
+      {
+        "label": "hw-4",
+        "hw": 4,
+        "sw": 0
+      },
+      {
+        "label": "sw-4",
+        "hw": 0,
+        "sw": 4
+      },
+      {
+        "label": "combo-2+2",
+        "hw": 2,
+        "sw": 2
+      },
+      {
+        "label": "combo-4+4",
+        "hw": 4,
+        "sw": 4
+      },
+      {
+        "label": "combo-2+4",
+        "hw": 2,
+        "sw": 4
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "label": "hw-4",
+        "hw": 4,
+        "sw": 0,
+        "totalFrames": 1566,
+        "aggregateFps": 156.6,
+        "hwAggregateFps": 156.6,
+        "swAggregateFps": 0,
+        "perDecoder": [
+          {
+            "id": 0,
+            "kind": "hw",
+            "framesDecoded": 401,
+            "fps": 40.1,
+            "firstQuarterFps": 36,
+            "lastQuarterFps": 44.4
+          },
+          {
+            "id": 1,
+            "kind": "hw",
+            "framesDecoded": 393,
+            "fps": 39.3,
+            "firstQuarterFps": 32.8,
+            "lastQuarterFps": 44.4
+          },
+          {
+            "id": 2,
+            "kind": "hw",
+            "framesDecoded": 388,
+            "fps": 38.8,
+            "firstQuarterFps": 30.4,
+            "lastQuarterFps": 44
+          },
+          {
+            "id": 3,
+            "kind": "hw",
+            "framesDecoded": 384,
+            "fps": 38.4,
+            "firstQuarterFps": 28.8,
+            "lastQuarterFps": 44
+          }
+        ],
+        "errors": []
+      },
+      {
+        "label": "sw-4",
+        "hw": 0,
+        "sw": 4,
+        "totalFrames": 1612,
+        "aggregateFps": 161.2,
+        "hwAggregateFps": 0,
+        "swAggregateFps": 161.2,
+        "perDecoder": [
+          {
+            "id": 0,
+            "kind": "sw",
+            "framesDecoded": 403,
+            "fps": 40.3,
+            "firstQuarterFps": 39.6,
+            "lastQuarterFps": 40.8
+          },
+          {
+            "id": 1,
+            "kind": "sw",
+            "framesDecoded": 403,
+            "fps": 40.3,
+            "firstQuarterFps": 39.2,
+            "lastQuarterFps": 40.8
+          },
+          {
+            "id": 2,
+            "kind": "sw",
+            "framesDecoded": 403,
+            "fps": 40.3,
+            "firstQuarterFps": 39.2,
+            "lastQuarterFps": 40.8
+          },
+          {
+            "id": 3,
+            "kind": "sw",
+            "framesDecoded": 403,
+            "fps": 40.3,
+            "firstQuarterFps": 39.2,
+            "lastQuarterFps": 40.8
+          }
+        ],
+        "errors": []
+      },
+      {
+        "label": "combo-2+2",
+        "hw": 2,
+        "sw": 2,
+        "totalFrames": 2387,
+        "aggregateFps": 238.7,
+        "hwAggregateFps": 90.19999999999999,
+        "swAggregateFps": 148.5,
+        "perDecoder": [
+          {
+            "id": 0,
+            "kind": "hw",
+            "framesDecoded": 459,
+            "fps": 45.9,
+            "firstQuarterFps": 47.2,
+            "lastQuarterFps": 44.4
+          },
+          {
+            "id": 1,
+            "kind": "hw",
+            "framesDecoded": 443,
+            "fps": 44.3,
+            "firstQuarterFps": 42.4,
+            "lastQuarterFps": 44.4
+          },
+          {
+            "id": 2,
+            "kind": "sw",
+            "framesDecoded": 743,
+            "fps": 74.3,
+            "firstQuarterFps": 73.6,
+            "lastQuarterFps": 74
+          },
+          {
+            "id": 3,
+            "kind": "sw",
+            "framesDecoded": 742,
+            "fps": 74.2,
+            "firstQuarterFps": 73.6,
+            "lastQuarterFps": 73.6
+          }
+        ],
+        "errors": []
+      },
+      {
+        "label": "combo-4+4",
+        "hw": 4,
+        "sw": 4,
+        "totalFrames": 3177,
+        "aggregateFps": 317.7,
+        "hwAggregateFps": 161.60000000000002,
+        "swAggregateFps": 156.1,
+        "perDecoder": [
+          {
+            "id": 0,
+            "kind": "hw",
+            "framesDecoded": 406,
+            "fps": 40.6,
+            "firstQuarterFps": 43.6,
+            "lastQuarterFps": 41.2
+          },
+          {
+            "id": 1,
+            "kind": "hw",
+            "framesDecoded": 402,
+            "fps": 40.2,
+            "firstQuarterFps": 42.4,
+            "lastQuarterFps": 39.6
+          },
+          {
+            "id": 2,
+            "kind": "hw",
+            "framesDecoded": 405,
+            "fps": 40.5,
+            "firstQuarterFps": 41.6,
+            "lastQuarterFps": 40.8
+          },
+          {
+            "id": 3,
+            "kind": "hw",
+            "framesDecoded": 403,
+            "fps": 40.3,
+            "firstQuarterFps": 39.6,
+            "lastQuarterFps": 40.4
+          },
+          {
+            "id": 4,
+            "kind": "sw",
+            "framesDecoded": 391,
+            "fps": 39.1,
+            "firstQuarterFps": 38.8,
+            "lastQuarterFps": 40
+          },
+          {
+            "id": 5,
+            "kind": "sw",
+            "framesDecoded": 390,
+            "fps": 39,
+            "firstQuarterFps": 38.8,
+            "lastQuarterFps": 39.6
+          },
+          {
+            "id": 6,
+            "kind": "sw",
+            "framesDecoded": 390,
+            "fps": 39,
+            "firstQuarterFps": 38.8,
+            "lastQuarterFps": 39.6
+          },
+          {
+            "id": 7,
+            "kind": "sw",
+            "framesDecoded": 390,
+            "fps": 39,
+            "firstQuarterFps": 38.8,
+            "lastQuarterFps": 39.6
+          }
+        ],
+        "errors": []
+      },
+      {
+        "label": "combo-2+4",
+        "hw": 2,
+        "sw": 4,
+        "totalFrames": 2422,
+        "aggregateFps": 242.2,
+        "hwAggregateFps": 86.6,
+        "swAggregateFps": 155.6,
+        "perDecoder": [
+          {
+            "id": 0,
+            "kind": "hw",
+            "framesDecoded": 434,
+            "fps": 43.4,
+            "firstQuarterFps": 46.4,
+            "lastQuarterFps": 40.8
+          },
+          {
+            "id": 1,
+            "kind": "hw",
+            "framesDecoded": 432,
+            "fps": 43.2,
+            "firstQuarterFps": 44.8,
+            "lastQuarterFps": 41.6
+          },
+          {
+            "id": 2,
+            "kind": "sw",
+            "framesDecoded": 389,
+            "fps": 38.9,
+            "firstQuarterFps": 38.8,
+            "lastQuarterFps": 39.6
+          },
+          {
+            "id": 3,
+            "kind": "sw",
+            "framesDecoded": 389,
+            "fps": 38.9,
+            "firstQuarterFps": 38.8,
+            "lastQuarterFps": 39.6
+          },
+          {
+            "id": 4,
+            "kind": "sw",
+            "framesDecoded": 389,
+            "fps": 38.9,
+            "firstQuarterFps": 38.8,
+            "lastQuarterFps": 39.6
+          },
+          {
+            "id": 5,
+            "kind": "sw",
+            "framesDecoded": 389,
+            "fps": 38.9,
+            "firstQuarterFps": 38.8,
+            "lastQuarterFps": 39.6
+          }
+        ],
+        "errors": []
+      }
+    ]
+  }
+}
