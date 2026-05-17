@@ -62,6 +62,37 @@ Per (K, codec, mode) cell:
 - **K=16 AV1 parallel encode ≥ 10 s** → save needs a background
   job pattern (toast-on-complete, not blocking UI)
 
+## Verdict
+
+**Parallel encoders genuinely parallelise; AV1 trades speed for size, VP9 trades size for speed; both are fast enough at typical session-save K.**
+
+| K | mip | codec | sequential | parallel | KB/cell | total KB |
+|---|---|---|---|---|---|---|
+| 4 | 540p | AV1 | 5.3 s | **4.2 s** | 232 | 930 |
+| 4 | 540p | VP9 | 3.5 s | **2.5 s** | 279 | 1115 |
+| 9 | 360p | AV1 | 8.2 s | **2.9 s** | 94 | 843 |
+| 9 | 360p | VP9 | 5.2 s | **1.8 s** | 131 | 1177 |
+| 16 | 270p | AV1 | 6.0 s | **2.1 s** | 50 | 792 |
+| 16 | 270p | VP9 | 5.2 s | **1.7 s** | 73 | 1170 |
+| 25 | 180p | AV1 | 5.1 s | **1.7 s** | 22 | 547 |
+| 25 | 180p | VP9 | 3.7 s | **1.3 s** | 36 | 887 |
+
+Findings:
+
+1. **Parallel encode actually parallelises** at this device's encoder service. K=9 AV1 parallel is 2.9 s vs 8.2 s sequential (2.8× faster). Encoders pipeline differently than decoders (23/24-series showed decoders serialise on GPU IPC) — encoder service apparently does meaningful concurrency.
+2. **VP9 is 20-30% faster than AV1** at every K and mip.
+3. **AV1 files are 17-39% smaller than VP9** (and the gap widens at smaller mips).
+4. **At K=16: AV1 parallel = 2.1 s, VP9 parallel = 1.7 s.** Fast enough for a session-save that the user perceives as near-instant; trivially fine as a background task.
+
+Total session-save size is ~0.5-1.2 MB regardless of codec choice — the canonical storage premise of C2 holds either way.
+
+## Note for eddy implementation
+
+- **AV1 for canonical storage, VP9 acceptable as fallback** — AV1's smaller-file win matters across many saved sessions; the 2.1 s vs 1.7 s difference at K=16 doesn't.
+- Session-save can be parallel (~2 s) or background-incremental (encode while user keeps working). Both feasible.
+- Cell-level save (one cell modified, encode just that cell) would be ~1/K of these numbers — sub-second for K=16 cells. Very cheap.
+- Per-cell file sizes scale with mip area: 540p ≈ 230-280 KB, 270p ≈ 50-73 KB, 180p ≈ 22-36 KB for 2 s of content. Linear in seconds, so 6 s would be 3× these.
+
 ## Caveats
 
 - All K cells share the same source content. Cross-cell entropy

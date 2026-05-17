@@ -1,0 +1,1772 @@
+{
+  "ranAt": "2026-05-17T20:19:38.738Z",
+  "git": {
+    "sha": "f6452ca",
+    "dirty": true
+  },
+  "experiment": "session-save-encode",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "framesPerCell": 60,
+    "bitratePerPixel": 0.1,
+    "codecs": [
+      {
+        "label": "av1",
+        "codecString": "av01.0.04M.08"
+      },
+      {
+        "label": "vp9",
+        "codecString": "vp09.00.10.08"
+      }
+    ],
+    "passes": [
+      {
+        "k": 4,
+        "mip": {
+          "label": "540p",
+          "width": 960,
+          "height": 544
+        }
+      },
+      {
+        "k": 9,
+        "mip": {
+          "label": "360p",
+          "width": 640,
+          "height": 368
+        }
+      },
+      {
+        "k": 16,
+        "mip": {
+          "label": "270p",
+          "width": 480,
+          "height": 272
+        }
+      },
+      {
+        "k": 25,
+        "mip": {
+          "label": "180p",
+          "width": 320,
+          "height": 184
+        }
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "k": 4,
+        "mip": "540p",
+        "mipWidth": 960,
+        "mipHeight": 544,
+        "rgbaBytesPerCell": 125337600,
+        "codecs": [
+          {
+            "codec": "av1",
+            "sequential": {
+              "mode": "sequential",
+              "totalMs": 5306.600000023842,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 1457.699999988079,
+                  "outputBytes": 238063,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1293.300000011921,
+                  "outputBytes": 238063,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1265.0999999642372,
+                  "outputBytes": 238063,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1288.5,
+                  "outputBytes": 238063,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 238063,
+              "totalBytesKb": 929.93359375
+            },
+            "parallel": {
+              "mode": "parallel",
+              "totalMs": 4172.099999964237,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 4073.400000035763,
+                  "outputBytes": 238063,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 4132.100000023842,
+                  "outputBytes": 238063,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 3803.300000011921,
+                  "outputBytes": 238063,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 3595.400000035763,
+                  "outputBytes": 238063,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 238063,
+              "totalBytesKb": 929.93359375
+            }
+          },
+          {
+            "codec": "vp9",
+            "sequential": {
+              "mode": "sequential",
+              "totalMs": 3486.599999964237,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 871.1000000238419,
+                  "outputBytes": 285414,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 861.8999999761581,
+                  "outputBytes": 285414,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 833.8999999761581,
+                  "outputBytes": 285414,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 917.6999999880791,
+                  "outputBytes": 285414,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 285414,
+              "totalBytesKb": 1114.8984375
+            },
+            "parallel": {
+              "mode": "parallel",
+              "totalMs": 2541.100000023842,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 2278.900000035763,
+                  "outputBytes": 285414,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2480.699999988079,
+                  "outputBytes": 285414,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2306.300000011921,
+                  "outputBytes": 285414,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2383.300000011921,
+                  "outputBytes": 285414,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 285414,
+              "totalBytesKb": 1114.8984375
+            }
+          }
+        ]
+      },
+      {
+        "k": 9,
+        "mip": "360p",
+        "mipWidth": 640,
+        "mipHeight": 368,
+        "rgbaBytesPerCell": 56524800,
+        "codecs": [
+          {
+            "codec": "av1",
+            "sequential": {
+              "mode": "sequential",
+              "totalMs": 8179.900000035763,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 1006.8000000119209,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 875.8000000119209,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 879.8999999761581,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 904.8000000119209,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 898.4000000357628,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 908,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 908.3000000119209,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 897.0999999642372,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 899.8000000119209,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 95922,
+              "totalBytesKb": 843.064453125
+            },
+            "parallel": {
+              "mode": "parallel",
+              "totalMs": 2941.7999999523163,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 2323.699999988079,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2799.800000011921,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2729.100000023842,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2500.199999988079,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2717.899999976158,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2752.7000000476837,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2705.399999976158,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2638.300000011921,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2666.800000011921,
+                  "outputBytes": 95922,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 95922,
+              "totalBytesKb": 843.064453125
+            }
+          },
+          {
+            "codec": "vp9",
+            "sequential": {
+              "mode": "sequential",
+              "totalMs": 5165.800000011921,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 576.5999999642372,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 583.7000000476837,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 576.8000000119209,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 571.8000000119209,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 583.3999999761581,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 577,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 571.1999999880791,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 562,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 563.1000000238419,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 133888,
+              "totalBytesKb": 1176.75
+            },
+            "parallel": {
+              "mode": "parallel",
+              "totalMs": 1813.0999999642372,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 1593.699999988079,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1601.300000011921,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1328.300000011921,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1389.9000000357628,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1717.800000011921,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1720.1000000238419,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1275.2000000476837,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1507.199999988079,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1288.3999999761581,
+                  "outputBytes": 133888,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 133888,
+              "totalBytesKb": 1176.75
+            }
+          }
+        ]
+      },
+      {
+        "k": 16,
+        "mip": "270p",
+        "mipWidth": 480,
+        "mipHeight": 272,
+        "rgbaBytesPerCell": 31334400,
+        "codecs": [
+          {
+            "codec": "av1",
+            "sequential": {
+              "mode": "sequential",
+              "totalMs": 5975.5,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 537.1000000238419,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 368.30000001192093,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 361.80000001192093,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 350.5999999642372,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 350.89999997615814,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 366.89999997615814,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 360.69999998807907,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 367.80000001192093,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 368.80000001192093,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 386.19999998807907,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 358.5,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 345,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 364.9000000357628,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 364.30000001192093,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 364.9000000357628,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 358.2999999523163,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 50679,
+              "totalBytesKb": 791.859375
+            },
+            "parallel": {
+              "mode": "parallel",
+              "totalMs": 2145.699999988079,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 2079.400000035763,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2053.699999988079,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2031,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 2025.9000000357628,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1989.3999999761581,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1926.199999988079,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1857.0999999642372,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1935.699999988079,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1957.8999999761581,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1923.1000000238419,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1901.7999999523163,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1897.2000000476837,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1856.5999999642372,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1810.9000000357628,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1776.800000011921,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1821.199999988079,
+                  "outputBytes": 50679,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 50679,
+              "totalBytesKb": 791.859375
+            }
+          },
+          {
+            "codec": "vp9",
+            "sequential": {
+              "mode": "sequential",
+              "totalMs": 5230.900000035763,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 347.7000000476837,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 348.60000002384186,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 329.5999999642372,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 325.69999998807907,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 321.80000001192093,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 318.89999997615814,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 317.69999998807907,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 317.30000001192093,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 314.5,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 328.30000001192093,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 317,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 314,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 338.69999998807907,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 331.30000001192093,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 322.69999998807907,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 336.5,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 74864,
+              "totalBytesKb": 1169.75
+            },
+            "parallel": {
+              "mode": "parallel",
+              "totalMs": 1732.3999999761581,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 1658.699999988079,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1635.699999988079,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1647.5,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1593.5,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1616.199999988079,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1614.9000000357628,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1595.8999999761581,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1582.2999999523163,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1587.5999999642372,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1606,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1582.699999988079,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1599.0999999642372,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1566.5,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1536,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1534.300000011921,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1549.5,
+                  "outputBytes": 74864,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 74864,
+              "totalBytesKb": 1169.75
+            }
+          }
+        ]
+      },
+      {
+        "k": 25,
+        "mip": "180p",
+        "mipWidth": 320,
+        "mipHeight": 192,
+        "rgbaBytesPerCell": 14745600,
+        "codecs": [
+          {
+            "codec": "av1",
+            "sequential": {
+              "mode": "sequential",
+              "totalMs": 5112.100000023842,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 386.10000002384186,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 226,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 184.80000001192093,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 189.5999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 189.20000004768372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 191.39999997615814,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 229.5,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 204,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 189.4000000357628,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 201.5,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 204.79999995231628,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 210.80000001192093,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 198.69999998807907,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 191.19999998807907,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 190.19999998807907,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 208.19999998807907,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 179.0999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 184.9000000357628,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 205.5999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 191,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 188.10000002384186,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 192.10000002384186,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 196.20000004768372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 195.5,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 183.0999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 22410,
+              "totalBytesKb": 547.119140625
+            },
+            "parallel": {
+              "mode": "parallel",
+              "totalMs": 1673.699999988079,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 1592.199999988079,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1597.0999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1556.300000011921,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1575.199999988079,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1552.6000000238419,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1533.5999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1531,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1532.2000000476837,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1537.3999999761581,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1521.9000000357628,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1510.199999988079,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1492.5,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1490.8999999761581,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1478.5,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1468.300000011921,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1454.0999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1449.1000000238419,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1436.0999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1424.800000011921,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1438.0999999642372,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1400.3999999761581,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1417.8999999761581,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1401.1000000238419,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1373.2999999523163,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1385.1000000238419,
+                  "outputBytes": 22410,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 22410,
+              "totalBytesKb": 547.119140625
+            }
+          },
+          {
+            "codec": "vp9",
+            "sequential": {
+              "mode": "sequential",
+              "totalMs": 3737.800000011921,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 177.69999998807907,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 152,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 158.0999999642372,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 158.80000001192093,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 158.5999999642372,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 141.80000001192093,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 150.89999997615814,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 144,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 150.19999998807907,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 145.10000002384186,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 149.69999998807907,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 145.89999997615814,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 150,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 147.5,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 151,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 148.70000004768372,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 145,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 154.39999997615814,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 142.5,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 141.60000002384186,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 142.29999995231628,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 140,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 147.5,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 143.19999998807907,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 150.80000001192093,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 36335,
+              "totalBytesKb": 887.0849609375
+            },
+            "parallel": {
+              "mode": "parallel",
+              "totalMs": 1280.300000011921,
+              "perCell": [
+                {
+                  "ok": true,
+                  "encodeMs": 1231.699999988079,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1205.7999999523163,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1218,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1201.0999999642372,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1201.7999999523163,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1185.7999999523163,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1193.5,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1181.4000000357628,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1182,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1160,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1155.1000000238419,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1143.0999999642372,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1141.5,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1132.800000011921,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1137,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1118.300000011921,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1121.1000000238419,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1107.300000011921,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1100.800000011921,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1094.2999999523163,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1071.199999988079,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1063.300000011921,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1066.5,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1053.9000000357628,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                },
+                {
+                  "ok": true,
+                  "encodeMs": 1067.199999988079,
+                  "outputBytes": 36335,
+                  "frameCount": 60,
+                  "errors": []
+                }
+              ],
+              "bytesPerCell": 36335,
+              "totalBytesKb": 887.0849609375
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
