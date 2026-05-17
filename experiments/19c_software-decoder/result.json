@@ -1,0 +1,246 @@
+{
+  "ranAt": "2026-05-17T16:05:07.863Z",
+  "git": {
+    "sha": "7fd44d2",
+    "dirty": true
+  },
+  "experiment": "software-decoder",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 10,
+    "maxQueue": 8,
+    "passes": [
+      {
+        "label": "hw-solo",
+        "n": 1,
+        "hardwareAcceleration": "prefer-hardware"
+      },
+      {
+        "label": "sw-solo",
+        "n": 1,
+        "hardwareAcceleration": "prefer-software"
+      },
+      {
+        "label": "hw-4",
+        "n": 4,
+        "hardwareAcceleration": "prefer-hardware"
+      },
+      {
+        "label": "sw-4",
+        "n": 4,
+        "hardwareAcceleration": "prefer-software"
+      },
+      {
+        "label": "sw-8",
+        "n": 8,
+        "hardwareAcceleration": "prefer-software"
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "label": "hw-solo",
+        "n": 1,
+        "hardwareAcceleration": "prefer-hardware",
+        "totalFrames": 907,
+        "aggregateFps": 90.7,
+        "perDecoder": [
+          {
+            "id": 0,
+            "framesDecoded": 907,
+            "fps": 90.7,
+            "firstQuarterFps": 81.2,
+            "lastQuarterFps": 94.4
+          }
+        ],
+        "configured": true,
+        "configureMs": 10.700000047683716,
+        "switchCostMs": 260.80000001192093,
+        "errors": []
+      },
+      {
+        "label": "sw-solo",
+        "n": 1,
+        "hardwareAcceleration": "prefer-software",
+        "totalFrames": 1512,
+        "aggregateFps": 151.2,
+        "perDecoder": [
+          {
+            "id": 0,
+            "framesDecoded": 1512,
+            "fps": 151.2,
+            "firstQuarterFps": 147.6,
+            "lastQuarterFps": 154.8
+          }
+        ],
+        "configured": true,
+        "configureMs": 0.5,
+        "switchCostMs": 13.5,
+        "errors": []
+      },
+      {
+        "label": "hw-4",
+        "n": 4,
+        "hardwareAcceleration": "prefer-hardware",
+        "totalFrames": 1582,
+        "aggregateFps": 158.2,
+        "perDecoder": [
+          {
+            "id": 0,
+            "framesDecoded": 412,
+            "fps": 41.2,
+            "firstQuarterFps": 48.4,
+            "lastQuarterFps": 35.2
+          },
+          {
+            "id": 1,
+            "framesDecoded": 397,
+            "fps": 39.7,
+            "firstQuarterFps": 42.4,
+            "lastQuarterFps": 34.8
+          },
+          {
+            "id": 2,
+            "framesDecoded": 391,
+            "fps": 39.1,
+            "firstQuarterFps": 39.2,
+            "lastQuarterFps": 35.2
+          },
+          {
+            "id": 3,
+            "framesDecoded": 382,
+            "fps": 38.2,
+            "firstQuarterFps": 36.8,
+            "lastQuarterFps": 34
+          }
+        ],
+        "configured": true,
+        "configureMs": 0.9999999403953552,
+        "switchCostMs": 301.89999997615814,
+        "errors": []
+      },
+      {
+        "label": "sw-4",
+        "n": 4,
+        "hardwareAcceleration": "prefer-software",
+        "totalFrames": 1648,
+        "aggregateFps": 164.8,
+        "perDecoder": [
+          {
+            "id": 0,
+            "framesDecoded": 412,
+            "fps": 41.2,
+            "firstQuarterFps": 40.4,
+            "lastQuarterFps": 41.6
+          },
+          {
+            "id": 1,
+            "framesDecoded": 412,
+            "fps": 41.2,
+            "firstQuarterFps": 40.4,
+            "lastQuarterFps": 41.6
+          },
+          {
+            "id": 2,
+            "framesDecoded": 412,
+            "fps": 41.2,
+            "firstQuarterFps": 40.4,
+            "lastQuarterFps": 41.6
+          },
+          {
+            "id": 3,
+            "framesDecoded": 412,
+            "fps": 41.2,
+            "firstQuarterFps": 40.4,
+            "lastQuarterFps": 41.6
+          }
+        ],
+        "configured": true,
+        "configureMs": 1.800000011920929,
+        "switchCostMs": 28.399999976158142,
+        "errors": []
+      },
+      {
+        "label": "sw-8",
+        "n": 8,
+        "hardwareAcceleration": "prefer-software",
+        "totalFrames": 1688,
+        "aggregateFps": 168.8,
+        "perDecoder": [
+          {
+            "id": 0,
+            "framesDecoded": 211,
+            "fps": 21.1,
+            "firstQuarterFps": 20.8,
+            "lastQuarterFps": 21.6
+          },
+          {
+            "id": 1,
+            "framesDecoded": 211,
+            "fps": 21.1,
+            "firstQuarterFps": 20.8,
+            "lastQuarterFps": 21.6
+          },
+          {
+            "id": 2,
+            "framesDecoded": 211,
+            "fps": 21.1,
+            "firstQuarterFps": 20.8,
+            "lastQuarterFps": 21.6
+          },
+          {
+            "id": 3,
+            "framesDecoded": 211,
+            "fps": 21.1,
+            "firstQuarterFps": 20.8,
+            "lastQuarterFps": 21.6
+          },
+          {
+            "id": 4,
+            "framesDecoded": 211,
+            "fps": 21.1,
+            "firstQuarterFps": 20.8,
+            "lastQuarterFps": 21.6
+          },
+          {
+            "id": 5,
+            "framesDecoded": 211,
+            "fps": 21.1,
+            "firstQuarterFps": 20.8,
+            "lastQuarterFps": 21.6
+          },
+          {
+            "id": 6,
+            "framesDecoded": 211,
+            "fps": 21.1,
+            "firstQuarterFps": 20.8,
+            "lastQuarterFps": 21.6
+          },
+          {
+            "id": 7,
+            "framesDecoded": 211,
+            "fps": 21.1,
+            "firstQuarterFps": 20.8,
+            "lastQuarterFps": 21.6
+          }
+        ],
+        "configured": true,
+        "configureMs": 2.9999999403953552,
+        "switchCostMs": 30.69999998807907,
+        "errors": []
+      }
+    ]
+  }
+}
