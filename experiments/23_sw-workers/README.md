@@ -84,6 +84,22 @@ The bottleneck is **not** main-thread callback saturation at 720p. Best remainin
 
 **Important caveat:** at 720p the SW pool delivers ~450 callbacks/sec — not enough to saturate the main thread. [20d](../20d_resolution-codec-pool/README.md)'s "lower res hurts more" finding was at 360p, where the SW pool produces ~1690 callbacks/sec. That hypothesis isn't disproven yet — just untested at the resolution where it would actually matter. A 23b sweep across resolutions (or 20d + workers) would close it.
 
+## Why workers don't help — the Chrome architecture
+
+Intuition says "SW decode = CPU work, more worker threads = more parallelism." But on Chrome (~95+), **`VideoDecoder.decode()` doesn't actually run in the JavaScript renderer at all** — it IPCs the decode task to the **GPU process**, which is where both HW and SW decode execute. The "GPU process" name is misleading: it manages GPU resources but also runs CPU codecs like dav1d.
+
+So when you put 4 decoders in 4 workers, all 4 still funnel into the same GPU-process decode pool. The renderer threads (main or workers) only handle IPC plumbing and the output callback fan-out, which is cheap.
+
+The actual parallelism is determined by:
+1. How many threads the GPU process spawns for decode tasks (tied to core count)
+2. Whether the codec library is internally threaded (dav1d is — that's why one AV1-SW decoder at 360p hits 420+ fps, far more than one core could do alone)
+
+Spawning 4 decoders already saturates the GPU process's decode capacity on this device. Adding workers in front doesn't unlock anything because the bottleneck isn't in the renderer.
+
+This also reframes [20c](../20c_cross-codec-dual-pool/README.md)'s cross-codec contention as **GPU-process contention**: VP9-HW and AV1-SW both run in the GPU process, share its IPC queue back to the renderer, and may share frame allocators. That model fits 20c/20d better than either "memory bandwidth" or "renderer main-thread saturation."
+
+Where workers *would* help on this stack is anywhere the cost lives on the renderer side: `copyTo()` into a CPU buffer, atlas builds, JS render math. The decode loop itself is just IPC + callbacks.
+
 ## Note for eddy implementation
 
 - For **aggregate throughput**, workers vs main is a wash on this device (at 720p; possibly different at lower res)
