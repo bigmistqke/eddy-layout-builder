@@ -77,6 +77,38 @@ Per K-value pass:
 - **coldStartMs scales linearly with K** → effectively serial despite
   parallel-decoder-pool theory; reveals a hidden serialization
 
+## Verdict
+
+**Cold-start slower than bandwidth-only prediction; storage compression confirmed.**
+
+| K | mip | cold-start | per-cell amort | AV1 size | RGBA size | ratio |
+|---|---|---|---|---|---|---|
+| 4 | 540p | 7.9 s | 2.0 s | 0.92 MB | 478 MB | 522× |
+| 9 | 360p | 9.6 s | 1.1 s | 0.85 MB | 485 MB | 572× |
+| 16 | 270p | **12.9 s** | 0.8 s | 0.82 MB | 478 MB | 581× |
+| 25 | 180p | **25.8 s** | 1.0 s | 0.60 MB | 351 MB | 583× |
+
+Per-cell breakdown at K=16: ~9.4 s decode + ~3.5 s OPFS write = ~12.9 s. Cells run in parallel so total ≈ slowest cell.
+
+**The decode time is ~50× slower than the bandwidth-only prediction.** Per 20, AV1-SW solo at 270p decodes ~263 fps; sw-pool aggregate ~551 fps; predicted K=16 × 60 frames / 551 = 1.7 s. Actual: ~9 s. The dominant cost is **main-thread `context.drawImage` + `getImageData` + `new Uint8Array` per frame**. K=16 × 60 frames = 960 main-thread pixel-readback calls, each pulling pixels back from the canvas. Decoder bandwidth is fine; main-thread serialisation isn't.
+
+**Two known mitigations not applied in this experiment:**
+
+1. **`VideoFrame.copyTo(buffer)`** — copies decoded frame pixels directly into a provided ArrayBuffer (no canvas roundtrip). Likely 5-10× faster than `drawImage + getImageData`.
+2. **Worker-side cold-start** — moves the JS allocation + RGBA write coordination off main. Decoders still IPC to GPU process per 23, but main thread isn't doing buffer extraction or writing files.
+
+The ~13 s cold-start at K=16 is therefore likely a *ceiling, not a floor*. Achievable with optimisations: probably 2-3 s, possibly less with both mitigations combined.
+
+**The compression ratio is the unambiguous win:** AV1 is 500-580× smaller than raw RGBA across all K. A K=16 session takes 0.82 MB persistent vs 478 MB raw. Even with hundreds of saved sessions, AV1 stays trivial on disk.
+
+## Note for eddy implementation
+
+- The C2 storage premise is confirmed: AV1 canonical is essentially free on disk relative to RGBA.
+- Cold-start latency in production needs the two optimisations to be tolerable. `VideoFrame.copyTo` is straightforward; worker-side cold-start is moderate scaffolding.
+- Even with optimisations applied, cold-start at K=25 may stay multi-second. Mitigations beyond raw-perf: lazy-warm only visible cells; keep RGBA cache warm across app sessions where possible (the eviction risk is the only reason this isn't always free); show a brief loading state on first session open.
+- The amortised per-cell time at K=16 (0.8 s) is less alarming than the absolute K=25 number — it suggests the system is mostly throughput-bound, not latency-bound. A single cell warm is fast.
+- Follow-up worth running: 26b — same experiment with `VideoFrame.copyTo` and a worker. Closes the "is 13 s the floor or ceiling" question with hard data.
+
 ## Caveats
 
 - All K cells decode the same source content (test simplification).

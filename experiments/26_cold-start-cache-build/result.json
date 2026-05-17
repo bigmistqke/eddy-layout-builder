@@ -1,0 +1,605 @@
+{
+  "ranAt": "2026-05-17T20:16:53.883Z",
+  "git": {
+    "sha": "41fe20a",
+    "dirty": true
+  },
+  "experiment": "cold-start-cache-build",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "framesPerCell": 60,
+    "bitratePerPixel": 0.1,
+    "swCodec": {
+      "label": "av1",
+      "codecString": "av01.0.04M.08"
+    },
+    "opfsDirName": "26",
+    "passes": [
+      {
+        "k": 4,
+        "mip": {
+          "label": "540p",
+          "width": 960,
+          "height": 544
+        }
+      },
+      {
+        "k": 9,
+        "mip": {
+          "label": "360p",
+          "width": 640,
+          "height": 368
+        }
+      },
+      {
+        "k": 16,
+        "mip": {
+          "label": "270p",
+          "width": 480,
+          "height": 272
+        }
+      },
+      {
+        "k": 25,
+        "mip": {
+          "label": "180p",
+          "width": 320,
+          "height": 184
+        }
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "k": 4,
+        "mip": "540p",
+        "mipWidth": 960,
+        "mipHeight": 544,
+        "coldStartMs": 7927,
+        "avgPerCellMs": 1981.75,
+        "av1TotalMb": 0.9155807495117188,
+        "rgbaTotalMb": 478.125,
+        "compressionRatio": 522.209537776963,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesDecoded": 60,
+            "av1Bytes": 240014,
+            "rgbaBytes": 125337600,
+            "decodeMs": 5127.600000023842,
+            "writeMs": 2719.899999976158,
+            "totalMs": 7906.899999976158
+          },
+          {
+            "cellId": 1,
+            "framesDecoded": 60,
+            "av1Bytes": 240014,
+            "rgbaBytes": 125337600,
+            "decodeMs": 5121,
+            "writeMs": 2730.199999988079,
+            "totalMs": 7920.600000023842
+          },
+          {
+            "cellId": 2,
+            "framesDecoded": 60,
+            "av1Bytes": 240014,
+            "rgbaBytes": 125337600,
+            "decodeMs": 5110.5,
+            "writeMs": 2725.699999988079,
+            "totalMs": 7910.600000023842
+          },
+          {
+            "cellId": 3,
+            "framesDecoded": 60,
+            "av1Bytes": 240014,
+            "rgbaBytes": 125337600,
+            "decodeMs": 5161.600000023842,
+            "writeMs": 2674.7999999523163,
+            "totalMs": 7921.599999964237
+          }
+        ]
+      },
+      {
+        "k": 9,
+        "mip": "360p",
+        "mipWidth": 640,
+        "mipHeight": 368,
+        "coldStartMs": 9550.900000035763,
+        "avgPerCellMs": 1061.2111111150848,
+        "av1TotalMb": 0.8487882614135742,
+        "rgbaTotalMb": 485.15625,
+        "compressionRatio": 571.5868987066568,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6535.400000035763,
+            "writeMs": 2981.899999976158,
+            "totalMs": 9535.200000047684
+          },
+          {
+            "cellId": 1,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6548.399999976158,
+            "writeMs": 2951.400000035763,
+            "totalMs": 9519.299999952316
+          },
+          {
+            "cellId": 2,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6600.399999976158,
+            "writeMs": 2921.900000035763,
+            "totalMs": 9543.300000011921
+          },
+          {
+            "cellId": 3,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6529.900000035763,
+            "writeMs": 2968.300000011921,
+            "totalMs": 9520.700000047684
+          },
+          {
+            "cellId": 4,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6542.300000011921,
+            "writeMs": 2970.900000035763,
+            "totalMs": 9538.600000023842
+          },
+          {
+            "cellId": 5,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6522.400000035763,
+            "writeMs": 2968.5,
+            "totalMs": 9520.199999988079
+          },
+          {
+            "cellId": 6,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6536.199999988079,
+            "writeMs": 2969,
+            "totalMs": 9535.699999988079
+          },
+          {
+            "cellId": 7,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6650.399999976158,
+            "writeMs": 2863.400000035763,
+            "totalMs": 9545.900000035763
+          },
+          {
+            "cellId": 8,
+            "framesDecoded": 60,
+            "av1Bytes": 98891,
+            "rgbaBytes": 56524800,
+            "decodeMs": 6763,
+            "writeMs": 2752.900000035763,
+            "totalMs": 9549.600000023842
+          }
+        ]
+      },
+      {
+        "k": 16,
+        "mip": "270p",
+        "mipWidth": 480,
+        "mipHeight": 272,
+        "coldStartMs": 12909.900000035763,
+        "avgPerCellMs": 806.8687500022352,
+        "av1TotalMb": 0.8228302001953125,
+        "rgbaTotalMb": 478.125,
+        "compressionRatio": 581.0737134909597,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9383,
+            "writeMs": 3456.600000023842,
+            "totalMs": 12864.300000011921
+          },
+          {
+            "cellId": 1,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9373.199999988079,
+            "writeMs": 3479.199999988079,
+            "totalMs": 12878.699999988079
+          },
+          {
+            "cellId": 2,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9429.5,
+            "writeMs": 3433.100000023842,
+            "totalMs": 12890.200000047684
+          },
+          {
+            "cellId": 3,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9426.099999964237,
+            "writeMs": 3416.300000011921,
+            "totalMs": 12872.100000023842
+          },
+          {
+            "cellId": 4,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9422.199999988079,
+            "writeMs": 3433.199999988079,
+            "totalMs": 12889.199999988079
+          },
+          {
+            "cellId": 5,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9420.900000035763,
+            "writeMs": 3413.800000011921,
+            "totalMs": 12870.100000023842
+          },
+          {
+            "cellId": 6,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9420.699999988079,
+            "writeMs": 3443.400000035763,
+            "totalMs": 12900.800000011921
+          },
+          {
+            "cellId": 7,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9418.600000023842,
+            "writeMs": 3430.300000011921,
+            "totalMs": 12887.100000023842
+          },
+          {
+            "cellId": 8,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9426.399999976158,
+            "writeMs": 3443.600000023842,
+            "totalMs": 12900.800000011921
+          },
+          {
+            "cellId": 9,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9424.400000035763,
+            "writeMs": 3431.099999964237,
+            "totalMs": 12887.699999988079
+          },
+          {
+            "cellId": 10,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9418.400000035763,
+            "writeMs": 3432.399999976158,
+            "totalMs": 12890.099999964237
+          },
+          {
+            "cellId": 11,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9461.600000023842,
+            "writeMs": 3402.199999988079,
+            "totalMs": 12904.599999964237
+          },
+          {
+            "cellId": 12,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9415.800000011921,
+            "writeMs": 3446.600000023842,
+            "totalMs": 12903.800000011921
+          },
+          {
+            "cellId": 13,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9458.199999988079,
+            "writeMs": 3399.5,
+            "totalMs": 12900.699999988079
+          },
+          {
+            "cellId": 14,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9470.900000035763,
+            "writeMs": 3392.300000011921,
+            "totalMs": 12908.600000023842
+          },
+          {
+            "cellId": 15,
+            "framesDecoded": 60,
+            "av1Bytes": 53925,
+            "rgbaBytes": 31334400,
+            "decodeMs": 9458.700000047684,
+            "writeMs": 3398.2999999523163,
+            "totalMs": 12903.699999988079
+          }
+        ]
+      },
+      {
+        "k": 25,
+        "mip": "180p",
+        "mipWidth": 320,
+        "mipHeight": 192,
+        "coldStartMs": 25755.399999976158,
+        "avgPerCellMs": 1030.2159999990463,
+        "av1TotalMb": 0.6029844284057617,
+        "rgbaTotalMb": 351.5625,
+        "compressionRatio": 583.0374441500929,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22906.69999998808,
+            "writeMs": 2776,
+            "totalMs": 25719
+          },
+          {
+            "cellId": 1,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22903.30000001192,
+            "writeMs": 2777.100000023842,
+            "totalMs": 25718
+          },
+          {
+            "cellId": 2,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22903,
+            "writeMs": 2776.699999988079,
+            "totalMs": 25718.599999964237
+          },
+          {
+            "cellId": 3,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22755,
+            "writeMs": 2922.400000035763,
+            "totalMs": 25717.399999976158
+          },
+          {
+            "cellId": 4,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22977.900000035763,
+            "writeMs": 2727.699999988079,
+            "totalMs": 25746.69999998808
+          },
+          {
+            "cellId": 5,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22896.900000035763,
+            "writeMs": 2778.599999964237,
+            "totalMs": 25717.799999952316
+          },
+          {
+            "cellId": 6,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22933.799999952316,
+            "writeMs": 2748.7000000476837,
+            "totalMs": 25725.900000035763
+          },
+          {
+            "cellId": 7,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22973.69999998808,
+            "writeMs": 2720.300000011921,
+            "totalMs": 25738.5
+          },
+          {
+            "cellId": 8,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22971.5,
+            "writeMs": 2718.800000011921,
+            "totalMs": 25736
+          },
+          {
+            "cellId": 9,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22969.30000001192,
+            "writeMs": 2716.599999964237,
+            "totalMs": 25732.80000001192
+          },
+          {
+            "cellId": 10,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22967,
+            "writeMs": 2719.699999988079,
+            "totalMs": 25735.200000047684
+          },
+          {
+            "cellId": 11,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22964.599999964237,
+            "writeMs": 2715.400000035763,
+            "totalMs": 25729.700000047684
+          },
+          {
+            "cellId": 12,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22971.80000001192,
+            "writeMs": 2728.899999976158,
+            "totalMs": 25751.600000023842
+          },
+          {
+            "cellId": 13,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22967.400000035763,
+            "writeMs": 2727.199999988079,
+            "totalMs": 25746.5
+          },
+          {
+            "cellId": 14,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22969.099999964237,
+            "writeMs": 2728.900000035763,
+            "totalMs": 25751
+          },
+          {
+            "cellId": 15,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22977.30000001192,
+            "writeMs": 2721.300000011921,
+            "totalMs": 25753.30000001192
+          },
+          {
+            "cellId": 16,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22976.5,
+            "writeMs": 2720,
+            "totalMs": 25752.599999964237
+          },
+          {
+            "cellId": 17,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22961.80000001192,
+            "writeMs": 2728.100000023842,
+            "totalMs": 25747.80000001192
+          },
+          {
+            "cellId": 18,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22964.100000023842,
+            "writeMs": 2729.5,
+            "totalMs": 25752.700000047684
+          },
+          {
+            "cellId": 19,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22960.100000023842,
+            "writeMs": 2729.599999964237,
+            "totalMs": 25750
+          },
+          {
+            "cellId": 20,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22969.30000001192,
+            "writeMs": 2720.699999988079,
+            "totalMs": 25751.399999976158
+          },
+          {
+            "cellId": 21,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22968.30000001192,
+            "writeMs": 2720.899999976158,
+            "totalMs": 25752.099999964237
+          },
+          {
+            "cellId": 22,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22956.599999964237,
+            "writeMs": 2729.900000035763,
+            "totalMs": 25750.900000035763
+          },
+          {
+            "cellId": 23,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 23119.100000023842,
+            "writeMs": 2569.099999964237,
+            "totalMs": 25753.599999964237
+          },
+          {
+            "cellId": 24,
+            "framesDecoded": 60,
+            "av1Bytes": 25291,
+            "rgbaBytes": 14745600,
+            "decodeMs": 22976.400000035763,
+            "writeMs": 2709.5,
+            "totalMs": 25752.900000035763
+          }
+        ]
+      }
+    ]
+  }
+}
