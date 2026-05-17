@@ -1,0 +1,168 @@
+{
+  "ranAt": "2026-05-17T19:55:25.408Z",
+  "git": {
+    "sha": "3ad6fc6",
+    "dirty": true
+  },
+  "experiment": "bitmap-during-record",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 15,
+    "captureSeconds": 10,
+    "framesPerPass": 60,
+    "sourceFps": 30,
+    "opfsDirName": "24h",
+    "k": 16,
+    "gridCols": 4,
+    "gridRows": 4,
+    "cellMip": {
+      "label": "270p",
+      "width": 480,
+      "height": 272
+    },
+    "passes": [
+      {
+        "label": "baseline",
+        "render": true,
+        "capture": false
+      },
+      {
+        "label": "capture-only",
+        "render": false,
+        "capture": true
+      },
+      {
+        "label": "full",
+        "render": true,
+        "capture": true
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 755,
+      "height": 298
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "label": "baseline",
+        "renderEnabled": true,
+        "captureEnabled": false,
+        "jank": {
+          "framesObserved": 879,
+          "meanMs": 17.13720136518771,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.700000000004366,
+          "p99Ms": 33.29999999999927,
+          "maxMs": 99.79999999999563,
+          "over16ms": 879,
+          "over33ms": 13,
+          "over50ms": 3,
+          "over100ms": 0,
+          "over33msRatio": 0.01478953356086462,
+          "longestJankStreak": 2,
+          "jankScore": 11.797519908986155,
+          "histogramMs": [
+            0,
+            866,
+            0,
+            7,
+            0,
+            3,
+            0,
+            0,
+            2,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 2,
+          "totalDurationMs": 138,
+          "longestMs": 78
+        },
+        "emptyCellTicks": 0,
+        "captureCompleted": false,
+        "captureChunkCount": null
+      },
+      {
+        "label": "capture-only",
+        "renderEnabled": false,
+        "captureEnabled": true,
+        "jank": null,
+        "longTasks": null,
+        "emptyCellTicks": null,
+        "captureCompleted": true,
+        "captureChunkCount": 134
+      },
+      {
+        "label": "full",
+        "renderEnabled": true,
+        "captureEnabled": true,
+        "jank": {
+          "framesObserved": 880,
+          "meanMs": 17.06125,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.70000000001164,
+          "p99Ms": 33.30000000000291,
+          "maxMs": 66.5,
+          "over16ms": 880,
+          "over33ms": 15,
+          "over50ms": 2,
+          "over100ms": 0,
+          "over33msRatio": 0.017045454545454544,
+          "longestJankStreak": 1,
+          "jankScore": 3.5254090909084077,
+          "histogramMs": [
+            0,
+            865,
+            0,
+            10,
+            2,
+            1,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 0,
+          "totalDurationMs": 0,
+          "longestMs": 0
+        },
+        "emptyCellTicks": 0,
+        "captureCompleted": true,
+        "captureChunkCount": 129
+      }
+    ]
+  }
+}

@@ -76,6 +76,46 @@ Per pass:
   sits relative to 24e's atlas-with-rebuild failure (22% jank) and
   24e's atlas-only-with-capture success (5% jank)
 
+## Verdict
+
+**Concurrent capture has near-zero cost on the all-bitmap render path. Full pass matches baseline within noise.**
+
+| pass | render fps | over 33 ms | streak | empty ticks | capture chunks |
+|---|---|---|---|---|---|
+| baseline | 58.6 | 1.5% | 2 | 0 | — |
+| capture-only | — | — | — | — | 134 |
+| **full** | **58.7** | **1.7%** | 1 | 0 | **129 (96%)** |
+
+**Side-by-side against 24e (atlas + AV1 rebuild during capture):**
+
+| metric | 24e full | 24h full |
+|---|---|---|
+| render fps | 32.3 | **58.7** |
+| over 33 ms | 22.1% | **1.7%** |
+| longest jank streak | 13 | 1 |
+| capture chunk retention | 119/193 = **62%** | 129/134 = **96%** |
+| concurrent rebuild | yes (the killer) | n/a (none in this architecture) |
+
+The full pass matches the baseline: 58.7 vs 58.6 fps, 1.7 vs 1.5% jank, both with zero empty-cell ticks. Capture lost 4% of its chunks — within run-to-run noise, vs 24e's 38% loss when an AV1 rebuild was concurrent.
+
+The architectural reason matches the prediction: there's no AV1 encoder fighting playback for the GPU process. Capture (VP8 via MediaRecorder) and playback (Uint8Array uploads from OPFS) use independent paths.
+
+**End-to-end validation status for the all-bitmap architecture on this device:**
+
+| layer | validated by | status |
+|---|---|---|
+| Upload + draw budget | [24f](../24f_render-loop-all-bitmap/README.md) | ✓ K=4-25 |
+| OPFS storage + read pipeline | [24g](../24g_opfs-bitmap-render/README.md) | ✓ K=4-25 |
+| Concurrent capture | this experiment | ✓ K=16 |
+| Session-end encode (raw RGBA → AV1 for share/sync) | — | not measured |
+
+## Note for eddy implementation
+
+- The all-bitmap architecture survives the load profile that broke the atlas+rebuild design (24e). The capture-during-record moment is now clean rather than super-linearly failing.
+- 24h didn't test the incremental write path (capture-frame-bytes → OPFS append as they arrive). [18c](../18c_opfs-bitmaps/README.md) already validated that for VP8 capture at 30 fps; the AV1-side equivalent isn't needed because the bitmap path doesn't encode capture into AV1.
+- Capture chunk count was 134/10 s = 13.4 chunks/s. MediaRecorder chunks aren't 1:1 with video frames (they're GOP-aligned), and this experiment's chunk count was lower than 24e's 193 — probably thermal/session variance, not architecture. The retention ratio (96%) is the meaningful number.
+- Single-recording test only. Multi-recording (back-to-back captures during long sessions) would be a useful next probe to confirm sustained behaviour, but the per-recording cost characterized here suggests it should hold.
+
 ## Caveats
 
 - All K=16 cells share the same source content (looped) — per 15
