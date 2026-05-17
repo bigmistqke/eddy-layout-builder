@@ -1,5 +1,6 @@
 import { view } from "@bigmistqke/view.gl"
 import { compile } from "@bigmistqke/view.gl/tag"
+import type { BitmapFrame } from "../media/bitmap-source"
 import type { LeafFrame } from "../viewport"
 import {
   FRAGMENT_SHADER,
@@ -8,19 +9,8 @@ import {
   VIDEO_VERTEX_SHADER,
 } from "./shaders"
 
-function sourceDimensions(source: TextureSource): { width: number; height: number } {
-  if (source instanceof HTMLVideoElement) {
-    return { width: source.videoWidth, height: source.videoHeight }
-  }
-  if (source instanceof VideoFrame) {
-    return { width: source.displayWidth, height: source.displayHeight }
-  }
-  // ImageBitmap, HTMLCanvasElement
-  return { width: source.width, height: source.height }
-}
-
 export type ViewportState = { x: number; y: number; scale: number }
-export type TextureSource = VideoFrame | HTMLVideoElement | ImageBitmap | HTMLCanvasElement
+export type TextureSource = BitmapFrame
 
 function compileShader(gl: WebGL2RenderingContext, type: number, source: string) {
   const shader = gl.createShader(type)
@@ -212,16 +202,18 @@ export function createRenderer(canvas: HTMLCanvasElement): Renderer {
 
       // Source's natural dimensions feed the cover-fit math in the
       // vertex shader (cell size is already there via i_size).
-      const sourceSize = sourceDimensions(source)
-      videoUniforms.u_sourceSize.set(sourceSize.width, sourceSize.height)
+      videoUniforms.u_sourceSize.set(source.width, source.height)
 
       gl.texImage2D(
         gl.TEXTURE_2D,
         0,
         gl.RGBA,
+        source.width,
+        source.height,
+        0,
         gl.RGBA,
         gl.UNSIGNED_BYTE,
-        source as TexImageSource,
+        source.bytes,
       )
       gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, 1)
     }
