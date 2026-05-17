@@ -104,6 +104,38 @@ OPFS adds ~1 fps cost and ~1% more jank vs in-memory bitmap. Small, attributable
 - One thing worth noting: the per-cell ArrayBuffer churn on the main thread (one transferable buffer per cell per source frame) is significant. K=25 × 30 fps = 750 buffers/sec being allocated and transferred. Hasn't shown up as jank here but worth watching under combined load (24h).
 - The reader-worker pattern as scaffolded uses one worker for all K cells. Splitting into K/N workers (e.g., N=4 workers each handling a quarter of the cells) is a possible mitigation if read concurrency ever becomes a bottleneck.
 
+### Follow-up: SharedArrayBuffer to eliminate postMessage overhead
+
+The ~1 fps cost vs in-memory (24f) is attributable to per-frame ArrayBuffer allocation + structured-clone deserialization on the main thread (K cells × ~30 frames/s = up to 750 buffers/sec at K=25). A `SharedArrayBuffer`-backed ring buffer per cell would eliminate this entirely:
+
+```
+// Setup (once):
+const ringSize = 2 // double-buffered: worker writes one slot while main reads other
+const sab = new SharedArrayBuffer(K * ringSize * frameBytes)
+const signals = new SharedArrayBuffer(K * 4) // Int32 per cell — index of latest-written slot
+const sigView = new Int32Array(signals)
+
+// Worker per frame per cell:
+handle.read(new Uint8Array(sab, cellOffset + nextSlot * frameBytes, frameBytes), { at: ... })
+Atomics.store(sigView, cellId, nextSlot)
+nextSlot = 1 - nextSlot
+
+// Main per tick per cell:
+const slot = Atomics.load(sigView, cellId)
+const bytes = new Uint8Array(sab, cellOffset + slot * frameBytes, frameBytes)
+gl.texImage2D(..., bytes)
+```
+
+Zero per-frame allocation; zero `postMessage` of bytes (only one init message handing over the SAB references). The atomic on the signal index guarantees main never reads a partially-written frame.
+
+Total shared memory needed is tiny: K=25 × 2 × 59 KB = ~3 MB; K=16 × 2 × 130 KB = ~4 MB; K=4 × 2 × 522 KB = ~4 MB.
+
+**Prerequisite:** `SharedArrayBuffer` needs cross-origin isolation — HTTP responses must include `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, and `crossOriginIsolated` must be `true` at runtime. The experiments dev server (Vite) does not set these by default; one-line `server.headers` config in `vite.config.ts` fixes it. `texImage2D` accepts `Uint8Array` views of SAB on WebGL2.
+
+**Larger alternative — OffscreenCanvas in worker:** moving the entire render loop into the worker (reader + WebGL context + texImage2D + drawArrays) eliminates all main-thread JS during steady-state playback. Bigger refactor (shader setup, draw logic, frame pacing all move to worker), but frees the main thread completely for capture / UI / edits. Worth considering separately if main-thread contention ever becomes the bottleneck.
+
+Neither was implemented here — 24g establishes that the postMessage version is already viable. The SAB and OffscreenCanvas options are characterized for when the next layer of optimization is needed.
+
 ## Caveats
 
 - All cells share the same source content (looped). Per 15
