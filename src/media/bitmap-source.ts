@@ -99,6 +99,75 @@ export async function makeBitmapSource(track: InputVideoTrack): Promise<BitmapSo
   return { latestFrame, seek, reset, close }
 }
 
-export function makeCameraBitmapSource(_stream: MediaStream): BitmapSource {
-  throw new Error("makeCameraBitmapSource: not implemented")
+export function makeCameraBitmapSource(stream: MediaStream): BitmapSource {
+  const [track] = stream.getVideoTracks()
+  if (track === undefined) {
+    throw new Error("makeCameraBitmapSource: stream has no video track")
+  }
+  // MediaStreamTrackProcessor isn't in all TS lib defs.
+  const Ctor = (window as unknown as {
+    MediaStreamTrackProcessor: new (init: { track: MediaStreamTrack }) => {
+      readable: ReadableStream<VideoFrame>
+    }
+  }).MediaStreamTrackProcessor
+  const processor = new Ctor({ track })
+  const reader = processor.readable.getReader()
+
+  let latest: BitmapFrame | null = null
+  let stopped = false
+
+  ;(async () => {
+    while (!stopped) {
+      const { value, done } = await reader.read()
+      if (done) {
+        break
+      }
+      const width = value.displayWidth
+      const height = value.displayHeight
+      // Reuse the buffer if dimensions are unchanged; otherwise allocate.
+      const byteLength = width * height * 4
+      const bytes: Uint8Array =
+        latest !== null && latest.bytes.byteLength === byteLength
+          ? latest.bytes
+          : new Uint8Array(byteLength)
+      try {
+        await value.copyTo(bytes, { format: "RGBA" })
+        latest = { bytes, width, height }
+      } catch (error) {
+        // copyTo can race close(); drop the frame. Trace in case
+        // it's actually a real error (format unsupported, OOM, …).
+        logTrace("camera-bitmap-copyTo-dropped", {
+          message: error instanceof Error ? error.message : String(error),
+        })
+      }
+      value.close()
+    }
+    try {
+      reader.releaseLock()
+    } catch {}
+  })()
+
+  return {
+    latestFrame(): BitmapFrame | null {
+      return latest
+    },
+    seek(_tSeconds: number): void {
+      // Camera is always "live"; no seek concept.
+    },
+    reset(): void {
+      // No-op for live camera.
+    },
+    close(): void {
+      // Releases the reader; caller still owns the MediaStreamTrack
+      // (call track.stop() separately to release the camera).
+      stopped = true
+      // Force any pending reader.read() to resolve {done: true}.
+      // Without this, a stalled camera would hold the reader lock
+      // indefinitely after close().
+      try {
+        reader.cancel()
+      } catch {}
+      latest = null
+    },
+  }
 }
