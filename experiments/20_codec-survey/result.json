@@ -1,0 +1,207 @@
+{
+  "ranAt": "2026-05-17T16:14:53.631Z",
+  "git": {
+    "sha": "7fd44d2",
+    "dirty": true
+  },
+  "experiment": "codec-survey",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 6,
+    "bitratePerPixel": 0.1,
+    "maxQueue": 8,
+    "codecs": [
+      {
+        "label": "vp8",
+        "codecString": "vp8"
+      },
+      {
+        "label": "vp9",
+        "codecString": "vp09.00.10.08"
+      },
+      {
+        "label": "h264",
+        "codecString": "avc1.42E01E"
+      },
+      {
+        "label": "av1",
+        "codecString": "av01.0.04M.08"
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "codecs": [
+      {
+        "label": "vp8",
+        "codecString": "vp8",
+        "encoderProbe": {
+          "supported": true,
+          "actualHardwareAcceleration": "no-preference",
+          "reason": null
+        },
+        "decoderProbeHw": {
+          "supported": true,
+          "actualHardwareAcceleration": "prefer-hardware",
+          "reason": null
+        },
+        "decoderProbeSw": {
+          "supported": true,
+          "actualHardwareAcceleration": "prefer-software",
+          "reason": null
+        },
+        "encode": {
+          "ok": true,
+          "encodeMs": 3811,
+          "encodeFps": 46.706901075833116,
+          "framesEncoded": 178,
+          "totalBytes": 1956421,
+          "bytesPerSecOfContent": 329733.8764044944,
+          "decoderConfig": {
+            "codec": "vp8",
+            "codedWidth": 720,
+            "codedHeight": 1280
+          },
+          "chunks": [],
+          "errors": []
+        },
+        "decodeHw": {
+          "ok": true,
+          "decodeFps": 96.5,
+          "totalFrames": 579,
+          "switchCostMs": 265.39999997615814,
+          "errors": []
+        },
+        "decodeSw": {
+          "ok": true,
+          "decodeFps": 174,
+          "totalFrames": 1044,
+          "switchCostMs": 10.300000011920929,
+          "errors": []
+        }
+      },
+      {
+        "label": "vp9",
+        "codecString": "vp09.00.10.08",
+        "encoderProbe": {
+          "supported": true,
+          "actualHardwareAcceleration": "no-preference",
+          "reason": null
+        },
+        "decoderProbeHw": {
+          "supported": true,
+          "actualHardwareAcceleration": "prefer-hardware",
+          "reason": null
+        },
+        "decoderProbeSw": {
+          "supported": true,
+          "actualHardwareAcceleration": "prefer-software",
+          "reason": null
+        },
+        "encode": {
+          "ok": true,
+          "encodeMs": 4148.600000023842,
+          "encodeFps": 42.906040591760366,
+          "framesEncoded": 178,
+          "totalBytes": 1490605,
+          "bytesPerSecOfContent": 251225.5617977528,
+          "decoderConfig": {
+            "codec": "vp09.00.10.08",
+            "codedWidth": 720,
+            "codedHeight": 1280
+          },
+          "chunks": [],
+          "errors": []
+        },
+        "decodeHw": {
+          "ok": true,
+          "decodeFps": 151,
+          "totalFrames": 906,
+          "switchCostMs": 271.69999998807907,
+          "errors": []
+        },
+        "decodeSw": {
+          "ok": true,
+          "decodeFps": 262.8333333333333,
+          "totalFrames": 1577,
+          "switchCostMs": 15.5,
+          "errors": []
+        }
+      },
+      {
+        "label": "h264",
+        "codecString": "avc1.42E01E",
+        "encoderProbe": {
+          "supported": false,
+          "actualHardwareAcceleration": "no-preference",
+          "reason": null
+        },
+        "decoderProbeHw": {
+          "supported": false,
+          "actualHardwareAcceleration": null,
+          "reason": "no asset"
+        },
+        "decoderProbeSw": {
+          "supported": false,
+          "actualHardwareAcceleration": null,
+          "reason": "no asset"
+        },
+        "encode": null,
+        "decodeHw": null,
+        "decodeSw": null
+      },
+      {
+        "label": "av1",
+        "codecString": "av01.0.04M.08",
+        "encoderProbe": {
+          "supported": true,
+          "actualHardwareAcceleration": "no-preference",
+          "reason": null
+        },
+        "decoderProbeHw": {
+          "supported": false,
+          "actualHardwareAcceleration": "prefer-hardware",
+          "reason": null
+        },
+        "decoderProbeSw": {
+          "supported": true,
+          "actualHardwareAcceleration": "prefer-software",
+          "reason": null
+        },
+        "encode": {
+          "ok": true,
+          "encodeMs": 5623.100000023842,
+          "encodeFps": 31.655136846089395,
+          "framesEncoded": 178,
+          "totalBytes": 835112,
+          "bytesPerSecOfContent": 140749.21348314607,
+          "decoderConfig": {
+            "codec": "av01.0.04M.08",
+            "codedWidth": 720,
+            "codedHeight": 1280
+          },
+          "chunks": [],
+          "errors": []
+        },
+        "decodeHw": null,
+        "decodeSw": {
+          "ok": true,
+          "decodeFps": 376.1666666666667,
+          "totalFrames": 2257,
+          "switchCostMs": null,
+          "errors": []
+        }
+      }
+    ]
+  }
+}
