@@ -72,6 +72,34 @@ For pass 3 specifically, compare:
 - **Cold-start ≥ 5 s slower** → contention bad enough to need
   scheduling
 
+## Verdict
+
+**Cold-start during active playback has near-zero rendering cost. Incremental session load is viable.**
+
+| pass | render fps | over 33 ms | streak | empty ticks | cold-start ms |
+|---|---|---|---|---|---|
+| baseline | 59.3 | 0.8% | 1 | 0 | — |
+| cold-start-only | — | — | — | — | 1841 |
+| **full** | **59.5** | **0.7%** | 1 | 0 | **1146** |
+
+Per-cell cold-start in pass 3: 460-1070 ms each (4 cells in parallel finishing in 1146 ms total). Full pass matches baseline within noise — the cold-start workers (decode AV1 + copyTo + SyncAccessHandle write) don't measurably contend with the active K=8 bitmap playback.
+
+Side-by-side against [24e](../24e_rebuild-during-record/README.md) (atlas + AV1 rebuild during playback):
+
+| metric | 24e atlas+rebuild | 28 bitmap+coldstart |
+|---|---|---|
+| render fps during contention | 32.3 | **59.5** |
+| over 33 ms | 22.1% | **0.7%** |
+| concurrent work cost | super-linear failure | indistinguishable from baseline |
+
+The all-bitmap architecture's "no codec in the playback loop" property is what makes this work. Cold-start runs codec work in workers (decode → copyTo → write) but playback uses pure CPU→GPU uploads with no codec involvement, so there's no shared resource to contend on.
+
+## Note for eddy implementation
+
+- Incremental session load works cleanly: warm visible cells first (~1 s each on this device), background-warm the rest while the user interacts.
+- A user-added cell can warm in ~1 s and join playback with no jank visible to other cells.
+- The cold-start being slightly faster in the full pass than the cold-only pass (1.1 s vs 1.8 s) is most likely thermal variance — not a real architectural finding either way.
+
 ## Caveats
 
 - Same source content for all cells (test simplification per 15).

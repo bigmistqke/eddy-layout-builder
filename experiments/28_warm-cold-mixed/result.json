@@ -1,0 +1,240 @@
+{
+  "ranAt": "2026-05-17T20:25:02.045Z",
+  "git": {
+    "sha": "44fbcea",
+    "dirty": true
+  },
+  "experiment": "warm-cold-mixed",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 15,
+    "coldStartAtMs": 2000,
+    "framesPerCell": 60,
+    "sourceFps": 30,
+    "bitratePerPixel": 0.1,
+    "swCodec": {
+      "label": "av1",
+      "codecString": "av01.0.04M.08"
+    },
+    "opfsDirName": "28",
+    "m": 8,
+    "coldCells": 4,
+    "gridCols": 4,
+    "gridRows": 3,
+    "cellMip": {
+      "label": "270p",
+      "width": 480,
+      "height": 272
+    },
+    "passes": [
+      {
+        "label": "baseline",
+        "render": true,
+        "coldStart": false
+      },
+      {
+        "label": "cold-start-only",
+        "render": false,
+        "coldStart": true
+      },
+      {
+        "label": "full",
+        "render": true,
+        "coldStart": true
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "label": "baseline",
+        "renderEnabled": true,
+        "coldStartEnabled": false,
+        "jank": {
+          "framesObserved": 889,
+          "meanMs": 17.075815523059614,
+          "medianMs": 16.600000000002183,
+          "p95Ms": 16.700000000000728,
+          "p99Ms": 16.80000000000291,
+          "maxMs": 233,
+          "over16ms": 889,
+          "over33ms": 7,
+          "over50ms": 2,
+          "over100ms": 1,
+          "over33msRatio": 0.007874015748031496,
+          "longestJankStreak": 1,
+          "jankScore": 46.91852643419583,
+          "histogramMs": [
+            0,
+            882,
+            0,
+            3,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 207,
+          "longestMs": 207
+        },
+        "emptyCellTicks": 0,
+        "coldStartMs": null,
+        "coldStartCellResults": null
+      },
+      {
+        "label": "cold-start-only",
+        "renderEnabled": false,
+        "coldStartEnabled": true,
+        "jank": null,
+        "longTasks": null,
+        "emptyCellTicks": null,
+        "coldStartMs": 1841.1000000238419,
+        "coldStartCellResults": [
+          {
+            "cellId": 0,
+            "framesProduced": 60,
+            "decodeMs": 235.10000002384186,
+            "writeMs": 1498.5,
+            "totalMs": 1755.5,
+            "errors": []
+          },
+          {
+            "cellId": 1,
+            "framesProduced": 60,
+            "decodeMs": 212.69999998807907,
+            "writeMs": 1220,
+            "totalMs": 1455.1000000238419,
+            "errors": []
+          },
+          {
+            "cellId": 2,
+            "framesProduced": 60,
+            "decodeMs": 196.5,
+            "writeMs": 269.60000002384186,
+            "totalMs": 490,
+            "errors": []
+          },
+          {
+            "cellId": 3,
+            "framesProduced": 60,
+            "decodeMs": 220.10000002384186,
+            "writeMs": 1054.3999999761581,
+            "totalMs": 1290.5,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "label": "full",
+        "renderEnabled": true,
+        "coldStartEnabled": true,
+        "jank": {
+          "framesObserved": 893,
+          "meanMs": 16.849720044792836,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.700000000004366,
+          "p99Ms": 16.80000000000291,
+          "maxMs": 66.70000000000437,
+          "over16ms": 893,
+          "over33ms": 6,
+          "over50ms": 2,
+          "over100ms": 0,
+          "over33msRatio": 0.006718924972004479,
+          "longestJankStreak": 1,
+          "jankScore": 2.8526763717808414,
+          "histogramMs": [
+            0,
+            887,
+            0,
+            3,
+            0,
+            1,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 67,
+          "longestMs": 67
+        },
+        "emptyCellTicks": 0,
+        "coldStartMs": 1146,
+        "coldStartCellResults": [
+          {
+            "cellId": 0,
+            "framesProduced": 60,
+            "decodeMs": 261.5,
+            "writeMs": 178.30000001192093,
+            "totalMs": 460.10000002384186,
+            "errors": []
+          },
+          {
+            "cellId": 1,
+            "framesProduced": 60,
+            "decodeMs": 289.5,
+            "writeMs": 291.5,
+            "totalMs": 597.5,
+            "errors": []
+          },
+          {
+            "cellId": 2,
+            "framesProduced": 60,
+            "decodeMs": 305.9000000357628,
+            "writeMs": 742.5,
+            "totalMs": 1069.199999988079,
+            "errors": []
+          },
+          {
+            "cellId": 3,
+            "framesProduced": 60,
+            "decodeMs": 293.5,
+            "writeMs": 637.8000000119209,
+            "totalMs": 953.8999999761581,
+            "errors": []
+          }
+        ]
+      }
+    ]
+  }
+}
