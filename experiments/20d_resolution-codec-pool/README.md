@@ -66,6 +66,33 @@ For every (resolution, pass) tuple:
   In that case [23](../23_sw-workers/README.md)'s worker test
   diagnoses it
 
+## Verdict
+
+**AV1-SW at typical cell resolution is a game-changer; cross-codec actively hurts at lower res.**
+
+| res | vp9-hw-4 | av1-sw-4 | cross-4+4 | additivity |
+|---|---|---|---|---|
+| 720p | 181 | 456 | 492 | 77% |
+| 540p | 211 | **821** | 721 | 70% |
+| 360p | 240 | **1690** | 1259 | 65% |
+
+Two surprises:
+
+1. **AV1-SW at lower res is staggering.** 540p → 820 fps (K=27 cells), 360p → 1690 fps (K=56 cells). A single SW pool at typical eddy cell resolution serves more cells than any plausible session needs.
+
+2. **Cross-codec gets *worse* at lower res, not better.** Additivity drops 77% → 70% → 65%. At 540p/360p, cross-4+4 is *worse* than av1-sw-4 alone (721 vs 821; 1259 vs 1690). The memory-bandwidth hypothesis is falsified.
+
+The pattern: as AV1-SW gets faster (more output callbacks/sec), adding VP9-HW hurts more. That points to **main-thread callback saturation** at ~1500-2000 callbacks/sec, not memory bandwidth. Tested directly in [23](../23_sw-workers/README.md).
+
+VP9-HW barely scales with smaller frames (181 → 240, +33% for 4× fewer pixels) — HW path has high per-frame fixed overhead. Another reason cross-codec is a poor architecture for typical eddy cell sizes.
+
+## Note for eddy implementation
+
+- **Pick AV1-SW (with multi-resolution cache) over cross-codec.** Multi-codec storage is not worth it on this device at any tested resolution.
+- **Render each cell at its display resolution.** The 360p single-pool result (K=56) only happens because frames decode at 360p. If you decode at 720p and downscale in WebGL, you pay the 720p cost.
+- **Storage layout should be a mip-style ladder** per clip: 720p (canonical/portable) + lower resolutions cached locally. A 540p mip costs ~0.6× the 720p bytes; a 360p mip ~0.3×. Total ladder ~2× source.
+- **The "atlas required past K=4" finding from 10/11 is fully obsolete on this device** for layouts where cell res ≤ 540p.
+
 ## Caveats
 
 - 1280×720 source recording is the only one — re-encoding to 540p and
