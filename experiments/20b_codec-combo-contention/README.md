@@ -55,6 +55,30 @@ Per codec × pass:
   376 fps solo is memory-bandwidth-bound, not codec-bound
 - **AV1 combo-4+4** dominated by SW (no HW); meaningful absolute ceiling
 
+## Verdict
+
+**Per-codec SW scaling varies dramatically — codec choice matters more than expected.**
+
+| codec | hw-4 | sw-4 | combo-4+4 | K @ 30 fps realtime |
+|---|---|---|---|---|
+| VP8 | 146 | 193 | **362** | 12 |
+| VP9 | 174 | **93** ⚠️ | 287 | 9 |
+| AV1 | n/a (no HW) | **551** 🚀 | n/a | **18** (SW pool only) |
+
+Key surprises:
+- **VP9 SW collapses under contention** — 263 fps solo (per 20) → 92 fps at N=4. Likely a single-threaded VP9 SW codepath on this device fighting for one core. Worst SW scaling of any tested codec.
+- **AV1 SW scales partially** — 376 fps solo → 551 fps at N=4 (1.5×). Likely dav1d's internal threading. Single AV1-SW pool of 4 decoders = **K=18 cells at realtime** — and no HW path needed.
+- **VP8 combo-4+4 = 362 fps** corroborates 19d's 318 fps; additivity confirmed across two runs.
+
+Per-cell **cache codec** ranking on this device:
+1. **AV1** — 551 fps SW pool, no atlas/combo needed for K≤18
+2. **VP8** — 362 fps combo pool, needs HW+SW infrastructure
+3. **VP9** — 287 fps combo, worse than VP8 despite stronger solo numbers
+
+This reorders the codec recommendation: VP9-SW is *not* the headline; **AV1 SW pool dominates** for high-K playback on devices that have AV1 SW. The storage codec choice (VP9 for portability) stays unchanged, but the *cache* codec recommendation flips to AV1 wherever it's supported.
+
+First scaffold attempt cascaded on AV1 combo-4+4 (no HW path → `prefer-hardware` configure failed → closed-codec errors on neighbouring SW slots). Fixed by probing HW/SW availability up front and skipping incompatible passes.
+
 ## Caveats
 
 - 10 s runs — thermal at 60 s+ is a follow-up

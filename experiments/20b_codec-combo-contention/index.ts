@@ -291,8 +291,32 @@ async function surveyCodec(
   status(
     `  transcode ok: encodeFps=${asset.encodeFps.toFixed(1)} bytes/s=${asset.bytesPerSecOfContent.toFixed(0)} chunks=${asset.chunks.length}`,
   )
+  // Probe HW/SW availability once so we can skip passes that would
+  // cascade-fail (e.g. AV1 has no HW path on this device — running
+  // a `prefer-hardware` configure trips the entire decoder slot and
+  // takes neighbouring SW slots down with it).
+  const hwProbe = await VideoDecoder.isConfigSupported({
+    ...asset.config,
+    hardwareAcceleration: "prefer-hardware",
+  })
+  const swProbe = await VideoDecoder.isConfigSupported({
+    ...asset.config,
+    hardwareAcceleration: "prefer-software",
+  })
+  const hwAvailable = hwProbe.supported ?? false
+  const swAvailable = swProbe.supported ?? false
+  status(`  decoder paths: hw=${hwAvailable} sw=${swAvailable}`)
+
   const passes: PassReport[] = []
   for (const pass of params.passes) {
+    if (pass.hw > 0 && !hwAvailable) {
+      status(`  SKIP [${pass.label}] — no HW path`)
+      continue
+    }
+    if (pass.sw > 0 && !swAvailable) {
+      status(`  SKIP [${pass.label}] — no SW path`)
+      continue
+    }
     status(`  PASS [${pass.label}] HW=${pass.hw} SW=${pass.sw}`)
     const report = await runPass(asset, pass)
     passes.push(report)
