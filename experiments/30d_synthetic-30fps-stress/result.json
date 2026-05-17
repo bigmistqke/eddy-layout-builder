@@ -1,0 +1,105 @@
+{
+  "ranAt": "2026-05-17T23:32:07.985Z",
+  "git": {
+    "sha": "0bdaef3",
+    "dirty": true
+  },
+  "experiment": "synthetic-30fps-stress",
+  "params": {
+    "captureSeconds": 10,
+    "targetFps": 30,
+    "bitratePerPixel": 0.1,
+    "codec": "av1",
+    "passes": [
+      {
+        "label": "540p",
+        "width": 960,
+        "height": 544
+      },
+      {
+        "label": "270p",
+        "width": 480,
+        "height": 272
+      },
+      {
+        "label": "180p",
+        "width": 320,
+        "height": 184
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "label": "540p",
+        "width": 960,
+        "height": 544,
+        "targetFps": 30,
+        "framesSubmitted": 300,
+        "framesEncoded": 300,
+        "submittedFps": 30,
+        "encodedFps": 30,
+        "pendingAddsMax": 9,
+        "addP95Ms": 8,
+        "addMaxMs": 297.2999999523163,
+        "tickLagMaxMs": 2.066666642824771,
+        "tickLagP95Ms": 0.5333333214121012,
+        "finalizeMs": 23.099999964237213,
+        "webmBytes": 955529,
+        "webmBytesPerSecond": 95552.9,
+        "roundTripDemuxed": 300,
+        "roundTripVerified": true,
+        "errors": []
+      },
+      {
+        "label": "270p",
+        "width": 480,
+        "height": 272,
+        "targetFps": 30,
+        "framesSubmitted": 300,
+        "framesEncoded": 300,
+        "submittedFps": 30,
+        "encodedFps": 30,
+        "pendingAddsMax": 1,
+        "addP95Ms": 4.400000035762787,
+        "addMaxMs": 6.100000023841858,
+        "tickLagMaxMs": 22.69999998807907,
+        "tickLagP95Ms": 1.4333333571739786,
+        "finalizeMs": 17.400000035762787,
+        "webmBytes": 315787,
+        "webmBytesPerSecond": 31578.7,
+        "roundTripDemuxed": 300,
+        "roundTripVerified": true,
+        "errors": []
+      },
+      {
+        "label": "180p",
+        "width": 320,
+        "height": 184,
+        "targetFps": 30,
+        "framesSubmitted": 300,
+        "framesEncoded": 300,
+        "submittedFps": 30,
+        "encodedFps": 30,
+        "pendingAddsMax": 1,
+        "addP95Ms": 4.599999964237213,
+        "addMaxMs": 7.100000023841858,
+        "tickLagMaxMs": 8.233333369094908,
+        "tickLagP95Ms": 1.8333333333321207,
+        "finalizeMs": 17.5,
+        "webmBytes": 159652,
+        "webmBytesPerSecond": 15965.2,
+        "roundTripDemuxed": 300,
+        "roundTripVerified": true,
+        "errors": []
+      }
+    ]
+  }
+}
