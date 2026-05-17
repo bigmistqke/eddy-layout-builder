@@ -70,6 +70,31 @@ Per pass:
   operation itself is a hitch; needs the 14/16 hold-pattern
   treatment for AV1
 
+## Verdict
+
+**Inline-on-main-thread rebuild doesn't work. The eventually-consistent pattern is not validated yet.**
+
+| R | fps | mean | p95 | max | >33ms | streak | meanD | maxD | edits | rebuilds | rebuildMs |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 37.5 | 26.8 | 83.2 | 149.8 | **30.3%** | 28 | 1.50 | 4 | 4 | 2 | **9086** |
+| 0.5  | 33.8 | 29.7 | 83.2 | 166.4 | **43.6%** | 24 | 3.51 | 7 | 9 | 2 | **9995** |
+| 1.0  | 26.2 | 38.1 | 83.2 | 149.8 | **71.0%** | 70 | 8.22 | 16 | 16 | 1 | 18987 |
+| 2.0  | 21.3 | 46.8 | 83.3 | 149.7 | **82.9%** | 41 | 11.87 | 16 | 16 | 1 | 19889 |
+
+Two findings:
+
+1. **Inline rebuild under playback contention is 4-10× slower than uncontended.** 24a's uncontended build was 1.1-2.8 s; here it's 9-20 s. The render loop and the rebuild fight for the same main thread, GPU process, and probably the same codec service IPC.
+
+2. **The rebuild itself is the jank source, not D.** At R=0.25 the dirty-cell count averaged 1.5 (well within 24b's clean budget of D ≤ 2-3) but render was already 30% jank — the rebuild operation alone was blocking rAF.
+
+The hybrid architecture's viability is therefore **not yet established**. The rebuild scheduler in this scaffold fails at every tested edit rate.
+
+## Note for eddy implementation
+
+- A worker-based rebuild scheduler is now a hard requirement, not a "nice to have." 18g already proved this works for VP8 (cached chunk-worker pattern); the AV1 equivalent is the natural next experiment.
+- Alternatives or supplements: chunked yielded inline rebuild (per 18e), rebuild-only-on-idle, smaller atlas sizes (reduces per-rebuild cost), or pre-built atlas pool (rebuild speculatively before edits land).
+- This run also surfaces that AV1 *encode* under contention is meaningfully more expensive than VP8 was in 09's measurements. The encoder's CPU work fights playback decoders for the same cores. Worker isolation might or might not help depending on whether the cost is CPU-thread contention or GPU-process IPC.
+
 ## Caveats
 
 - "Edits" here mean *one cell becomes dirty*. Real eddy edits may
