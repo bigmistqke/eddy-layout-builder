@@ -1,0 +1,1167 @@
+{
+  "ranAt": "2026-05-17T19:20:03.391Z",
+  "git": {
+    "sha": "e2e96e7",
+    "dirty": true
+  },
+  "experiment": "upload-real-sources",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "cellDurationMs": 2000,
+    "bitratePerPixel": 0.1,
+    "swCodec": {
+      "label": "av1",
+      "codecString": "av01.0.04M.08"
+    },
+    "resolutions": [
+      {
+        "label": "540p",
+        "width": 960,
+        "height": 544
+      },
+      {
+        "label": "360p",
+        "width": 640,
+        "height": 368
+      },
+      {
+        "label": "270p",
+        "width": 480,
+        "height": 272
+      },
+      {
+        "label": "180p",
+        "width": 320,
+        "height": 184
+      },
+      {
+        "label": "144p",
+        "width": 256,
+        "height": 144
+      }
+    ],
+    "kValues": [
+      1,
+      4,
+      8,
+      16
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "cameraNativeWidth": 720,
+    "cameraNativeHeight": 1280,
+    "cells": [
+      {
+        "sourceType": "uint8array",
+        "resolution": "540p",
+        "width": 960,
+        "height": 544,
+        "k": 1,
+        "sampleCount": 122,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.6795081975030117,
+          "p95Ms": 1,
+          "maxMs": 4.199999988079071
+        },
+        "finish": {
+          "meanMs": 0.16311475341437293,
+          "p95Ms": 0.30000001192092896,
+          "maxMs": 1.199999988079071
+        },
+        "total": {
+          "meanMs": 0.8426229509173847,
+          "p95Ms": 1.4000000357627869,
+          "maxMs": 5.300000011920929
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "540p",
+        "width": 960,
+        "height": 544,
+        "k": 4,
+        "sampleCount": 121,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 3.1429752042470884,
+          "p95Ms": 5.899999976158142,
+          "maxMs": 22.30000001192093
+        },
+        "finish": {
+          "meanMs": 0.1669421486618105,
+          "p95Ms": 0.3999999761581421,
+          "maxMs": 0.5
+        },
+        "total": {
+          "meanMs": 3.309917352908899,
+          "p95Ms": 6.199999988079071,
+          "maxMs": 22.5
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "540p",
+        "width": 960,
+        "height": 544,
+        "k": 8,
+        "sampleCount": 121,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 4.1099173539926195,
+          "p95Ms": 7.899999976158142,
+          "maxMs": 14.399999976158142
+        },
+        "finish": {
+          "meanMs": 0.1520661184610414,
+          "p95Ms": 0.20000004768371582,
+          "maxMs": 2.400000035762787
+        },
+        "total": {
+          "meanMs": 4.261983472453661,
+          "p95Ms": 8.100000023841858,
+          "maxMs": 14.600000023841858
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "540p",
+        "width": 960,
+        "height": 544,
+        "k": 16,
+        "sampleCount": 89,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 21.54269662331999,
+          "p95Ms": 26.099999964237213,
+          "maxMs": 31.100000023841858
+        },
+        "finish": {
+          "meanMs": 0.10000000107154418,
+          "p95Ms": 0.20000004768371582,
+          "maxMs": 0.30000001192092896
+        },
+        "total": {
+          "meanMs": 21.642696624391533,
+          "p95Ms": 26.099999964237213,
+          "maxMs": 31.200000047683716
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "360p",
+        "width": 640,
+        "height": 368,
+        "k": 1,
+        "sampleCount": 122,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.7196721312452535,
+          "p95Ms": 1.100000023841858,
+          "maxMs": 2.5
+        },
+        "finish": {
+          "meanMs": 0.2860655740636294,
+          "p95Ms": 0.5999999642372131,
+          "maxMs": 0.800000011920929
+        },
+        "total": {
+          "meanMs": 1.005737705308883,
+          "p95Ms": 1.699999988079071,
+          "maxMs": 2.800000011920929
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "360p",
+        "width": 640,
+        "height": 368,
+        "k": 4,
+        "sampleCount": 122,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 2.1000000013679756,
+          "p95Ms": 3.300000011920929,
+          "maxMs": 4.300000011920929
+        },
+        "finish": {
+          "meanMs": 0.2426229485722839,
+          "p95Ms": 0.5,
+          "maxMs": 0.6000000238418579
+        },
+        "total": {
+          "meanMs": 2.3426229499402593,
+          "p95Ms": 3.699999988079071,
+          "maxMs": 4.5
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "360p",
+        "width": 640,
+        "height": 368,
+        "k": 8,
+        "sampleCount": 123,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 2.9325203226833807,
+          "p95Ms": 5.800000011920929,
+          "maxMs": 6.599999964237213
+        },
+        "finish": {
+          "meanMs": 0.19430894677231952,
+          "p95Ms": 0.3999999761581421,
+          "maxMs": 0.6000000238418579
+        },
+        "total": {
+          "meanMs": 3.1268292694557003,
+          "p95Ms": 6.100000023841858,
+          "maxMs": 6.899999976158142
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "360p",
+        "width": 640,
+        "height": 368,
+        "k": 16,
+        "sampleCount": 121,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 3.5471074374254083,
+          "p95Ms": 6.400000035762787,
+          "maxMs": 12.5
+        },
+        "finish": {
+          "meanMs": 0.136363635871036,
+          "p95Ms": 0.20000004768371582,
+          "maxMs": 1.9000000357627869
+        },
+        "total": {
+          "meanMs": 3.6834710732964444,
+          "p95Ms": 6.600000023841858,
+          "maxMs": 12.5
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "270p",
+        "width": 480,
+        "height": 272,
+        "k": 1,
+        "sampleCount": 121,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.4818181804389008,
+          "p95Ms": 0.699999988079071,
+          "maxMs": 1
+        },
+        "finish": {
+          "meanMs": 0.3041322290404769,
+          "p95Ms": 0.5,
+          "maxMs": 0.7000000476837158
+        },
+        "total": {
+          "meanMs": 0.7859504094793777,
+          "p95Ms": 1.100000023841858,
+          "maxMs": 1.300000011920929
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "270p",
+        "width": 480,
+        "height": 272,
+        "k": 4,
+        "sampleCount": 122,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 1.3713114755075486,
+          "p95Ms": 2,
+          "maxMs": 5.699999988079071
+        },
+        "finish": {
+          "meanMs": 0.2614754111063285,
+          "p95Ms": 0.40000003576278687,
+          "maxMs": 0.800000011920929
+        },
+        "total": {
+          "meanMs": 1.632786886613877,
+          "p95Ms": 2.400000035762787,
+          "maxMs": 5.899999976158142
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "270p",
+        "width": 480,
+        "height": 272,
+        "k": 8,
+        "sampleCount": 122,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 2.2213114719898974,
+          "p95Ms": 3.600000023841858,
+          "maxMs": 4.600000023841858
+        },
+        "finish": {
+          "meanMs": 0.22213115164490996,
+          "p95Ms": 0.40000003576278687,
+          "maxMs": 0.699999988079071
+        },
+        "total": {
+          "meanMs": 2.4434426236348075,
+          "p95Ms": 3.899999976158142,
+          "maxMs": 5.199999988079071
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "270p",
+        "width": 480,
+        "height": 272,
+        "k": 16,
+        "sampleCount": 123,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 3.8796747942280962,
+          "p95Ms": 6.699999988079071,
+          "maxMs": 12.399999976158142
+        },
+        "finish": {
+          "meanMs": 0.21463414517844595,
+          "p95Ms": 0.3999999761581421,
+          "maxMs": 3.200000047683716
+        },
+        "total": {
+          "meanMs": 4.094308939406543,
+          "p95Ms": 7,
+          "maxMs": 12.5
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "180p",
+        "width": 320,
+        "height": 192,
+        "k": 1,
+        "sampleCount": 121,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.23388429614138012,
+          "p95Ms": 0.3999999761581421,
+          "maxMs": 0.9000000357627869
+        },
+        "finish": {
+          "meanMs": 0.23305785458935194,
+          "p95Ms": 0.3999999761581421,
+          "maxMs": 0.6000000238418579
+        },
+        "total": {
+          "meanMs": 0.4669421507307321,
+          "p95Ms": 0.7000000476837158,
+          "maxMs": 1.100000023841858
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "180p",
+        "width": 320,
+        "height": 192,
+        "k": 4,
+        "sampleCount": 121,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 0.8512396679436864,
+          "p95Ms": 1.199999988079071,
+          "maxMs": 2.300000011920929
+        },
+        "finish": {
+          "meanMs": 0.28677685989821255,
+          "p95Ms": 0.40000003576278687,
+          "maxMs": 1.199999988079071
+        },
+        "total": {
+          "meanMs": 1.138016527841899,
+          "p95Ms": 1.600000023841858,
+          "maxMs": 2.699999988079071
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "180p",
+        "width": 320,
+        "height": 192,
+        "k": 8,
+        "sampleCount": 122,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 1.4778688549995422,
+          "p95Ms": 2.100000023841858,
+          "maxMs": 5.700000047683716
+        },
+        "finish": {
+          "meanMs": 0.27868852165878794,
+          "p95Ms": 0.5,
+          "maxMs": 0.699999988079071
+        },
+        "total": {
+          "meanMs": 1.7565573766583302,
+          "p95Ms": 2.400000035762787,
+          "maxMs": 6
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "180p",
+        "width": 320,
+        "height": 192,
+        "k": 16,
+        "sampleCount": 122,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 2.4885245903593596,
+          "p95Ms": 3.800000011920929,
+          "maxMs": 4.200000047683716
+        },
+        "finish": {
+          "meanMs": 0.24836065534685478,
+          "p95Ms": 0.5,
+          "maxMs": 0.699999988079071
+        },
+        "total": {
+          "meanMs": 2.7368852457062145,
+          "p95Ms": 4.100000023841858,
+          "maxMs": 4.5
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "144p",
+        "width": 256,
+        "height": 144,
+        "k": 1,
+        "sampleCount": 121,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.19008264068729622,
+          "p95Ms": 0.30000001192092896,
+          "maxMs": 0.5999999642372131
+        },
+        "finish": {
+          "meanMs": 0.25619834957043985,
+          "p95Ms": 0.5,
+          "maxMs": 0.800000011920929
+        },
+        "total": {
+          "meanMs": 0.4462809902577361,
+          "p95Ms": 0.699999988079071,
+          "maxMs": 0.8999999761581421
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "144p",
+        "width": 256,
+        "height": 144,
+        "k": 4,
+        "sampleCount": 121,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 0.574380166274457,
+          "p95Ms": 0.8999999761581421,
+          "maxMs": 1.800000011920929
+        },
+        "finish": {
+          "meanMs": 0.2859504134201806,
+          "p95Ms": 0.5,
+          "maxMs": 1.7000000476837158
+        },
+        "total": {
+          "meanMs": 0.8603305796946376,
+          "p95Ms": 1.2000000476837158,
+          "maxMs": 2.400000035762787
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "144p",
+        "width": 256,
+        "height": 144,
+        "k": 8,
+        "sampleCount": 122,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 1.0114754076863899,
+          "p95Ms": 1.5,
+          "maxMs": 2
+        },
+        "finish": {
+          "meanMs": 0.259016395103736,
+          "p95Ms": 0.5,
+          "maxMs": 0.6000000238418579
+        },
+        "total": {
+          "meanMs": 1.270491802790126,
+          "p95Ms": 1.899999976158142,
+          "maxMs": 2.200000047683716
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "uint8array",
+        "resolution": "144p",
+        "width": 256,
+        "height": 144,
+        "k": 16,
+        "sampleCount": 122,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 1.6934426182606181,
+          "p95Ms": 2.5,
+          "maxMs": 3.299999952316284
+        },
+        "finish": {
+          "meanMs": 0.24918033451330465,
+          "p95Ms": 0.5,
+          "maxMs": 0.7000000476837158
+        },
+        "total": {
+          "meanMs": 1.9426229527739227,
+          "p95Ms": 2.900000035762787,
+          "maxMs": 4
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "540p",
+        "width": 960,
+        "height": 544,
+        "k": 1,
+        "sampleCount": 121,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.5487603328444741,
+          "p95Ms": 0.7000000476837158,
+          "maxMs": 11.100000023841858
+        },
+        "finish": {
+          "meanMs": 0.18347107132604298,
+          "p95Ms": 0.699999988079071,
+          "maxMs": 1.199999988079071
+        },
+        "total": {
+          "meanMs": 0.7322314041705171,
+          "p95Ms": 1.300000011920929,
+          "maxMs": 11.200000047683716
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "540p",
+        "width": 960,
+        "height": 544,
+        "k": 4,
+        "sampleCount": 117,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 3.229059831199483,
+          "p95Ms": 9.5,
+          "maxMs": 26
+        },
+        "finish": {
+          "meanMs": 1.2222222222222223,
+          "p95Ms": 6.199999988079071,
+          "maxMs": 11.800000011920929
+        },
+        "total": {
+          "meanMs": 4.451282053421705,
+          "p95Ms": 13.100000023841858,
+          "maxMs": 30.399999976158142
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "540p",
+        "width": 960,
+        "height": 544,
+        "k": 8,
+        "sampleCount": 82,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 10.626829263640612,
+          "p95Ms": 29.400000035762787,
+          "maxMs": 42.5
+        },
+        "finish": {
+          "meanMs": 5.317073172912365,
+          "p95Ms": 19.30000001192093,
+          "maxMs": 30.19999998807907
+        },
+        "total": {
+          "meanMs": 15.943902436552978,
+          "p95Ms": 31.899999976158142,
+          "maxMs": 42.69999998807907
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "540p",
+        "width": 960,
+        "height": 544,
+        "k": 16,
+        "sampleCount": 25,
+        "framesReady": 15,
+        "submit": {
+          "meanMs": 46.988000004291536,
+          "p95Ms": 144,
+          "maxMs": 152
+        },
+        "finish": {
+          "meanMs": 10.24,
+          "p95Ms": 34.09999996423721,
+          "maxMs": 34.19999998807907
+        },
+        "total": {
+          "meanMs": 57.22800000429154,
+          "p95Ms": 144.19999998807907,
+          "maxMs": 173.39999997615814
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "360p",
+        "width": 640,
+        "height": 368,
+        "k": 1,
+        "sampleCount": 121,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.3851239671391889,
+          "p95Ms": 0.5,
+          "maxMs": 7.199999988079071
+        },
+        "finish": {
+          "meanMs": 0.1561983478955986,
+          "p95Ms": 0.40000003576278687,
+          "maxMs": 1.600000023841858
+        },
+        "total": {
+          "meanMs": 0.5413223150347876,
+          "p95Ms": 1.399999976158142,
+          "maxMs": 7.199999988079071
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "360p",
+        "width": 640,
+        "height": 368,
+        "k": 4,
+        "sampleCount": 121,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 1.1338842969295406,
+          "p95Ms": 2.300000011920929,
+          "maxMs": 4.400000035762787
+        },
+        "finish": {
+          "meanMs": 0.6685950416178743,
+          "p95Ms": 2,
+          "maxMs": 6.900000035762787
+        },
+        "total": {
+          "meanMs": 1.802479338547415,
+          "p95Ms": 4,
+          "maxMs": 8.600000023841858
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "360p",
+        "width": 640,
+        "height": 368,
+        "k": 8,
+        "sampleCount": 119,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 3.021848738193512,
+          "p95Ms": 8.600000023841858,
+          "maxMs": 16.19999998807907
+        },
+        "finish": {
+          "meanMs": 1.5142857171908146,
+          "p95Ms": 7.5,
+          "maxMs": 14.5
+        },
+        "total": {
+          "meanMs": 4.536134455384326,
+          "p95Ms": 12.799999952316284,
+          "maxMs": 17.30000001192093
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "360p",
+        "width": 640,
+        "height": 368,
+        "k": 16,
+        "sampleCount": 81,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 16.728395065407692,
+          "p95Ms": 34.5,
+          "maxMs": 42.69999998807907
+        },
+        "finish": {
+          "meanMs": 1.6148148120185475,
+          "p95Ms": 12.099999964237213,
+          "maxMs": 15.799999952316284
+        },
+        "total": {
+          "meanMs": 18.34320987742624,
+          "p95Ms": 35.700000047683716,
+          "maxMs": 42.90000003576279
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "270p",
+        "width": 480,
+        "height": 272,
+        "k": 1,
+        "sampleCount": 122,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.2852458992942435,
+          "p95Ms": 0.5999999642372131,
+          "maxMs": 0.9000000357627869
+        },
+        "finish": {
+          "meanMs": 0.1377049225275634,
+          "p95Ms": 0.30000001192092896,
+          "maxMs": 1.600000023841858
+        },
+        "total": {
+          "meanMs": 0.4229508218218069,
+          "p95Ms": 0.800000011920929,
+          "maxMs": 1.699999988079071
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "270p",
+        "width": 480,
+        "height": 272,
+        "k": 4,
+        "sampleCount": 121,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 0.9991735485959644,
+          "p95Ms": 2.399999976158142,
+          "maxMs": 5.400000035762787
+        },
+        "finish": {
+          "meanMs": 0.48016528896063815,
+          "p95Ms": 2,
+          "maxMs": 6.699999988079071
+        },
+        "total": {
+          "meanMs": 1.4793388375566026,
+          "p95Ms": 3.099999964237213,
+          "maxMs": 7.299999952316284
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "270p",
+        "width": 480,
+        "height": 272,
+        "k": 8,
+        "sampleCount": 121,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 2.0239669414591197,
+          "p95Ms": 6.900000035762787,
+          "maxMs": 9.100000023841858
+        },
+        "finish": {
+          "meanMs": 1.4628099153849705,
+          "p95Ms": 6.099999964237213,
+          "maxMs": 8.599999964237213
+        },
+        "total": {
+          "meanMs": 3.4867768568440902,
+          "p95Ms": 8.800000011920929,
+          "maxMs": 10.5
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "270p",
+        "width": 480,
+        "height": 272,
+        "k": 16,
+        "sampleCount": 113,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 7.512389379792509,
+          "p95Ms": 18.599999964237213,
+          "maxMs": 24
+        },
+        "finish": {
+          "meanMs": 1.5734513270116486,
+          "p95Ms": 8,
+          "maxMs": 16.5
+        },
+        "total": {
+          "meanMs": 9.085840706804158,
+          "p95Ms": 19.600000023841858,
+          "maxMs": 24.30000001192093
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "180p",
+        "width": 320,
+        "height": 192,
+        "k": 1,
+        "sampleCount": 122,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.2475409839974075,
+          "p95Ms": 0.40000003576278687,
+          "maxMs": 0.800000011920929
+        },
+        "finish": {
+          "meanMs": 0.111475406611552,
+          "p95Ms": 0.20000004768371582,
+          "maxMs": 0.5
+        },
+        "total": {
+          "meanMs": 0.3590163906089595,
+          "p95Ms": 0.699999988079071,
+          "maxMs": 0.8999999761581421
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "180p",
+        "width": 320,
+        "height": 192,
+        "k": 4,
+        "sampleCount": 112,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 0.5339285667453494,
+          "p95Ms": 1.100000023841858,
+          "maxMs": 2.400000035762787
+        },
+        "finish": {
+          "meanMs": 0.254464291036129,
+          "p95Ms": 1,
+          "maxMs": 3.800000011920929
+        },
+        "total": {
+          "meanMs": 0.7883928577814784,
+          "p95Ms": 1.699999988079071,
+          "maxMs": 4.200000047683716
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "180p",
+        "width": 320,
+        "height": 192,
+        "k": 8,
+        "sampleCount": 121,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 1.2652892578731885,
+          "p95Ms": 3.5,
+          "maxMs": 5.199999988079071
+        },
+        "finish": {
+          "meanMs": 0.8702479334902172,
+          "p95Ms": 3,
+          "maxMs": 5.899999976158142
+        },
+        "total": {
+          "meanMs": 2.135537191363406,
+          "p95Ms": 4.599999964237213,
+          "maxMs": 7.600000023841858
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "180p",
+        "width": 320,
+        "height": 192,
+        "k": 16,
+        "sampleCount": 120,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 2.35416666418314,
+          "p95Ms": 6.5,
+          "maxMs": 8.599999964237213
+        },
+        "finish": {
+          "meanMs": 1.189999998609225,
+          "p95Ms": 4.800000011920929,
+          "maxMs": 11.5
+        },
+        "total": {
+          "meanMs": 3.5441666627923647,
+          "p95Ms": 8.5,
+          "maxMs": 13
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "144p",
+        "width": 256,
+        "height": 144,
+        "k": 1,
+        "sampleCount": 121,
+        "framesReady": 1,
+        "submit": {
+          "meanMs": 0.18429752420787968,
+          "p95Ms": 0.3999999761581421,
+          "maxMs": 0.5999999642372131
+        },
+        "finish": {
+          "meanMs": 0.1280991720759179,
+          "p95Ms": 0.30000001192092896,
+          "maxMs": 2
+        },
+        "total": {
+          "meanMs": 0.31239669628379757,
+          "p95Ms": 0.6000000238418579,
+          "maxMs": 2.100000023841858
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "144p",
+        "width": 256,
+        "height": 144,
+        "k": 4,
+        "sampleCount": 121,
+        "framesReady": 4,
+        "submit": {
+          "meanMs": 0.4107438040173743,
+          "p95Ms": 0.800000011920929,
+          "maxMs": 1.300000011920929
+        },
+        "finish": {
+          "meanMs": 0.24132231148806485,
+          "p95Ms": 0.9000000357627869,
+          "maxMs": 2.800000011920929
+        },
+        "total": {
+          "meanMs": 0.6520661155054391,
+          "p95Ms": 1.399999976158142,
+          "maxMs": 3.200000047683716
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "144p",
+        "width": 256,
+        "height": 144,
+        "k": 8,
+        "sampleCount": 122,
+        "framesReady": 8,
+        "submit": {
+          "meanMs": 0.8581967192595122,
+          "p95Ms": 2,
+          "maxMs": 3.5
+        },
+        "finish": {
+          "meanMs": 0.6598360641080825,
+          "p95Ms": 2.899999976158142,
+          "maxMs": 5.099999964237213
+        },
+        "total": {
+          "meanMs": 1.5180327833675948,
+          "p95Ms": 3.699999988079071,
+          "maxMs": 5.699999988079071
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "decoded",
+        "resolution": "144p",
+        "width": 256,
+        "height": 144,
+        "k": 16,
+        "sampleCount": 121,
+        "framesReady": 16,
+        "submit": {
+          "meanMs": 2.1495867736083416,
+          "p95Ms": 5.899999976158142,
+          "maxMs": 9.5
+        },
+        "finish": {
+          "meanMs": 1.2239669438236016,
+          "p95Ms": 5.100000023841858,
+          "maxMs": 8.699999988079071
+        },
+        "total": {
+          "meanMs": 3.3735537174319434,
+          "p95Ms": 8.099999964237213,
+          "maxMs": 9.699999988079071
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "camera",
+        "resolution": "720x1280",
+        "width": 720,
+        "height": 1280,
+        "k": 1,
+        "sampleCount": 32,
+        "framesReady": 2,
+        "submit": {
+          "meanMs": 1.1812499947845936,
+          "p95Ms": 1.9000000357627869,
+          "maxMs": 4.5
+        },
+        "finish": {
+          "meanMs": 0.26562500558793545,
+          "p95Ms": 0.40000003576278687,
+          "maxMs": 0.5
+        },
+        "total": {
+          "meanMs": 1.446875000372529,
+          "p95Ms": 2.300000011920929,
+          "maxMs": 4.5
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "camera",
+        "resolution": "720x1280",
+        "width": 720,
+        "height": 1280,
+        "k": 4,
+        "sampleCount": 120,
+        "framesReady": 2,
+        "submit": {
+          "meanMs": 3.599166668454806,
+          "p95Ms": 5.600000023841858,
+          "maxMs": 21.69999998807907
+        },
+        "finish": {
+          "meanMs": 0.3083333323399226,
+          "p95Ms": 0.6000000238418579,
+          "maxMs": 0.7999999523162842
+        },
+        "total": {
+          "meanMs": 3.9075000007947285,
+          "p95Ms": 6.199999988079071,
+          "maxMs": 21.899999976158142
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "camera",
+        "resolution": "720x1280",
+        "width": 720,
+        "height": 1280,
+        "k": 8,
+        "sampleCount": 121,
+        "framesReady": 2,
+        "submit": {
+          "meanMs": 3.9958677700728424,
+          "p95Ms": 6,
+          "maxMs": 12.600000023841858
+        },
+        "finish": {
+          "meanMs": 0.202479335887373,
+          "p95Ms": 0.40000003576278687,
+          "maxMs": 0.800000011920929
+        },
+        "total": {
+          "meanMs": 4.198347105960216,
+          "p95Ms": 6.399999976158142,
+          "maxMs": 13.300000011920929
+        },
+        "errors": []
+      },
+      {
+        "sourceType": "camera",
+        "resolution": "720x1280",
+        "width": 720,
+        "height": 1280,
+        "k": 16,
+        "sampleCount": 76,
+        "framesReady": 2,
+        "submit": {
+          "meanMs": 23.81184210353776,
+          "p95Ms": 35.19999998807907,
+          "maxMs": 46
+        },
+        "finish": {
+          "meanMs": 0.3697368424189718,
+          "p95Ms": 1.199999988079071,
+          "maxMs": 1.600000023841858
+        },
+        "total": {
+          "meanMs": 24.181578945956733,
+          "p95Ms": 35.60000002384186,
+          "maxMs": 46.30000001192093
+        },
+        "errors": []
+      }
+    ]
+  }
+}

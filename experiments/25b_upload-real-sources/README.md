@@ -92,6 +92,39 @@ sync wait) → `totalMs`.
 - **Per-pixel scaling holds across all three** → confirms 24's
   per-pixel upload model independent of source type.
 
+## Verdict
+
+**Upload cost ordering depends on K. Decoded VideoFrame wins at low count; Uint8Array wins at high count. Crossover ~K=4-8.**
+
+| 270p | K=1 | K=4 | K=8 | K=16 |
+|---|---|---|---|---|
+| Uint8Array | 0.79 | 1.63 | 2.44 | **4.09** |
+| Decoded VideoFrame | **0.42** | 1.48 | 3.49 | 9.09 |
+| decoded / uint8 | 0.54× | 0.91× | 1.43× | **2.22×** |
+
+At K=16/540p the decoded path costs 2.6× the bytes path (57 ms vs 22 ms — both over budget).
+
+**Likely cause of the inverted scaling:** decoded VideoFrames carry a GPU buffer reference. Uploading K of them concurrently means K GPU buffers fighting for upload IPC slots (same kind of GPU-process contention 23 identified). Uint8Array uploads come from CPU memory through a different pipeline that parallelises better.
+
+**This explains every previous result on this device:**
+
+| Prior finding | Why |
+|---|---|
+| 24a atlas-K=16 clean 60 fps | M=4 decoded uploads at 270p ≈ 1.48 ms — fast path with massive headroom |
+| 24 per-cell K=16 collapsed | 16 decoded uploads at 270p ≈ 9 ms + draws + feed + capture → over 16.7 ms |
+| 25 "VideoFrame slower than Uint8Array" | Synthetic VideoFrame is a wrapper over RGBA — no GPU backing, no fast path. Real decoded frames have it. |
+| 24b D ≤ 2-3 dirty budget | Dirty cells were decoded VideoFrames — pay the high-K scaling penalty. With Uint8Array dirty cells the budget likely widens. |
+
+**Camera VideoFrames** (720×1280, native): K=1 = 1.45 ms, K=16 = 24.18 ms. Roughly comparable to decoded VideoFrames per upload at similar pixel area. Note the ring buffer only ever held 2 camera frames during high-K measurements, so the K=16 number is "16 uploads of 2 frames cycled," not 16 different frames — slight underestimate of true cost.
+
+## Note for eddy implementation
+
+- **Atlas decoders (M small, fewer textures per tick) should stay on the decoded-VideoFrame path** — it's the fastest source at M=1-4.
+- **Dirty / per-cell streams at high D should use the Uint8Array (OPFS bitmap) path** — better scaling at high upload count.
+- **The hybrid pattern is genuinely optimal** — each side picks the source type that scales best at its count. M=2-4 atlas decoded + D=4-6 bitmap streams stays well in budget.
+- **The 24b "D ≤ 2-3" finding is a lower bound** specific to the AV1-decoded path. Re-measuring 24b with bitmap dirty cells is the natural next step — likely doubles the dirty-cell budget.
+- **For large cells (e.g. K=1-2 layouts where a cell is 540p+)** both paths get expensive; this isn't a source-selection problem, it's a "the cell is just big" problem.
+
 ## Caveats
 
 - Camera native resolution isn't user-controllable; results at that
