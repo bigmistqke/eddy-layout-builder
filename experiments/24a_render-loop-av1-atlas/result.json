@@ -1,0 +1,238 @@
+{
+  "ranAt": "2026-05-17T17:49:46.155Z",
+  "git": {
+    "sha": "0578107",
+    "dirty": true
+  },
+  "experiment": "render-loop-av1-atlas",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 10,
+    "bitratePerPixel": 0.1,
+    "swCodec": {
+      "label": "av1",
+      "codecString": "av01.0.04M.08"
+    },
+    "passes": [
+      {
+        "k": 9,
+        "m": 1,
+        "atlasCols": 3,
+        "atlasRows": 3,
+        "gridCols": 3,
+        "gridRows": 3,
+        "cellMip": {
+          "width": 480,
+          "height": 272
+        },
+        "label": "K9-M1"
+      },
+      {
+        "k": 16,
+        "m": 4,
+        "atlasCols": 2,
+        "atlasRows": 2,
+        "gridCols": 4,
+        "gridRows": 4,
+        "cellMip": {
+          "width": 480,
+          "height": 272
+        },
+        "label": "K16-M4"
+      },
+      {
+        "k": 25,
+        "m": 5,
+        "atlasCols": 5,
+        "atlasRows": 1,
+        "gridCols": 5,
+        "gridRows": 5,
+        "cellMip": {
+          "width": 320,
+          "height": 184
+        },
+        "label": "K25-M5"
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 755,
+      "height": 298
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "label": "K9-M1",
+        "k": 9,
+        "m": 1,
+        "atlasCols": 3,
+        "atlasRows": 3,
+        "atlasWidth": 1440,
+        "atlasHeight": 816,
+        "atlasBuildMsMean": 2798.2999999523163,
+        "totalFramesDecoded": 297,
+        "aggregateDecodeFps": 29.649595687331537,
+        "jank": {
+          "framesObserved": 600,
+          "meanMs": 16.888999999999996,
+          "medianMs": 16.600000000002183,
+          "p95Ms": 16.700000000000728,
+          "p99Ms": 16.799999999999272,
+          "maxMs": 146.29999999999927,
+          "over16ms": 600,
+          "over33ms": 2,
+          "over50ms": 1,
+          "over100ms": 1,
+          "over33msRatio": 0.0033333333333333335,
+          "longestJankStreak": 1,
+          "jankScore": 21.39496666666639,
+          "histogramMs": [
+            0,
+            598,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 158,
+          "longestMs": 158
+        }
+      },
+      {
+        "label": "K16-M4",
+        "k": 16,
+        "m": 4,
+        "atlasCols": 2,
+        "atlasRows": 2,
+        "atlasWidth": 960,
+        "atlasHeight": 544,
+        "atlasBuildMsMean": 1448.2499999850988,
+        "totalFramesDecoded": 1188,
+        "aggregateDecodeFps": 118.63154320878493,
+        "jank": {
+          "framesObserved": 601,
+          "meanMs": 16.700831946755407,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.700000000004366,
+          "p99Ms": 16.799999999999272,
+          "maxMs": 49.89999999999782,
+          "over16ms": 601,
+          "over33ms": 1,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0.0016638935108153079,
+          "longestJankStreak": 1,
+          "jankScore": 0.4752246256238373,
+          "histogramMs": [
+            0,
+            600,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 61,
+          "longestMs": 61
+        }
+      },
+      {
+        "label": "K25-M5",
+        "k": 25,
+        "m": 5,
+        "atlasCols": 5,
+        "atlasRows": 1,
+        "atlasWidth": 1600,
+        "atlasHeight": 192,
+        "atlasBuildMsMean": 1145.499999988079,
+        "totalFramesDecoded": 1485,
+        "aggregateDecodeFps": 148.29090981680477,
+        "jank": {
+          "framesObserved": 602,
+          "meanMs": 16.672757475083056,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.700000000004366,
+          "p99Ms": 16.80000000000291,
+          "maxMs": 33.19999999999709,
+          "over16ms": 602,
+          "over33ms": 1,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0.0016611295681063123,
+          "longestJankStreak": 1,
+          "jankScore": 0.00006644518272231869,
+          "histogramMs": [
+            0,
+            601,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 63,
+          "longestMs": 63
+        }
+      }
+    ]
+  }
+}

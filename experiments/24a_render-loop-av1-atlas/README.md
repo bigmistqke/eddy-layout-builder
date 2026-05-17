@@ -65,6 +65,40 @@ Per pass (mirrors 24 for direct comparison):
 - **Atlas FAILS at K=16+ too** → both architectures hit a wall; need
   a third strategy
 
+## Verdict
+
+**Atlas recovers full 60fps smoothness where 24's per-cell architecture saturated.**
+
+| pass | K | M | atlas | rAF fps | mean | p95 | max | >33ms | decode fps | build ms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| K9-M1 | 9 | 1 | 1440×816 | 60.0 | 16.9 | 16.7 | 146* | 0.3% | 30 | 2798 |
+| K16-M4 | 16 | 4 | 960×544 | **60.1** | 16.7 | 16.7 | 49.9 | 0.2% | 119 | 1448 |
+| K25-M5 | 25 | 5 | 1600×192 | **60.2** | 16.7 | 16.7 | 33.2 | 0.2% | 148 | 1145 |
+
+\* K=9-M1's 146ms max is a first-frame setup hitch; p95=16.7 confirms steady state is clean.
+
+Side-by-side against 24's per-cell architecture:
+
+| K | per-cell (24) | atlas (24a) |
+|---|---|---|
+| 9 | 53 fps, 12% >33ms | 60 fps, 0.3% >33ms |
+| 16 | 34 fps, **73% >33ms** | 60 fps, 0.2% >33ms |
+| 25 | 24 fps, **88% >33ms** | 60 fps, 0.2% >33ms |
+
+The atlas does two things at once:
+- **Fewer texImage2D calls per tick** — M atlas uploads vs K per-cell uploads (5 vs 25 at K=25). The per-cell upload chain was 24's bottleneck; atlas collapses it.
+- **Less aggregate decode work** — 24's K=25 needed 738 decode fps to feed each cell at 30 fps; 24a's K=25-M5 only needs 148 fps (5 atlas streams × 30 fps each).
+
+Atlas build is 1.1-2.8 s wall-time per atlas at these sizes (one-shot, ahead of the render loop). That's a finalize-step cost, and it's the work 18g's hot-path pattern would do concurrent with capture for AV1 atlases — untested here.
+
+## Note for eddy implementation
+
+- For K=16+ uniform-grid layouts, sub-atlas grouping with AV1-SW decode is smooth end-to-end.
+- The K=9 case works either way; per-cell at K=9 (24) was 53 fps with 12% jank, atlas at K=9 (24a) is clean 60 fps. Atlas wins even at K=9 in this run, but the 24 K=9 number was likely thermal/variance, not architectural. Either pattern is viable at K=9.
+- Atlas decoder count M and per-atlas cell count C have flexibility — K=16 worked at M=4 (2×2 cells per atlas). K=25 worked at M=5 (5×1). Other packings unmeasured.
+- Atlas build cost (~1-3 s for these sizes) needs to fit somewhere in the eddy flow. 18g's pattern (cached chunk worker, builds during capture) is the prior art for VP8; the AV1 equivalent is unmeasured.
+- The shader needs sub-rect sampling (uvOffset + uvScale uniforms); UV math handled per-cell. Trivial complexity.
+
 ## Caveats
 
 - Compositing uses the same source for every cell (visually
