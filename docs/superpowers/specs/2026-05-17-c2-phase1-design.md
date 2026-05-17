@@ -1,7 +1,7 @@
 # C2 Prototype — Phase 1 Design
 
 **Date:** 2026-05-17
-**Status:** ready for review
+**Status:** phase 1 complete
 **Related:** [video pipeline experiments review](2026-05-17-video-pipeline-experiments-review.md)
 
 ## Scope
