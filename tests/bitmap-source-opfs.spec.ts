@@ -16,13 +16,15 @@ test("bitmap-source: rgba cache file created on record, removed on clip dispose"
     { timeout: 20_000 },
   )
 
-  const cellId = await page.evaluate(() => {
+  // Cache file is keyed by clipId (per-recording uuid), not cellId.
+  const cacheKey = await page.evaluate(() => {
     const ids = Object.keys(window.__appContext?.clips.clips ?? {})
-    return ids[0]
+    const clip = window.__appContext?.clips.clips[ids[0]]
+    return clip?.clipId ?? null
   })
-  expect(cellId).toBeTruthy()
+  expect(cacheKey).toBeTruthy()
 
-  // The rgba cache file should now exist in OPFS.
+  // The rgba cache file should now exist in OPFS keyed by clipId.
   const exists = await page.evaluate(async (id) => {
     try {
       const root = await navigator.storage.getDirectory()
@@ -32,13 +34,15 @@ test("bitmap-source: rgba cache file created on record, removed on clip dispose"
     } catch {
       return false
     }
-  }, cellId)
+  }, cacheKey)
   expect(exists).toBe(true)
 
   // Dispose the clip; the cache file should be removed (best-effort).
-  await page.evaluate((id) => {
-    window.__appContext?.clips.clearClip(id)
-  }, cellId)
+  // clearClip is keyed by cellId, not clipId.
+  await page.evaluate(() => {
+    const ids = Object.keys(window.__appContext?.clips.clips ?? {})
+    window.__appContext?.clips.clearClip(ids[0])
+  })
 
   // The delete in BitmapSource.close is fire-and-forget; give it a
   // tick to settle.
@@ -53,6 +57,6 @@ test("bitmap-source: rgba cache file created on record, removed on clip dispose"
     } catch {
       return false
     }
-  }, cellId)
+  }, cacheKey)
   expect(stillExists).toBe(false)
 })

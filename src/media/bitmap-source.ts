@@ -26,9 +26,9 @@ export interface BitmapSource {
 
 export async function makeBitmapSource(
   track: InputVideoTrack,
-  cellId: string,
+  clipId: string,
 ): Promise<BitmapSource> {
-  logTrace("bitmap-source-begin", { codec: track.codec, cellId })
+  logTrace("bitmap-source-begin", { codec: track.codec, clipId })
   const sink = new VideoSampleSink(track)
 
   // Phase 1 collected RGBA into a JS array; phase 2 collects into a
@@ -50,7 +50,7 @@ export async function makeBitmapSource(
       samples.push({ timestamp, bytes })
       const now = performance.now()
       if (now - lastLog > 250 || samples.length <= 3) {
-        logTrace("bitmap-source-sample", { count: samples.length, ts: timestamp, cellId })
+        logTrace("bitmap-source-sample", { count: samples.length, ts: timestamp, clipId })
         lastLog = now
       }
     } finally {
@@ -74,7 +74,7 @@ export async function makeBitmapSource(
         (samples[samples.length - 1].timestamp - samples[0].timestamp)
       : 30
   if (totalFrames === 0 || width === 0 || height === 0) {
-    logTrace("bitmap-source-empty", { cellId })
+    logTrace("bitmap-source-empty", { clipId })
     // No frames — return a degenerate source so callers don't crash.
     return {
       latestFrame: () => null,
@@ -90,8 +90,8 @@ export async function makeBitmapSource(
   for (let i = 0; i < totalFrames; i++) {
     concatenated.set(samples[i].bytes, i * frameSize)
   }
-  await writeRgbaCache(cellId, concatenated)
-  logTrace("bitmap-source-cached", { cellId, totalFrames, totalBytes })
+  await writeRgbaCache(clipId, concatenated)
+  logTrace("bitmap-source-cached", { clipId, totalFrames, totalBytes })
 
   // Spawn the per-clip reader worker.
   const worker = new Worker(new URL("./bitmap-reader-worker.ts", import.meta.url), {
@@ -123,14 +123,14 @@ export async function makeBitmapSource(
       // browser-data-cleared, etc.). Worker has stopped its read loop.
       // The cell paints nothing for the rest of the session; phase 3+
       // adds a re-decode-from-canonical recovery path.
-      logTrace("bitmap-source-dropped", { cellId, reason: event.data.reason })
+      logTrace("bitmap-source-dropped", { clipId, reason: event.data.reason })
       latest = null
       return
     }
   }
   worker.postMessage({
     type: "init",
-    fileName: `${cellId}.bin`,
+    fileName: `${clipId}.bin`,
     frameSize,
     totalFrames,
     sourceFps,
@@ -162,7 +162,7 @@ export async function makeBitmapSource(
       // fires (e.g., page refresh mid-session), the stale file will
       // be cleaned up at next project load (or by phase 3's
       // AV1-lifecycle GC). For now: fire-and-forget.
-      void deleteRgbaCache(cellId).catch(() => {})
+      void deleteRgbaCache(clipId).catch(() => {})
     },
   }
 }

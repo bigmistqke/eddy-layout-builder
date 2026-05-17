@@ -1,10 +1,12 @@
 /**
  * OPFS layout for the C2 raw-RGBA frame cache:
- *   /rgba/<cellId>.bin   frames concatenated, no header
+ *   /rgba/<clipId>.bin   frames concatenated, no header
  *
- * Cell IDs are UUIDs — flat namespacing is safe across projects.
- * Project deletion iterates manifest.cellIds and calls
- * `deleteRgbaCache(cellId)` for each.
+ * Clip IDs are per-recording UUIDs (distinct from cellId) so that
+ * re-recording the same cell writes to a fresh file, avoiding the
+ * SyncAccessHandle lock held by the previous clip's reader worker.
+ * The file is owned by BitmapSource.close()'s deleteRgbaCache call;
+ * crash recovery is handled by `wipeRgbaCache()` at project-store init.
  */
 
 export const RGBA_DIR_NAME = "rgba"
@@ -18,11 +20,11 @@ async function getOrCreateRgbaDir(): Promise<FileSystemDirectoryHandle> {
   return root.getDirectoryHandle(RGBA_DIR_NAME, { create: true })
 }
 
-/** Write the full concatenated RGBA bytes for a cell, replacing any
+/** Write the full concatenated RGBA bytes for a clip, replacing any
  *  existing cache. Used at clip-creation time (one-shot). */
-export async function writeRgbaCache(cellId: string, bytes: Uint8Array): Promise<void> {
+export async function writeRgbaCache(clipId: string, bytes: Uint8Array): Promise<void> {
   const dir = await getOrCreateRgbaDir()
-  const handle = await dir.getFileHandle(`${cellId}.bin`, { create: true })
+  const handle = await dir.getFileHandle(`${clipId}.bin`, { create: true })
   const writable = await handle.createWritable({ keepExistingData: false })
   try {
     // Pass a Blob to match the writeClipBlob pattern in
@@ -37,13 +39,13 @@ export async function writeRgbaCache(cellId: string, bytes: Uint8Array): Promise
   }
 }
 
-/** Delete the cell's rgba cache file. Safe to call when the file
+/** Delete the clip's rgba cache file. Safe to call when the file
  *  doesn't exist. */
-export async function deleteRgbaCache(cellId: string): Promise<void> {
+export async function deleteRgbaCache(clipId: string): Promise<void> {
   try {
     const root = await getRoot()
     const dir = await root.getDirectoryHandle(RGBA_DIR_NAME, { create: false })
-    await dir.removeEntry(`${cellId}.bin`)
+    await dir.removeEntry(`${clipId}.bin`)
   } catch (error) {
     // Already-clean cases (directory or file missing) are the
     // expected silent path. Anything else (permissions, quota)
@@ -55,16 +57,34 @@ export async function deleteRgbaCache(cellId: string): Promise<void> {
   }
 }
 
-/** Test/dev helper: does the cache file exist for this cell? Treats
+/** Test/dev helper: does the cache file exist for this clip? Treats
  *  any error (NotFoundError, permissions, etc.) as "no" — callers
  *  use this for diagnostic checks, not for app-logic decisions. */
-export async function rgbaCacheExists(cellId: string): Promise<boolean> {
+export async function rgbaCacheExists(clipId: string): Promise<boolean> {
   try {
     const root = await getRoot()
     const dir = await root.getDirectoryHandle(RGBA_DIR_NAME, { create: false })
-    await dir.getFileHandle(`${cellId}.bin`, { create: false })
+    await dir.getFileHandle(`${clipId}.bin`, { create: false })
     return true
   } catch {
     return false
+  }
+}
+
+/** Remove all rgba cache files. Called at project-store init to
+ *  drop orphans from previous sessions (page closed mid-session
+ *  before BitmapSource.close() fired). Phase 2 regenerates all
+ *  rgba files from persisted WebM blobs on project load, so any
+ *  pre-existing file is stale by construction. */
+export async function wipeRgbaCache(): Promise<void> {
+  try {
+    const root = await getRoot()
+    await root.removeEntry(RGBA_DIR_NAME, { recursive: true })
+  } catch (error) {
+    // Directory doesn't exist yet — clean slate.
+    if (error instanceof DOMException && error.name === "NotFoundError") {
+      return
+    }
+    throw error
   }
 }
