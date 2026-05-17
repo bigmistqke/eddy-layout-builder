@@ -8,40 +8,43 @@
       html, body {
         margin: 0;
         padding: 0;
+        width: 100%;
         height: 100%;
         font: 13px/1.4 ui-monospace, monospace;
-        background: #111;
+        background: #000;
         color: #eee;
+        overflow: hidden;
       }
-      body {
-        display: flex;
-        flex-direction: column;
-      }
-      /* Status log at the top — bounded, scrollable. */
-      pre#status {
-        flex: 0 0 auto;
-        margin: 0;
-        padding: 8px;
-        max-height: 30vh;
-        overflow-y: auto;
-        white-space: pre-wrap;
-        word-break: break-word;
-        border-bottom: 1px solid #333;
-      }
-      /* Any canvas an experiment appends to body fills the remaining
-         viewport. Experiments don't need to style their canvas; the
-         shared shell owns layout. !important overrides per-experiment
-         inline styles from earlier experiments. */
+      /* Canvas fills the entire viewport. */
       body > canvas {
-        flex: 1 1 auto !important;
-        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
         width: 100% !important;
-        height: auto !important;
-        max-height: calc(100vh - 30vh) !important;
+        height: 100% !important;
         object-fit: contain;
+        display: block !important;
         background: #000;
       }
-      /* Auto-scroll status to the latest line. */
+      /* Status log overlays the top of the canvas — semi-transparent
+         backdrop, click-through so it doesn't interfere with the
+         experiment's hit testing. */
+      pre#status {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        max-height: 30vh;
+        overflow-y: auto;
+        margin: 0;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 10;
+        pointer-events: none;
+        white-space: pre-wrap;
+        word-break: break-word;
+        text-shadow: 0 0 2px #000;
+      }
     </style>
   </head>
   <body>
