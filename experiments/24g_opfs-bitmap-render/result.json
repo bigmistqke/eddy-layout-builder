@@ -1,0 +1,346 @@
+{
+  "ranAt": "2026-05-17T19:48:07.439Z",
+  "git": {
+    "sha": "745eb51",
+    "dirty": true
+  },
+  "experiment": "opfs-bitmap-render",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 10,
+    "framesPerPass": 60,
+    "sourceFps": 30,
+    "opfsDirName": "24g",
+    "passes": [
+      {
+        "k": 4,
+        "gridCols": 2,
+        "gridRows": 2,
+        "mip": {
+          "label": "540p",
+          "width": 960,
+          "height": 544
+        }
+      },
+      {
+        "k": 9,
+        "gridCols": 3,
+        "gridRows": 3,
+        "mip": {
+          "label": "360p",
+          "width": 640,
+          "height": 368
+        }
+      },
+      {
+        "k": 16,
+        "gridCols": 4,
+        "gridRows": 4,
+        "mip": {
+          "label": "270p",
+          "width": 480,
+          "height": 272
+        }
+      },
+      {
+        "k": 25,
+        "gridCols": 5,
+        "gridRows": 5,
+        "mip": {
+          "label": "180p",
+          "width": 320,
+          "height": 184
+        }
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "k": 4,
+        "mip": "540p",
+        "mipWidth": 960,
+        "mipHeight": 544,
+        "frameCount": 60,
+        "opfsBytesMb": 478.125,
+        "opfsWriteMs": 7903.5,
+        "framesDelivered": {
+          "0": 268,
+          "1": 268,
+          "2": 268,
+          "3": 268
+        },
+        "emptyCellTicks": 0,
+        "jank": {
+          "framesObserved": 554,
+          "meanMs": 18.087184115523463,
+          "medianMs": 16.600000000002183,
+          "p95Ms": 16.799999999999272,
+          "p99Ms": 83.20000000000073,
+          "maxMs": 249.59999999999854,
+          "over16ms": 554,
+          "over33ms": 10,
+          "over50ms": 8,
+          "over100ms": 1,
+          "over33msRatio": 0.018050541516245487,
+          "longestJankStreak": 2,
+          "jankScore": 127.62622743682128,
+          "histogramMs": [
+            0,
+            544,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            4,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "longTasks": {
+          "observed": 3,
+          "totalDurationMs": 419,
+          "longestMs": 232
+        }
+      },
+      {
+        "k": 9,
+        "mip": "360p",
+        "mipWidth": 640,
+        "mipHeight": 368,
+        "frameCount": 60,
+        "opfsBytesMb": 485.15625,
+        "opfsWriteMs": 11174.699999988079,
+        "framesDelivered": {
+          "0": 285,
+          "1": 285,
+          "2": 285,
+          "3": 285,
+          "4": 285,
+          "5": 285,
+          "6": 285,
+          "7": 285,
+          "8": 285
+        },
+        "emptyCellTicks": 0,
+        "jank": {
+          "framesObserved": 589,
+          "meanMs": 17.153650254668932,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.700000000004366,
+          "p99Ms": 33.30000000000291,
+          "maxMs": 116.59999999999854,
+          "over16ms": 589,
+          "over33ms": 9,
+          "over50ms": 2,
+          "over100ms": 1,
+          "over33msRatio": 0.015280135823429542,
+          "longestJankStreak": 1,
+          "jankScore": 14.758709677418866,
+          "histogramMs": [
+            0,
+            580,
+            0,
+            5,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 2,
+          "totalDurationMs": 183,
+          "longestMs": 124
+        }
+      },
+      {
+        "k": 16,
+        "mip": "270p",
+        "mipWidth": 480,
+        "mipHeight": 272,
+        "frameCount": 60,
+        "opfsBytesMb": 478.125,
+        "opfsWriteMs": 14239.400000035763,
+        "framesDelivered": {
+          "0": 283,
+          "1": 283,
+          "2": 283,
+          "3": 283,
+          "4": 283,
+          "5": 283,
+          "6": 283,
+          "7": 283,
+          "8": 283,
+          "9": 283,
+          "10": 283,
+          "11": 283,
+          "12": 283,
+          "13": 283,
+          "14": 283,
+          "15": 283
+        },
+        "emptyCellTicks": 0,
+        "jank": {
+          "framesObserved": 593,
+          "meanMs": 16.952276559865087,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.70000000001164,
+          "p99Ms": 33.30000000000291,
+          "maxMs": 66.69999999999709,
+          "over16ms": 592,
+          "over33ms": 9,
+          "over50ms": 1,
+          "over100ms": 0,
+          "over33msRatio": 0.01517706576728499,
+          "longestJankStreak": 1,
+          "jankScore": 1.9165598650923845,
+          "histogramMs": [
+            0,
+            584,
+            0,
+            8,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 62,
+          "longestMs": 62
+        }
+      },
+      {
+        "k": 25,
+        "mip": "180p",
+        "mipWidth": 320,
+        "mipHeight": 192,
+        "frameCount": 60,
+        "opfsBytesMb": 351.5625,
+        "opfsWriteMs": 15761.199999988079,
+        "framesDelivered": {
+          "0": 286,
+          "1": 286,
+          "2": 286,
+          "3": 286,
+          "4": 286,
+          "5": 286,
+          "6": 286,
+          "7": 286,
+          "8": 286,
+          "9": 286,
+          "10": 286,
+          "11": 286,
+          "12": 286,
+          "13": 286,
+          "14": 286,
+          "15": 286,
+          "16": 286,
+          "17": 286,
+          "18": 286,
+          "19": 286,
+          "20": 286,
+          "21": 286,
+          "22": 286,
+          "23": 286,
+          "24": 286
+        },
+        "emptyCellTicks": 0,
+        "jank": {
+          "framesObserved": 592,
+          "meanMs": 16.982432432432418,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.70000000001164,
+          "p99Ms": 33.29999999998836,
+          "maxMs": 66.59999999999127,
+          "over16ms": 592,
+          "over33ms": 8,
+          "over50ms": 1,
+          "over100ms": 0,
+          "over33msRatio": 0.013513513513513514,
+          "longestJankStreak": 2,
+          "jankScore": 2.8783614864851423,
+          "histogramMs": [
+            0,
+            584,
+            0,
+            5,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 72,
+          "longestMs": 72
+        }
+      }
+    ]
+  }
+}

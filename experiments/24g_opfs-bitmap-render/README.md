@@ -67,6 +67,43 @@ Per pass (mirrors 24f for direct comparison):
 - **OPFS write time at K=25 is reasonable** (per 18c, sub-200 ms
   for K=9 × 6 s); larger writes scale accordingly
 
+## Verdict
+
+**OPFS reader holds through K=25 with zero empty-cell ticks. The storage layer is validated.**
+
+| K | mip | fps | mean | p95 | max | >33ms | empty ticks | OPFS write |
+|---|---|---|---|---|---|---|---|---|
+| 4 | 540p | 55.4 | 18.1 | 16.8 | 250* | 1.8% | 0 | 478 MB / 7.9 s |
+| 9 | 360p | 58.9 | 17.2 | 16.7 | 117* | 1.5% | 0 | 485 MB / 11.2 s |
+| 16 | 270p | **59.3** | 17.0 | 16.7 | 66.7 | 1.5% | 0 | 478 MB / 14.2 s |
+| 25 | 180p | **59.2** | 17.0 | 16.7 | 66.6 | **1.4%** | **0** | 352 MB / 15.8 s |
+
+\* Single setup hitches at K=4 / K=9; p95=16.7 confirms steady state.
+
+Side-by-side against 24f (in-memory) and 24a (atlas AV1):
+
+| K | 24f (in-mem bitmap) | 24g (OPFS bitmap) | 24a (atlas AV1) |
+|---|---|---|---|
+| 4 | 58.5 fps, 2.6% | 55.4 fps, 1.8% | 60.0 fps, 0.3% |
+| 9 | 59.7 fps, 0.5% | 58.9 fps, 1.5% | 60.0 fps, 0.3% |
+| 16 | 59.8 fps, 0.5% | 59.3 fps, 1.5% | 60.1 fps, 0.2% |
+| 25 | 60.1 fps, 0.2% | 59.2 fps, 1.4% | 60.2 fps, 0.2% |
+
+OPFS adds ~1 fps cost and ~1% more jank vs in-memory bitmap. Small, attributable to worker postMessage overhead. All three architectures functionally equivalent at this scale.
+
+**Key data points:**
+- Reader delivered 268-286 frames per cell over the 10 s window (target 300 at 30 fps) — sustains the data rate across all K.
+- Zero empty-cell ticks at every K — the reader was never behind the render loop.
+- Pre-population takes 8-16 s for 350-500 MB. This is one-shot setup cost; real eddy capture would write incrementally per camera frame.
+
+## Note for eddy implementation
+
+- The OPFS bitmap pipeline (18c's reader pattern extended to K=25) works for the no-atlas architecture.
+- Per-cell storage = mip bytes × source fps × cell duration. K=16 × 6 s × 270p ≈ 480 MB per session (bounded by cell-count × cell-duration, not session-length).
+- The setup-time pre-population cost (8-16 s for half a GB) is misleading — production would have frames trickling in at 30 fps during recording, ~33 ms per frame write. 18c showed this is sustainable.
+- One thing worth noting: the per-cell ArrayBuffer churn on the main thread (one transferable buffer per cell per source frame) is significant. K=25 × 30 fps = 750 buffers/sec being allocated and transferred. Hasn't shown up as jank here but worth watching under combined load (24h).
+- The reader-worker pattern as scaffolded uses one worker for all K cells. Splitting into K/N workers (e.g., N=4 workers each handling a quarter of the cells) is a possible mitigation if read concurrency ever becomes a bottleneck.
+
 ## Caveats
 
 - All cells share the same source content (looped). Per 15
