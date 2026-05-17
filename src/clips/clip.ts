@@ -1,14 +1,14 @@
 import type { Input } from "mediabunny"
 import { decodeToAudioBuffer } from "../media/audio-decoder"
 import { demuxBlob } from "../media/demuxer"
-import { makeVideoSource, type VideoSource } from "../media/video-decoder"
+import { makeBitmapSource, type BitmapSource } from "../media/bitmap-source"
 import { logTrace } from "../utils"
 
 export interface Clip {
   cellId: string
   duration: number
   audio: AudioBuffer
-  video: VideoSource
+  video: BitmapSource
   /** Underlying mediabunny Input — held to keep tracks alive until close. */
   input: Input
 }
@@ -26,7 +26,7 @@ export async function blobToClip(cellId: string, blob: Blob): Promise<Clip> {
       logTrace("clip-audio-decoded", { cellId, duration: a.duration, channels: a.numberOfChannels, sampleRate: a.sampleRate })
       return a
     }),
-    makeVideoSource(demuxed.videoTrack).then(v => {
+    makeBitmapSource(demuxed.videoTrack).then(v => {
       logTrace("clip-video-decoded", { cellId })
       return v
     }),
