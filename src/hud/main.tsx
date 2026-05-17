@@ -109,6 +109,13 @@ export function Main() {
       logTrace("record-stop-abort", { reason: "no cellId" })
       return
     }
+    // Re-recording the same cell: dispose the existing clip first so
+    // its reader worker releases the SyncAccessHandle on the rgba
+    // cache file. Otherwise the new clip's writeRgbaCache fails on
+    // the exclusive-lock collision.
+    if (context.clips.getClip(cellId) !== undefined) {
+      context.clips.clearClip(cellId)
+    }
     const clip = await blobToClip(cellId, blob)
     logTrace("record-stop-clip-ready", { cellId, duration: clip.duration })
     // Persist the raw blob to OPFS before staging the in-memory clip

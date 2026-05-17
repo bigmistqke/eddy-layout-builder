@@ -7,6 +7,8 @@
  * `deleteRgbaCache(cellId)` for each.
  */
 
+import { wait } from "../utils"
+
 export const RGBA_DIR_NAME = "rgba"
 
 async function getRoot(): Promise<FileSystemDirectoryHandle> {
@@ -23,17 +25,40 @@ async function getOrCreateRgbaDir(): Promise<FileSystemDirectoryHandle> {
 export async function writeRgbaCache(cellId: string, bytes: Uint8Array): Promise<void> {
   const dir = await getOrCreateRgbaDir()
   const handle = await dir.getFileHandle(`${cellId}.bin`, { create: true })
-  const writable = await handle.createWritable({ keepExistingData: false })
-  try {
-    // Pass a Blob to match the writeClipBlob pattern in
-    // src/storage/opfs.ts. The `as BlobPart` cast sidesteps the
-    // Uint8Array<ArrayBufferLike> vs ArrayBuffer<ArrayBuffer>
-    // friction in the current TS DOM lib.
-    await writable.write(new Blob([bytes as BlobPart]))
-    await writable.close()
-  } catch (error) {
-    await writable.abort().catch(() => {})
-    throw error
+
+  // A pre-existing SyncAccessHandle on the same file (typical case:
+  // the previous reader worker for this cell hasn't fully torn down
+  // yet — worker.terminate() returns synchronously but the handle
+  // release lags by a tick) causes createWritable to throw
+  // NoModificationAllowedError. Retry with backoff; the handle
+  // always frees within a few ms in practice.
+  const backoffsMs = [50, 100, 200, 400]
+  for (let attempt = 0; attempt <= backoffsMs.length; attempt++) {
+    let writable: FileSystemWritableFileStream
+    try {
+      writable = await handle.createWritable({ keepExistingData: false })
+    } catch (error) {
+      const isLockCollision =
+        error instanceof DOMException &&
+        (error.name === "NoModificationAllowedError" || error.name === "InvalidStateError")
+      if (isLockCollision && attempt < backoffsMs.length) {
+        await wait(backoffsMs[attempt])
+        continue
+      }
+      throw error
+    }
+    try {
+      // Pass a Blob to match the writeClipBlob pattern in
+      // src/storage/opfs.ts. The `as BlobPart` cast sidesteps the
+      // Uint8Array<ArrayBufferLike> vs ArrayBuffer<ArrayBuffer>
+      // friction in the current TS DOM lib.
+      await writable.write(new Blob([bytes as BlobPart]))
+      await writable.close()
+      return
+    } catch (error) {
+      await writable.abort().catch(() => {})
+      throw error
+    }
   }
 }
 
