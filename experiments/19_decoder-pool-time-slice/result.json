@@ -1,0 +1,279 @@
+{
+  "ranAt": "2026-05-17T15:35:57.208Z",
+  "git": {
+    "sha": "7fd44d2",
+    "dirty": true
+  },
+  "experiment": "decoder-pool-time-slice",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "canvasResolution": {
+      "width": 540,
+      "height": 982
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 6,
+    "batchSize": 30,
+    "refillThreshold": 15,
+    "bufferCap": 30,
+    "cellCounts": [
+      2,
+      4,
+      8
+    ],
+    "sourceFps": 30
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "k": 2,
+        "switches": 8,
+        "meanPureSwitchMs": 76.80000001937151,
+        "maxPureSwitchMs": 127.60000002384186,
+        "meanBatchMs": 694.0750000104308,
+        "totalFramesDecoded": 264,
+        "effectiveDecoderFps": 44,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesPainted": 129,
+            "underflows": 26,
+            "renderFps": 21.5
+          },
+          {
+            "cellId": 1,
+            "framesPainted": 115,
+            "underflows": 63,
+            "renderFps": 19.166666666666668
+          }
+        ],
+        "totalUnderflows": 89,
+        "jank": {
+          "framesObserved": 360,
+          "meanMs": 16.631944444444443,
+          "medianMs": 16.600000023841858,
+          "p95Ms": 18.400000035762787,
+          "p99Ms": 20.19999998807907,
+          "maxMs": 27.5,
+          "over16ms": 263,
+          "over33ms": 0,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0,
+          "longestJankStreak": 0,
+          "jankScore": 0,
+          "histogramMs": [
+            1,
+            355,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "k": 4,
+        "switches": 9,
+        "meanPureSwitchMs": 63.48888888623979,
+        "maxPureSwitchMs": 250.30000001192093,
+        "meanBatchMs": 665.3222222195732,
+        "totalFramesDecoded": 270,
+        "effectiveDecoderFps": 45,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesPainted": 75,
+            "underflows": 172,
+            "renderFps": 12.5
+          },
+          {
+            "cellId": 1,
+            "framesPainted": 60,
+            "underflows": 205,
+            "renderFps": 10
+          },
+          {
+            "cellId": 2,
+            "framesPainted": 60,
+            "underflows": 206,
+            "renderFps": 10
+          },
+          {
+            "cellId": 3,
+            "framesPainted": 60,
+            "underflows": 211,
+            "renderFps": 10
+          }
+        ],
+        "totalUnderflows": 794,
+        "jank": {
+          "framesObserved": 360,
+          "meanMs": 16.64083333330022,
+          "medianMs": 16.69999998807907,
+          "p95Ms": 17.80000001192093,
+          "p99Ms": 21,
+          "maxMs": 22.30000001192093,
+          "over16ms": 302,
+          "over33ms": 0,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0,
+          "longestJankStreak": 0,
+          "jankScore": 0,
+          "histogramMs": [
+            0,
+            356,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "k": 8,
+        "switches": 8,
+        "meanPureSwitchMs": 93.21249999850988,
+        "maxPureSwitchMs": 243.30000001192093,
+        "meanBatchMs": 725.5375000089407,
+        "totalFramesDecoded": 259,
+        "effectiveDecoderFps": 43.166666666666664,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesPainted": 34,
+            "underflows": 271,
+            "renderFps": 5.666666666666667
+          },
+          {
+            "cellId": 1,
+            "framesPainted": 30,
+            "underflows": 284,
+            "renderFps": 5
+          },
+          {
+            "cellId": 2,
+            "framesPainted": 30,
+            "underflows": 284,
+            "renderFps": 5
+          },
+          {
+            "cellId": 3,
+            "framesPainted": 30,
+            "underflows": 281,
+            "renderFps": 5
+          },
+          {
+            "cellId": 4,
+            "framesPainted": 30,
+            "underflows": 281,
+            "renderFps": 5
+          },
+          {
+            "cellId": 5,
+            "framesPainted": 30,
+            "underflows": 285,
+            "renderFps": 5
+          },
+          {
+            "cellId": 6,
+            "framesPainted": 30,
+            "underflows": 283,
+            "renderFps": 5
+          },
+          {
+            "cellId": 7,
+            "framesPainted": 20,
+            "underflows": 310,
+            "renderFps": 3.3333333333333335
+          }
+        ],
+        "totalUnderflows": 2279,
+        "jank": {
+          "framesObserved": 359,
+          "meanMs": 16.667130919220057,
+          "medianMs": 16.600000023841858,
+          "p95Ms": 19.69999998807907,
+          "p99Ms": 21,
+          "maxMs": 23,
+          "over16ms": 231,
+          "over33ms": 0,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0,
+          "longestJankStreak": 0,
+          "jankScore": 0,
+          "histogramMs": [
+            0,
+            343,
+            16,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    ],
+    "longtasks": {
+      "observed": 1,
+      "totalDurationMs": 54,
+      "longestMs": 54
+    }
+  }
+}
