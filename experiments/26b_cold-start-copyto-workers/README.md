@@ -77,6 +77,32 @@ Per pass (mirrors 26 exactly):
 - **Per-cell `writeMs` drops vs 26** → SyncAccessHandle write in
   worker is faster than the main-thread async writable.
 
+## Verdict
+
+**Cold-start drops 3-11× across K vs 26. C2 session-open is viable.**
+
+| K | mip | 26 cold | 26b cold | speedup | 26b decode | 26b write |
+|---|---|---|---|---|---|---|
+| 4 | 540p | 7.9 s | **3.4 s** | 2.3× | 959 ms | 1905 ms |
+| 9 | 360p | 9.6 s | **3.0 s** | 3.2× | 723 ms | 1720 ms |
+| 16 | 270p | 12.9 s | **4.5 s** | 2.9× | 717 ms | 2903 ms |
+| 25 | 180p | 25.8 s | **2.4 s** | **10.8×** | 631 ms | 647 ms |
+
+Key findings:
+
+1. **Decode cost dropped ~13×** (K=16: 9.4 s → 0.7 s per cell). `VideoFrame.copyTo({format:'RGBA'})` + worker isolation does almost exactly what 26's verdict predicted.
+2. **K=25's pathological 26 s in 26 was main-thread serialisation** — workers eliminate it entirely, dropping to 2.4 s.
+3. **Write became the dominant cost** at K=4/9/16 (per-cell write 1.7-2.9 s). The SyncAccessHandle write happens per-frame inside each worker; batching into one large write would likely halve it.
+
+K=16 cold-start at 4.5 s is acceptable for production session-open with a loading state. K=25 at 2.4 s is near-instant. The architecture is viable.
+
+## Note for eddy implementation
+
+- **Use `VideoFrame.copyTo({format:'RGBA'})`** for any path that needs raw bytes from a decoded frame. Don't use canvas + `getImageData` — it's ~13× slower in this case.
+- **Run cold-start in per-cell workers** with `SyncAccessHandle` for OPFS I/O. The main thread stays free for UI.
+- **Next optimisation**: batch the per-frame RGBA writes inside each worker into one large Uint8Array, then a single `sah.write()`. At K=16, this could shave another ~1-2 s off cold-start.
+- For larger K (K=25+) consider the lazy-warm pattern: warm only currently-visible cells immediately, background-warm the rest. Even with 4.5 s, foreground latency for visible cells could be < 1 s.
+
 ## Caveats
 
 - Same source content per cell (test simplification); per 15 doesn't

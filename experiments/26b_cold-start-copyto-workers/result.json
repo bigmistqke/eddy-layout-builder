@@ -1,0 +1,551 @@
+{
+  "ranAt": "2026-05-17T20:22:17.313Z",
+  "git": {
+    "sha": "cb9f04f",
+    "dirty": true
+  },
+  "experiment": "cold-start-copyto-workers",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "framesPerCell": 60,
+    "bitratePerPixel": 0.1,
+    "swCodec": {
+      "label": "av1",
+      "codecString": "av01.0.04M.08"
+    },
+    "opfsDirName": "26b",
+    "passes": [
+      {
+        "k": 4,
+        "mip": {
+          "label": "540p",
+          "width": 960,
+          "height": 544
+        }
+      },
+      {
+        "k": 9,
+        "mip": {
+          "label": "360p",
+          "width": 640,
+          "height": 368
+        }
+      },
+      {
+        "k": 16,
+        "mip": {
+          "label": "270p",
+          "width": 480,
+          "height": 272
+        }
+      },
+      {
+        "k": 25,
+        "mip": {
+          "label": "180p",
+          "width": 320,
+          "height": 184
+        }
+      }
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "k": 4,
+        "mip": "540p",
+        "mipWidth": 960,
+        "mipHeight": 544,
+        "coldStartMs": 3398.5,
+        "avgPerCellMs": 849.625,
+        "av1TotalMb": 0.9047317504882812,
+        "rgbaTotalMb": 478.125,
+        "compressionRatio": 528.471560484041,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesProduced": 60,
+            "decodeMs": 1008.3999999761581,
+            "writeMs": 2251,
+            "totalMs": 3276.699999988079,
+            "errors": []
+          },
+          {
+            "cellId": 1,
+            "framesProduced": 60,
+            "decodeMs": 1005.8000000119209,
+            "writeMs": 2065.199999988079,
+            "totalMs": 3087.399999976158,
+            "errors": []
+          },
+          {
+            "cellId": 2,
+            "framesProduced": 60,
+            "decodeMs": 989,
+            "writeMs": 1941.5,
+            "totalMs": 2946,
+            "errors": []
+          },
+          {
+            "cellId": 3,
+            "framesProduced": 60,
+            "decodeMs": 834.1999999880791,
+            "writeMs": 1364.2000000476837,
+            "totalMs": 2211.7000000476837,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "k": 9,
+        "mip": "360p",
+        "mipWidth": 640,
+        "mipHeight": 368,
+        "coldStartMs": 2967.399999976158,
+        "avgPerCellMs": 329.71111110846203,
+        "av1TotalMb": 0.8464107513427734,
+        "rgbaTotalMb": 485.15625,
+        "compressionRatio": 573.1924473198532,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesProduced": 60,
+            "decodeMs": 669.1000000238419,
+            "writeMs": 946.1000000238419,
+            "totalMs": 1641.7000000476837,
+            "errors": []
+          },
+          {
+            "cellId": 1,
+            "framesProduced": 60,
+            "decodeMs": 726.5,
+            "writeMs": 1738.699999988079,
+            "totalMs": 2487.599999964237,
+            "errors": []
+          },
+          {
+            "cellId": 2,
+            "framesProduced": 60,
+            "decodeMs": 732.6000000238419,
+            "writeMs": 1793.3999999761581,
+            "totalMs": 2552.599999964237,
+            "errors": []
+          },
+          {
+            "cellId": 3,
+            "framesProduced": 60,
+            "decodeMs": 710.2000000476837,
+            "writeMs": 1898.3999999761581,
+            "totalMs": 2632.699999988079,
+            "errors": []
+          },
+          {
+            "cellId": 4,
+            "framesProduced": 60,
+            "decodeMs": 765.5,
+            "writeMs": 2085.100000023842,
+            "totalMs": 2887.900000035763,
+            "errors": []
+          },
+          {
+            "cellId": 5,
+            "framesProduced": 60,
+            "decodeMs": 707.1000000238419,
+            "writeMs": 1672.800000011921,
+            "totalMs": 2420.5,
+            "errors": []
+          },
+          {
+            "cellId": 6,
+            "framesProduced": 60,
+            "decodeMs": 741.3999999761581,
+            "writeMs": 1983.6000000238419,
+            "totalMs": 2771.5,
+            "errors": []
+          },
+          {
+            "cellId": 7,
+            "framesProduced": 60,
+            "decodeMs": 734.9000000357628,
+            "writeMs": 1455.699999988079,
+            "totalMs": 2251.5,
+            "errors": []
+          },
+          {
+            "cellId": 8,
+            "framesProduced": 60,
+            "decodeMs": 723.6000000238419,
+            "writeMs": 1903.1000000238419,
+            "totalMs": 2665.300000011921,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "k": 16,
+        "mip": "270p",
+        "mipWidth": 480,
+        "mipHeight": 272,
+        "coldStartMs": 4452.099999964237,
+        "avgPerCellMs": 278.2562499977648,
+        "av1TotalMb": 0.7893218994140625,
+        "rgbaTotalMb": 478.125,
+        "compressionRatio": 605.7414603027315,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesProduced": 60,
+            "decodeMs": 703,
+            "writeMs": 2865.399999976158,
+            "totalMs": 3597,
+            "errors": []
+          },
+          {
+            "cellId": 1,
+            "framesProduced": 60,
+            "decodeMs": 718.3999999761581,
+            "writeMs": 2533.400000035763,
+            "totalMs": 3276.699999988079,
+            "errors": []
+          },
+          {
+            "cellId": 2,
+            "framesProduced": 60,
+            "decodeMs": 642.2000000476837,
+            "writeMs": 2080.599999964237,
+            "totalMs": 2754.199999988079,
+            "errors": []
+          },
+          {
+            "cellId": 3,
+            "framesProduced": 60,
+            "decodeMs": 672.6999999880791,
+            "writeMs": 852.5,
+            "totalMs": 1550.0999999642372,
+            "errors": []
+          },
+          {
+            "cellId": 4,
+            "framesProduced": 60,
+            "decodeMs": 668.7999999523163,
+            "writeMs": 2717,
+            "totalMs": 3433.600000023842,
+            "errors": []
+          },
+          {
+            "cellId": 5,
+            "framesProduced": 60,
+            "decodeMs": 803.5999999642372,
+            "writeMs": 3503.900000035763,
+            "totalMs": 4354.800000011921,
+            "errors": []
+          },
+          {
+            "cellId": 6,
+            "framesProduced": 60,
+            "decodeMs": 739.3000000119209,
+            "writeMs": 2804.300000011921,
+            "totalMs": 3579.5,
+            "errors": []
+          },
+          {
+            "cellId": 7,
+            "framesProduced": 60,
+            "decodeMs": 711.7000000476837,
+            "writeMs": 3328.2999999523163,
+            "totalMs": 4082.800000011921,
+            "errors": []
+          },
+          {
+            "cellId": 8,
+            "framesProduced": 60,
+            "decodeMs": 703.3000000119209,
+            "writeMs": 2775.5,
+            "totalMs": 3520.099999964237,
+            "errors": []
+          },
+          {
+            "cellId": 9,
+            "framesProduced": 60,
+            "decodeMs": 772.6000000238419,
+            "writeMs": 3100,
+            "totalMs": 3917.300000011921,
+            "errors": []
+          },
+          {
+            "cellId": 10,
+            "framesProduced": 60,
+            "decodeMs": 718.7999999523163,
+            "writeMs": 3289.900000035763,
+            "totalMs": 4056,
+            "errors": []
+          },
+          {
+            "cellId": 11,
+            "framesProduced": 60,
+            "decodeMs": 733,
+            "writeMs": 3402.599999964237,
+            "totalMs": 4194.5,
+            "errors": []
+          },
+          {
+            "cellId": 12,
+            "framesProduced": 60,
+            "decodeMs": 740.8000000119209,
+            "writeMs": 3125.099999964237,
+            "totalMs": 3927.5,
+            "errors": []
+          },
+          {
+            "cellId": 13,
+            "framesProduced": 60,
+            "decodeMs": 697.8000000119209,
+            "writeMs": 3366.899999976158,
+            "totalMs": 4105.399999976158,
+            "errors": []
+          },
+          {
+            "cellId": 14,
+            "framesProduced": 60,
+            "decodeMs": 721.8000000119209,
+            "writeMs": 3225.5,
+            "totalMs": 3994.300000011921,
+            "errors": []
+          },
+          {
+            "cellId": 15,
+            "framesProduced": 60,
+            "decodeMs": 722.1000000238419,
+            "writeMs": 3480.399999976158,
+            "totalMs": 4242,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "k": 25,
+        "mip": "180p",
+        "mipWidth": 320,
+        "mipHeight": 192,
+        "coldStartMs": 2393.7999999523163,
+        "avgPerCellMs": 95.75199999809266,
+        "av1TotalMb": 0.5822896957397461,
+        "rgbaTotalMb": 351.5625,
+        "compressionRatio": 603.7587519960692,
+        "perCell": [
+          {
+            "cellId": 0,
+            "framesProduced": 60,
+            "decodeMs": 395.69999998807907,
+            "writeMs": 168.5999999642372,
+            "totalMs": 586.1999999880791,
+            "errors": []
+          },
+          {
+            "cellId": 1,
+            "framesProduced": 60,
+            "decodeMs": 432,
+            "writeMs": 187.19999998807907,
+            "totalMs": 651.0999999642372,
+            "errors": []
+          },
+          {
+            "cellId": 2,
+            "framesProduced": 60,
+            "decodeMs": 562.6999999880791,
+            "writeMs": 194.5999999642372,
+            "totalMs": 791.8000000119209,
+            "errors": []
+          },
+          {
+            "cellId": 3,
+            "framesProduced": 60,
+            "decodeMs": 434.10000002384186,
+            "writeMs": 254.89999997615814,
+            "totalMs": 721.3000000119209,
+            "errors": []
+          },
+          {
+            "cellId": 4,
+            "framesProduced": 60,
+            "decodeMs": 646.5999999642372,
+            "writeMs": 231.5,
+            "totalMs": 924.5999999642372,
+            "errors": []
+          },
+          {
+            "cellId": 5,
+            "framesProduced": 60,
+            "decodeMs": 746.8000000119209,
+            "writeMs": 694.5999999642372,
+            "totalMs": 1486.5,
+            "errors": []
+          },
+          {
+            "cellId": 6,
+            "framesProduced": 60,
+            "decodeMs": 703.3999999761581,
+            "writeMs": 495.39999997615814,
+            "totalMs": 1240.300000011921,
+            "errors": []
+          },
+          {
+            "cellId": 7,
+            "framesProduced": 60,
+            "decodeMs": 651.5,
+            "writeMs": 269.2000000476837,
+            "totalMs": 963.2000000476837,
+            "errors": []
+          },
+          {
+            "cellId": 8,
+            "framesProduced": 60,
+            "decodeMs": 643.6999999880791,
+            "writeMs": 156.89999997615814,
+            "totalMs": 842.8000000119209,
+            "errors": []
+          },
+          {
+            "cellId": 9,
+            "framesProduced": 60,
+            "decodeMs": 607.5999999642372,
+            "writeMs": 279.30000001192093,
+            "totalMs": 966.5,
+            "errors": []
+          },
+          {
+            "cellId": 10,
+            "framesProduced": 60,
+            "decodeMs": 639.3999999761581,
+            "writeMs": 373.80000001192093,
+            "totalMs": 1045.5,
+            "errors": []
+          },
+          {
+            "cellId": 11,
+            "framesProduced": 60,
+            "decodeMs": 704,
+            "writeMs": 625,
+            "totalMs": 1387.300000011921,
+            "errors": []
+          },
+          {
+            "cellId": 12,
+            "framesProduced": 60,
+            "decodeMs": 592.6999999880791,
+            "writeMs": 437.9000000357628,
+            "totalMs": 1105.5,
+            "errors": []
+          },
+          {
+            "cellId": 13,
+            "framesProduced": 60,
+            "decodeMs": 684.1999999880791,
+            "writeMs": 1055.8999999761581,
+            "totalMs": 1850.199999988079,
+            "errors": []
+          },
+          {
+            "cellId": 14,
+            "framesProduced": 60,
+            "decodeMs": 658.0999999642372,
+            "writeMs": 656.6000000238419,
+            "totalMs": 1398.300000011921,
+            "errors": []
+          },
+          {
+            "cellId": 15,
+            "framesProduced": 60,
+            "decodeMs": 697.8000000119209,
+            "writeMs": 845,
+            "totalMs": 1620.5,
+            "errors": []
+          },
+          {
+            "cellId": 16,
+            "framesProduced": 60,
+            "decodeMs": 686.7999999523163,
+            "writeMs": 1380.300000011921,
+            "totalMs": 2140.5,
+            "errors": []
+          },
+          {
+            "cellId": 17,
+            "framesProduced": 60,
+            "decodeMs": 721.9000000357628,
+            "writeMs": 1102.2999999523163,
+            "totalMs": 1899.199999988079,
+            "errors": []
+          },
+          {
+            "cellId": 18,
+            "framesProduced": 60,
+            "decodeMs": 655.8000000119209,
+            "writeMs": 788.8000000119209,
+            "totalMs": 1543.1000000238419,
+            "errors": []
+          },
+          {
+            "cellId": 19,
+            "framesProduced": 60,
+            "decodeMs": 700.3000000119209,
+            "writeMs": 1328.3999999761581,
+            "totalMs": 2100.599999964237,
+            "errors": []
+          },
+          {
+            "cellId": 20,
+            "framesProduced": 60,
+            "decodeMs": 636.3999999761581,
+            "writeMs": 741.8999999761581,
+            "totalMs": 1457.5,
+            "errors": []
+          },
+          {
+            "cellId": 21,
+            "framesProduced": 60,
+            "decodeMs": 600.5,
+            "writeMs": 566.6000000238419,
+            "totalMs": 1244,
+            "errors": []
+          },
+          {
+            "cellId": 22,
+            "framesProduced": 60,
+            "decodeMs": 674.8000000119209,
+            "writeMs": 981.6999999880791,
+            "totalMs": 1706.199999988079,
+            "errors": []
+          },
+          {
+            "cellId": 23,
+            "framesProduced": 60,
+            "decodeMs": 659.3000000119209,
+            "writeMs": 1195,
+            "totalMs": 1914.7000000476837,
+            "errors": []
+          },
+          {
+            "cellId": 24,
+            "framesProduced": 60,
+            "decodeMs": 635.7999999523163,
+            "writeMs": 1154.4000000357628,
+            "totalMs": 1824.7999999523163,
+            "errors": []
+          }
+        ]
+      }
+    ]
+  }
+}
