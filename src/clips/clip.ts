@@ -26,7 +26,7 @@ export async function blobToClip(cellId: string, blob: Blob): Promise<Clip> {
       logTrace("clip-audio-decoded", { cellId, duration: a.duration, channels: a.numberOfChannels, sampleRate: a.sampleRate })
       return a
     }),
-    makeBitmapSource(demuxed.videoTrack).then(v => {
+    makeBitmapSource(demuxed.videoTrack, cellId).then(v => {
       logTrace("clip-video-decoded", { cellId })
       return v
     }),
