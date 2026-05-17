@@ -13,6 +13,7 @@ import {
   writeManifest,
   type ProjectManifest,
 } from "../storage/opfs"
+import { deleteRgbaCache } from "../storage/rgba-cache"
 import type { Node } from "../types"
 import { createEntity } from "../utils"
 
@@ -209,6 +210,13 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
   }
 
   async function deleteProject(id: string) {
+    // Clean up rgba cache for each cell before removing the project dir.
+    const manifest = await readManifest(id)
+    if (manifest !== null) {
+      for (const cellId of manifest.cellIds) {
+        await deleteRgbaCache(cellId)
+      }
+    }
     await deleteProjectOnDisk(id)
     setList(current => current.filter(p => p.id !== id))
     if (activeId() !== id) {
