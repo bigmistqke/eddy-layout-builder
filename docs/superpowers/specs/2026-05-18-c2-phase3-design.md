@@ -1,8 +1,10 @@
 # C2 Prototype — Phase 3 Design
 
 **Date:** 2026-05-18
-**Status:** ready for review
+**Status:** deferred — pending experiments 30 / 30b / 30c on capture-time AV1 encode
 **Related:** [phase 2 design](2026-05-18-c2-phase2-design.md), [phase 1 design](2026-05-17-c2-phase1-design.md), [video pipeline experiments review](2026-05-17-video-pipeline-experiments-review.md)
+
+> **Status note (2026-05-18):** this spec is written around the conservative "transcode at record-stop" path (validated by experiments 20 + 27). An alternative on-the-fly capture-time AV1 encode path is plausibly cleaner architecturally but isn't yet experiment-backed. Before committing to either, run experiments 30 (capture-time AV1 throughput), 30b (under playback), 30c (audio split pipeline). This spec will be rewritten or confirmed based on those results.
 
 ## Scope
 
