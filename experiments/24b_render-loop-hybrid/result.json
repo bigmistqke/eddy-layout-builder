@@ -1,0 +1,294 @@
+{
+  "ranAt": "2026-05-17T17:56:41.763Z",
+  "git": {
+    "sha": "c9a37e5",
+    "dirty": true
+  },
+  "experiment": "render-loop-hybrid",
+  "params": {
+    "captureResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "sourceSeconds": 6,
+    "runSeconds": 10,
+    "bitratePerPixel": 0.1,
+    "swCodec": {
+      "label": "av1",
+      "codecString": "av01.0.04M.08"
+    },
+    "k": 16,
+    "m": 4,
+    "atlasCols": 2,
+    "atlasRows": 2,
+    "gridCols": 4,
+    "gridRows": 4,
+    "cellMip": {
+      "width": 480,
+      "height": 272
+    },
+    "dirtyCounts": [
+      0,
+      2,
+      4,
+      8,
+      12
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "passes": [
+      {
+        "d": 0,
+        "textureUploadsPerTick": 4,
+        "totalFramesDecoded": 1188,
+        "aggregateDecodeFps": 118.65168539325843,
+        "jank": {
+          "framesObserved": 601,
+          "meanMs": 16.78369384359401,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.700000000004366,
+          "p99Ms": 16.799999999999272,
+          "maxMs": 99.79999999999927,
+          "over16ms": 601,
+          "over33ms": 1,
+          "over50ms": 1,
+          "over100ms": 0,
+          "over33msRatio": 0.0016638935108153079,
+          "longestJankStreak": 1,
+          "jankScore": 7.424692179700337,
+          "histogramMs": [
+            0,
+            600,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 115,
+          "longestMs": 115
+        }
+      },
+      {
+        "d": 2,
+        "textureUploadsPerTick": 6,
+        "totalFramesDecoded": 1782,
+        "aggregateDecodeFps": 177.98108326736897,
+        "jank": {
+          "framesObserved": 598,
+          "meanMs": 16.70066889632107,
+          "medianMs": 16.60000000000582,
+          "p95Ms": 16.700000000004366,
+          "p99Ms": 16.80000000000291,
+          "maxMs": 33.299999999995634,
+          "over16ms": 598,
+          "over33ms": 2,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0.0033444816053511705,
+          "longestJankStreak": 1,
+          "jankScore": 0.00021739130434149918,
+          "histogramMs": [
+            0,
+            596,
+            0,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 82,
+          "longestMs": 82
+        }
+      },
+      {
+        "d": 4,
+        "textureUploadsPerTick": 8,
+        "totalFramesDecoded": 2376,
+        "aggregateDecodeFps": 237.14941610939215,
+        "jank": {
+          "framesObserved": 552,
+          "meanMs": 18.122644927536225,
+          "medianMs": 16.69999999999709,
+          "p95Ms": 33.299999999995634,
+          "p99Ms": 33.30000000000291,
+          "maxMs": 49.900000000001455,
+          "over16ms": 552,
+          "over33ms": 48,
+          "over50ms": 0,
+          "over100ms": 0,
+          "over33msRatio": 0.08695652173913043,
+          "longestJankStreak": 2,
+          "jankScore": 0.5244565217392015,
+          "histogramMs": [
+            0,
+            504,
+            0,
+            47,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 0,
+          "totalDurationMs": 0,
+          "longestMs": 0
+        }
+      },
+      {
+        "d": 8,
+        "textureUploadsPerTick": 12,
+        "totalFramesDecoded": 3564,
+        "aggregateDecodeFps": 355.603448276708,
+        "jank": {
+          "framesObserved": 393,
+          "meanMs": 25.45445292620865,
+          "medianMs": 33.19999999999709,
+          "p95Ms": 33.400000000001455,
+          "p99Ms": 49.90000000000873,
+          "maxMs": 50.099999999998545,
+          "over16ms": 393,
+          "over33ms": 203,
+          "over50ms": 1,
+          "over100ms": 0,
+          "over33msRatio": 0.5165394402035624,
+          "longestJankStreak": 5,
+          "jankScore": 3.7119592875325917,
+          "histogramMs": [
+            0,
+            190,
+            0,
+            198,
+            2,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 0,
+          "totalDurationMs": 0,
+          "longestMs": 0
+        }
+      },
+      {
+        "d": 12,
+        "textureUploadsPerTick": 16,
+        "totalFramesDecoded": 4752,
+        "aggregateDecodeFps": 473.8684297113812,
+        "jank": {
+          "framesObserved": 300,
+          "meanMs": 33.29,
+          "medianMs": 33.30000000000291,
+          "p95Ms": 50,
+          "p99Ms": 66.60000000000582,
+          "maxMs": 83.30000000000291,
+          "over16ms": 300,
+          "over33ms": 250,
+          "over50ms": 9,
+          "over100ms": 0,
+          "over33msRatio": 0.8333333333333334,
+          "longestJankStreak": 28,
+          "jankScore": 68.17246666666436,
+          "histogramMs": [
+            0,
+            50,
+            0,
+            210,
+            24,
+            7,
+            8,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "longTasks": {
+          "observed": 1,
+          "totalDurationMs": 79,
+          "longestMs": 79
+        }
+      }
+    ]
+  }
+}

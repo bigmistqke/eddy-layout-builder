@@ -68,6 +68,35 @@ Per pass:
   bottleneck is texture upload + draw, not decode (matches 24's
   finding)
 
+## Verdict
+
+**The hybrid works, but the dirty budget is tight: D ≤ 2 clean, D ≥ 8 fails.**
+
+| D | uploads/tick | fps | mean | p95 | >33ms | streak | decode fps |
+|---|---|---|---|---|---|---|---|
+| 0 | 4 | **60.1** | 16.8 | 16.7 | 0.2% | 1 | 119 |
+| 2 | 6 | **59.8** | 16.7 | 16.7 | 0.3% | 1 | 178 |
+| 4 | 8 | 55.2 | 18.1 | 33.3 | **8.7%** | 2 | 237 |
+| 8 | 12 | 39.3 | 25.5 | 33.4 | **52%** | 5 | 356 |
+| 12 | 16 | 30.0 | 33.3 | 50.0 | **83%** | 28 | 474 |
+
+Dominated by texture-uploads-per-tick (= M+D):
+- 4-6 uploads → clean 60 fps
+- 8 uploads → first wobble (9% over 33 ms)
+- 12 uploads → soft failure (52%)
+- 16 uploads → matches 24's pure per-cell K=16 collapse
+
+So on this device the smooth `texImage2D`/tick budget is **~6-7 uploads**. At M=4 baseline that gives D ≤ 2-3 dirty cells before perceptible jank starts.
+
+Decode-side scaling is linear and well within the AV1-SW pool (D=12 → 474 fps aggregate, far under solo ceilings) — confirms 24's finding that decode isn't the bottleneck. The texImage2D + drawArrays chain on the rAF tick is.
+
+## Note for eddy implementation
+
+- Eventually-consistent atlas pattern is viable, but the architecture must **bound D** — rebuild atlases before the dirty count exceeds ~3.
+- An **incremental rebuild** strategy (rebuild one atlas slot at a time, draining D one cell per rebuild cycle) probably keeps D close to 1 in practice. Unmeasured here.
+- For UX: a user adding 3+ clips in rapid succession may see jank on this device unless the rebuild queue stays ahead. Background rebuild scheduling matters more than rebuild *speed*.
+- Lower M (say M=2 atlases) widens the D budget (D ≤ 4-5 with M+D ≤ 7). Tradeoff: smaller atlases need more rebuilds when content changes. M=2 vs M=4 vs M=8 hasn't been measured here.
+
 ## Caveats
 
 - Same source clip for every cell + every atlas slot, as in 24/24a.
