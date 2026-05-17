@@ -81,6 +81,29 @@ Other things to watch:
 - **Memory** — the worker's intermediate buffers live in worker
   process; chunks are transferred not copied where possible
 
+## Verdict
+
+**Worker rebuild buys essentially nothing. The bottleneck is GPU-process contention, not main thread.**
+
+| R | 24c (inline) fps | 24d (worker) fps | 24c rbMs | 24d rbMs | 24c >33ms | 24d >33ms |
+|---|---|---|---|---|---|---|
+| 0.25 | 37.5 | 40.6 | 9086 | **8724** | 30% | 26% |
+| 0.50 | 33.8 | 34.1 | 9995 | **9850** | 44% | 45% |
+| 1.00 | 26.2 | 26.0 | 18987 | **11450** | 71% | 68% |
+| 2.00 | 21.3 | 21.1 | 19889 | **19853** | 83% | 83% |
+
+Rebuild times match inline within noise; render jank matches inline. The only change is `longtasks` dropped to 1 across all passes (vs 0-1 in 24c) — confirming the worker *did* free the main-thread JS event loop. But render kept janking at the same rate because main-thread JS wasn't the bottleneck.
+
+This is exactly what [23](../23_sw-workers/README.md) predicted: `VideoEncoder` runs in the GPU process regardless of whether the JS driving it lives on main or in a worker. The rebuild's encode and playback's decode are both scheduled by the same GPU process, on the same hardware, fighting for the same threads. The worker hop is JS-thread isolation only.
+
+**Architectural implication:** the AV1-encode-during-playback path is fundamentally constrained by GPU-process contention on this device. No amount of "move the JS to a worker" fixes it. The hybrid eventually-consistent pattern needs a different lever to make rebuilds compatible with playback.
+
+## Note for eddy implementation
+
+- Worker isolation is not the fix for atlas rebuild contention.
+- Several architectural directions remain unmeasured: smaller atlases (less encode work per rebuild), cheaper rebuild codec (VP9/VP8 encode during AV1 playback), skip-rebuild-entirely (with eviction), idle-only rebuild, speculative pre-build, or moving away from per-edit rebuild altogether. None has been validated.
+- The 23 finding ("VideoDecoder/Encoder live in GPU process") should be treated as a general architectural constraint going forward — worker scaffolding doesn't unlock concurrent codec workloads on this Chrome.
+
 ## Caveats
 
 - The source clip's chunk bytes are sent to the worker once, copied
