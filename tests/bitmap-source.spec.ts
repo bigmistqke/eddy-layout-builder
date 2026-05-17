@@ -15,7 +15,10 @@ test("bitmap-source: clip source latestFrame returns null before seek, populates
   )
 
   // Drive the BitmapSource contract directly via the clip.
-  const result = await page.evaluate(() => {
+  // Phase 2: BitmapSource is backed by a Web Worker that reads frames
+  // from OPFS, so seek() is async — wait for the worker to publish a
+  // frame before reading after-state.
+  const before = await page.evaluate(() => {
     const ctx = window.__appContext
     if (!ctx) {
       return { error: "no context" }
@@ -23,23 +26,47 @@ test("bitmap-source: clip source latestFrame returns null before seek, populates
     const ids = Object.keys(ctx.clips.clips)
     const clip = ctx.clips.clips[ids[0]]
     // Reset to defeat any seek the render loop performed after autoplay
-    // kicked in post-record-stop.
+    // kicked in post-record-stop. Read latest synchronously in the same
+    // tick — the worker round-trip can't have completed yet.
     clip.video.reset()
-    const before = clip.video.latestFrame()
+    const beforeFrame = clip.video.latestFrame()
     clip.video.seek(0)
-    const after = clip.video.latestFrame()
+    return { cellId: ids[0], beforeIsNull: beforeFrame === null }
+  })
+
+  await page.waitForFunction(
+    () => {
+      const ctx = window.__appContext
+      if (!ctx) {
+        return false
+      }
+      const ids = Object.keys(ctx.clips.clips)
+      const clip = ctx.clips.clips[ids[0]]
+      return clip.video.latestFrame() !== null
+    },
+    { timeout: 5000 },
+  )
+
+  const after = await page.evaluate(() => {
+    const ctx = window.__appContext
+    if (!ctx) {
+      return { error: "no context" }
+    }
+    const ids = Object.keys(ctx.clips.clips)
+    const clip = ctx.clips.clips[ids[0]]
+    const frame = clip.video.latestFrame()
     return {
-      cellId: ids[0],
-      beforeIsNull: before === null,
-      afterNotNull: after !== null,
+      afterNotNull: frame !== null,
       afterIsRgbaShape:
-        after !== null &&
-        typeof after.width === "number" &&
-        typeof after.height === "number" &&
-        after.bytes instanceof Uint8Array &&
-        after.bytes.byteLength === after.width * after.height * 4,
+        frame !== null &&
+        typeof frame.width === "number" &&
+        typeof frame.height === "number" &&
+        frame.bytes instanceof Uint8Array &&
+        frame.bytes.byteLength === frame.width * frame.height * 4,
     }
   })
+
+  const result = { ...before, ...after }
 
   expect(result.beforeIsNull).toBe(true)
   expect(result.afterNotNull).toBe(true)

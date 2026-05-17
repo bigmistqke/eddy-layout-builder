@@ -13,6 +13,7 @@ import {
   writeManifest,
   type ProjectManifest,
 } from "../storage/opfs"
+import { wipeRgbaCache } from "../storage/rgba-cache"
 import type { Node } from "../types"
 import { createEntity } from "../utils"
 
@@ -123,6 +124,11 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
   }
 
   async function init() {
+    // Crash recovery: any rgba file in OPFS predates this session and is
+    // stale by construction (phase 2 regenerates all rgba caches from
+    // persisted WebM blobs on project load). Wipe before loading so we
+    // don't delete files the just-loaded clips just created.
+    await wipeRgbaCache()
     const existing = await listProjects()
     setList(existing)
     const currentId = await getCurrentProjectId()
