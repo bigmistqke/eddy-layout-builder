@@ -5,7 +5,7 @@
   color: var(--color-front);
   border-radius: var(--radius-big);
   min-width: 260px;
-  max-height: 80vh;
+  max-height: 80dvh;
   /* Only switch to flex when the dialog is open — otherwise the UA's
      `dialog:not([open]) { display: none }` rule would be overridden
      and the menu would render inline. */
