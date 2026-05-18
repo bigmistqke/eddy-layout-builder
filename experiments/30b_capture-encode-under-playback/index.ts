@@ -17,7 +17,7 @@ import { wait } from "../../src/utils"
 import { reportResult, status } from "../harness/report"
 
 const params = {
-  encodeResolution: { width: 480, height: 272 },
+  encodeResolution: { width: 1280, height: 720 },
   encodeSeconds: 10,
   targetFps: 30,
   bitratePerPixel: 0.1,

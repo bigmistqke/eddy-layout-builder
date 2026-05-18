@@ -103,7 +103,9 @@ For the playback load:
   production also paces at 30 fps. If the decoders were unpaced,
   they'd burn way more CPU than realistic.
 
-## Findings (2026-05-18, sha `b682394`, Galaxy A15)
+## Findings (2026-05-18, Galaxy A15)
+
+### 270p encode under contention — clean (sha `b682394`)
 
 Encoder holds 30 fps cleanly even at K=9 concurrent decoders. No
 starvation in either direction.
@@ -112,6 +114,44 @@ starvation in either direction.
 |---|---|---|---|---|---|---|---|---|---|---|
 | 4 | 30.0 | 1 | 5.8 ms | 11.6 ms | 29.8 fps | 29.9 fps | 119.5 | 8.7 ms | 36 ms | ✓ 300/300 |
 | 9 | 30.0 | 1 | 4.3 ms | 29.3 ms | 29.7 fps | 29.8 fps | 268.1 | 9.3 ms | 18 ms | ✓ 300/300 |
+
+### 720p encode under contention — **not viable** (sha `5be3528`)
+
+Re-run with `encodeResolution = 1280×720` (camera native). Encoder
+nominally completes all 300 frames but only by deferring most of the
+work into a multi-second finalize drain; in realtime, the loop is
+hopelessly behind and decoders starve.
+
+| K | encodedFps* | pendingMax | add p95 | add max | decoderMin | decoderMean | totalDecFps | tickLag p95 | finalize | roundTrip |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 4 | 30.0* | 5 | 74.7 ms | 82.6 ms | 26.9 fps | 27.0 fps | 107.9 | 71.6 ms | **5079 ms** | ✓ 300/300 |
+| 9 | 30.0* | 13 | **190.1 ms** | 400.1 ms | **13.2 fps** | 13.2 fps | 118.7 | **146.6 ms** | **8557 ms** | ✓ 300/300 |
+
+*`encodedFps=30` here is misleading — it's `300 / 10s`, but those 300
+frames include the post-stop drain. In realtime, add p95 is 75-190
+ms (vs the 33 ms frame budget) and tickLag p95 is 72-147 ms (the
+loop misses every other frame deadline). The encoder is not
+realtime; it's amortizing over a deep queue + a long drain.
+
+What changed vs 270p:
+- **Encoder per-frame cost rose ~20×** (4 ms → 75-190 ms) — far more
+  than the 4× pixel-count increase. AV1 SW encode at 720p competes
+  with decode for cache + memory bandwidth in a way 270p doesn't.
+- **Decoders also slowed down.** At K=9/720p, each decoder is only
+  hitting 13.2 fps — far below realtime. Playback would visibly jank.
+  The 720p AV1 decode workload is much heavier than at 270p.
+- **Tick loop drifted by 147 ms p95.** The loop itself can't make
+  30 Hz under this load — the main thread is saturated.
+- **Finalize took 5-8 seconds.** The deep queue had to drain at
+  encoder speed. From a UX perspective this is exactly the record-
+  stop latency we were trying to eliminate by going on-the-fly.
+
+The 720p-in-isolation result from
+[exp 30d](../30d_synthetic-30fps-stress/README.md) (2.8 ms add p95,
+pendingMax 1) **does not predict the under-contention result**. The
+encoder has plenty of headroom by itself, but the *combined* main-
+thread load of K=9 720p decode + 720p encode + downscale-to-RGBA
+exceeds the device.
 
 What this confirms:
 - **Encoder is unstressed by playback contention.** `pendingMax = 1`
@@ -136,29 +176,44 @@ What this confirms:
   load.
 
 Implications for phase 3:
-- **Capture-time AV1 encode under realistic record-while-playing
-  contention is fully validated** at 270p / K∈{4,9}. Encode-as-you-
-  capture is the default for the
-  [phase 3 spec](../../docs/superpowers/specs/2026-05-18-c2-phase3-design.md) —
-  we don't need the MediaRecorder + post-record-transcode fallback at
-  these resolutions.
-- The result is conservative: this run keeps decoders on the main
-  thread (encoder also on main). Production (per
+- **270p is the realistic ceiling for the canonical encode resolution
+  when record-while-K=9-playing is required.** At 270p the encoder
+  hits 30 fps with pendingMax=1 and no decoder degradation; at 720p
+  the same workload becomes a multi-second-finalize disaster on this
+  device.
+- **Canonical-at-camera-native isn't free.** Exp 30d showed 720p
+  encode in isolation is fast, but the production workload (record
+  + K=9 playback simultaneously) requires choosing one of:
+  1. **Canonical at 270p** — sacrifices fullscreen single-cell
+     resolution + export quality, but record-while-playing works
+     cleanly today
+  2. **Canonical at native + pause-or-throttle playback during
+     record** — keeps quality, but breaks the visual-loop record-
+     while-playing UX that's core to eddy
+  3. **Encode in a dedicated worker** — would offload encode from
+     the main thread; not measured here, would need a new experiment.
+     Plausible: WebCodecs VideoEncoder works in workers, and
+     mediabunny's Output should too. Encode at 720p in a worker while
+     main thread does playback might fit
+- **Caveat — this is a main-thread baseline.** Decoders here run on
+  the main thread (matching the encoder). Production (per
   [phase 2 spec](../../docs/superpowers/specs/2026-05-18-c2-phase2-design.md))
-  moves bitmap-source decode to per-clip workers, which would reduce
-  main-thread contention further — the encoder should have *more*
-  headroom in the production layout, not less.
-- 30b doesn't measure thermal sustainment. Follow-up: 60-90 s run at
-  K=9 to confirm the headroom holds under thermal accumulation. Not
-  blocking on it given the ~7× isolated headroom.
+  moves bitmap-source decode into per-clip workers. With workers,
+  decode contention on the main thread drops to near zero, so the
+  encoder might have much more headroom at 720p in production. The
+  720p result here is a worst-case; production layout could change
+  the picture significantly. Worth re-measuring once phase 2 workers
+  are in place.
 - Still open before phase 3 lands:
   [30c (audio split pipeline)](../30c_audio-split-pipeline/README.md) —
   whether audio can be muxed into the same Output without A/V drift.
 
 Note for eddy implementation: the fire-and-track encode pattern
 (`videoSource.add(sample)` without awaiting in the tick loop, then
-draining at record-stop) works even under K=9 contention. No need to
-serial-await; let the source queue 1-2 deep and drain on close.
+draining at record-stop) works fine at 270p under K=9. At 720p it
+papers over realtime failure — the queue grows unboundedly and
+finalize becomes the new "post-record transcode" latency. The
+queue-depth + tickLag metrics are the real signal, not encodedFps.
 
 ## Reproduce
 
