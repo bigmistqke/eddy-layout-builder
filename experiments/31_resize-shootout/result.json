@@ -1,0 +1,145 @@
+{
+  "ranAt": "2026-05-18T07:23:41.557Z",
+  "git": {
+    "sha": "ba78188",
+    "dirty": true
+  },
+  "experiment": "resize-shootout",
+  "params": {
+    "sourceResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetResolution": {
+      "width": 480,
+      "height": 272
+    },
+    "targetFrames": 150,
+    "validateEncodeFrames": 30,
+    "codec": "av1",
+    "bitratePerPixel": 0.1,
+    "targetFps": 30
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "cameraSettings": {
+      "width": 720,
+      "height": 1280,
+      "frameRate": 30
+    },
+    "framesCaptured": 150,
+    "techniques": [
+      {
+        "name": "createImageBitmap-low",
+        "setupMs": 7.099999964237213,
+        "samples": 150,
+        "p50Ms": 2.800000011920929,
+        "p95Ms": 4.5,
+        "maxMs": 12.5,
+        "encodeFramesSubmitted": 30,
+        "encodeFramesEncoded": 30,
+        "encodeRoundTripDemuxed": 30,
+        "encodeRoundTripOk": true,
+        "available": true,
+        "skippedReason": null,
+        "errors": []
+      },
+      {
+        "name": "createImageBitmap-medium",
+        "setupMs": 3,
+        "samples": 150,
+        "p50Ms": 2.599999964237213,
+        "p95Ms": 4.100000023841858,
+        "maxMs": 5.899999976158142,
+        "encodeFramesSubmitted": 30,
+        "encodeFramesEncoded": 30,
+        "encodeRoundTripDemuxed": 30,
+        "encodeRoundTripOk": true,
+        "available": true,
+        "skippedReason": null,
+        "errors": []
+      },
+      {
+        "name": "createImageBitmap-high",
+        "setupMs": 2.199999988079071,
+        "samples": 150,
+        "p50Ms": 2.800000011920929,
+        "p95Ms": 5.600000023841858,
+        "maxMs": 8.300000011920929,
+        "encodeFramesSubmitted": 30,
+        "encodeFramesEncoded": 30,
+        "encodeRoundTripDemuxed": 30,
+        "encodeRoundTripOk": true,
+        "available": true,
+        "skippedReason": null,
+        "errors": []
+      },
+      {
+        "name": "canvas2d-wrap",
+        "setupMs": 1.899999976158142,
+        "samples": 150,
+        "p50Ms": 1.4000000357627869,
+        "p95Ms": 2.899999976158142,
+        "maxMs": 9.300000011920929,
+        "encodeFramesSubmitted": 30,
+        "encodeFramesEncoded": 30,
+        "encodeRoundTripDemuxed": 30,
+        "encodeRoundTripOk": true,
+        "available": true,
+        "skippedReason": null,
+        "errors": []
+      },
+      {
+        "name": "canvas2d-transfer",
+        "setupMs": 1.800000011920929,
+        "samples": 150,
+        "p50Ms": 2.600000023841858,
+        "p95Ms": 6,
+        "maxMs": 8.700000047683716,
+        "encodeFramesSubmitted": 30,
+        "encodeFramesEncoded": 30,
+        "encodeRoundTripDemuxed": 30,
+        "encodeRoundTripOk": true,
+        "available": true,
+        "skippedReason": null,
+        "errors": []
+      },
+      {
+        "name": "webgl",
+        "setupMs": 381,
+        "samples": 150,
+        "p50Ms": 0.7999999523162842,
+        "p95Ms": 1.699999988079071,
+        "maxMs": 4.399999976158142,
+        "encodeFramesSubmitted": 30,
+        "encodeFramesEncoded": 30,
+        "encodeRoundTripDemuxed": 30,
+        "encodeRoundTripOk": true,
+        "available": true,
+        "skippedReason": null,
+        "errors": []
+      },
+      {
+        "name": "webgpu",
+        "setupMs": 80.39999997615814,
+        "samples": 150,
+        "p50Ms": 19.19999998807907,
+        "p95Ms": 46.90000003576279,
+        "maxMs": 169.89999997615814,
+        "encodeFramesSubmitted": 30,
+        "encodeFramesEncoded": 30,
+        "encodeRoundTripDemuxed": 30,
+        "encodeRoundTripOk": true,
+        "available": true,
+        "skippedReason": null,
+        "errors": []
+      }
+    ]
+  }
+}
