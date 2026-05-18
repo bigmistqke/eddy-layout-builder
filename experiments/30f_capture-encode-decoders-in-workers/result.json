@@ -1,0 +1,96 @@
+{
+  "ranAt": "2026-05-18T07:12:31.304Z",
+  "git": {
+    "sha": "16351d2",
+    "dirty": true
+  },
+  "experiment": "capture-encode-decoders-in-workers",
+  "params": {
+    "encodeResolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "encodeSeconds": 10,
+    "targetFps": 30,
+    "bitratePerPixel": 0.1,
+    "codec": "av1",
+    "fixtureSeconds": 6,
+    "warmupMs": 1000,
+    "concurrencies": [
+      4,
+      9
+    ]
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "runs": [
+      {
+        "K": 4,
+        "encodeWidth": 1280,
+        "encodeHeight": 720,
+        "targetFps": 30,
+        "framesSubmitted": 300,
+        "framesEncoded": 300,
+        "submittedFps": 30,
+        "encodedFps": 30,
+        "pendingAddsMax": 6,
+        "addP95Ms": 83.89999997615814,
+        "addMaxMs": 190,
+        "tickLagP95Ms": 3.199999988079071,
+        "finalizeMs": 3773.699999988079,
+        "webmBytes": 1473344,
+        "roundTripDemuxed": 300,
+        "roundTripVerified": true,
+        "decoderFps": [
+          29.9,
+          30,
+          30.1,
+          30
+        ],
+        "decoderFpsMin": 29.9,
+        "decoderFpsMean": 30,
+        "totalDecoderFps": 120,
+        "errors": []
+      },
+      {
+        "K": 9,
+        "encodeWidth": 1280,
+        "encodeHeight": 720,
+        "targetFps": 30,
+        "framesSubmitted": 300,
+        "framesEncoded": 300,
+        "submittedFps": 30,
+        "encodedFps": 30,
+        "pendingAddsMax": 12,
+        "addP95Ms": 315.5,
+        "addMaxMs": 387,
+        "tickLagP95Ms": 9.099999964237213,
+        "finalizeMs": 7477.5,
+        "webmBytes": 1473344,
+        "roundTripDemuxed": 300,
+        "roundTripVerified": true,
+        "decoderFps": [
+          18.5,
+          20.2,
+          21.7,
+          18.4,
+          19.7,
+          18.1,
+          17.6,
+          20,
+          20.1
+        ],
+        "decoderFpsMin": 17.6,
+        "decoderFpsMean": 19.366666666666667,
+        "totalDecoderFps": 174.3,
+        "errors": []
+      }
+    ]
+  }
+}
