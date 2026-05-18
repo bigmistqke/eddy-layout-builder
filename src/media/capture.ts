@@ -9,7 +9,7 @@ import {
   type VideoCodec,
 } from "mediabunny"
 import { createResizeRig, type ResizeRig } from "./resize-rig"
-import { logTrace } from "../utils"
+import { logTrace, wait } from "../utils"
 
 /** Resolutions we always emit, in (width, height). The 720p is the
  *  canonical export-quality stream; the 270p is the playback mip cells
@@ -252,22 +252,61 @@ export async function startCapture(stream: MediaStream): Promise<CaptureSession>
     }
   })()
 
+  function shutdownTracks(): void {
+    try {
+      reader.releaseLock()
+    } catch {}
+    try {
+      rigHigh.audioTrack.stop()
+    } catch {}
+    try {
+      rigLow.audioTrack.stop()
+    } catch {}
+    resizeRig.dispose()
+  }
+
   // Wait for at least one frame to be submitted before resolving so
-  // callers know the session is live.
-  await Promise.race([
-    firstSubmitted,
-    // Safety net: if no frame arrives within 5s, surface the failure
-    // instead of leaving the caller hanging.
-    new Promise<void>((_, reject) =>
-      setTimeout(() => reject(new Error("startCapture: no camera frames within 5s")), 5000),
-    ),
-  ])
+  // callers know the session is live. Safety net: if no frame arrives
+  // within 5s, surface the failure instead of leaving the caller
+  // hanging — and clean up all live resources before rethrowing so we
+  // don't leak two encoder rigs + two cloned audio tracks + the
+  // resize rig + the reader.
+  const { promise: timeout, reject: rejectTimeout } = Promise.withResolvers<void>()
+  const timeoutHandle = setTimeout(() => {
+    rejectTimeout(new Error("startCapture: no camera frames within 5s"))
+  }, 5000)
+  try {
+    await Promise.race([firstSubmitted, timeout])
+  } catch (error) {
+    stopped = true
+    try {
+      await reader.cancel()
+    } catch {}
+    try {
+      await pumpPromise
+    } catch {}
+    // Best-effort finalize so internal buffers don't leak; ignore output.
+    try {
+      rigHigh.videoSource.close()
+      rigHigh.audioSource.close?.()
+      await rigHigh.output.finalize()
+    } catch {}
+    try {
+      rigLow.videoSource.close()
+      rigLow.audioSource.close?.()
+      await rigLow.output.finalize()
+    } catch {}
+    shutdownTracks()
+    throw error
+  } finally {
+    clearTimeout(timeoutHandle)
+  }
 
   async function finalizeRig(rig: VideoEncoderRig): Promise<Blob> {
     // Drain in-flight video adds before closing.
     const drainStart = performance.now()
     while (rig.pendingAdds > 0) {
-      await new Promise<void>(resolve => setTimeout(resolve, 10))
+      await wait(10)
       if (performance.now() - drainStart > 60_000) {
         logTrace("capture-drain-timeout", { pendingAdds: rig.pendingAdds })
         break
@@ -283,19 +322,6 @@ export async function startCapture(stream: MediaStream): Promise<CaptureSession>
     return new Blob([buffer], { type: "video/webm" })
   }
 
-  function shutdownTracks(): void {
-    try {
-      reader.releaseLock()
-    } catch {}
-    try {
-      rigHigh.audioTrack.stop()
-    } catch {}
-    try {
-      rigLow.audioTrack.stop()
-    } catch {}
-    resizeRig.dispose()
-  }
-
   return {
     async stop(): Promise<CaptureResult> {
       if (stopped) {
@@ -303,12 +329,20 @@ export async function startCapture(stream: MediaStream): Promise<CaptureSession>
       }
       stopped = true
       const durationSeconds = (performance.now() - startedAtMs) / 1000
+      try {
+        await reader.cancel()
+      } catch {}
       await pumpPromise
-      const [canonicalBlob, mipBlob] = await Promise.all([
-        finalizeRig(rigHigh),
-        finalizeRig(rigLow),
-      ])
-      shutdownTracks()
+      let canonicalBlob: Blob
+      let mipBlob: Blob
+      try {
+        ;[canonicalBlob, mipBlob] = await Promise.all([
+          finalizeRig(rigHigh),
+          finalizeRig(rigLow),
+        ])
+      } finally {
+        shutdownTracks()
+      }
       if (audioErrors.length > 0) {
         logTrace("capture-stop-audio-errors", { audioErrors })
       }
@@ -325,6 +359,9 @@ export async function startCapture(stream: MediaStream): Promise<CaptureSession>
         return
       }
       stopped = true
+      try {
+        await reader.cancel()
+      } catch {}
       try {
         await pumpPromise
       } catch {}
