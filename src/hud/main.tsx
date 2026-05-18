@@ -9,13 +9,13 @@ import {
 } from "../components/icons"
 import { Context } from "../context"
 import { useDirectOutput, useMediaStreamOutput } from "../media/audio-context"
-import { startCapture, type CaptureHandle } from "../media/capture"
+import { startCapture, type CaptureSession } from "../media/capture"
 import { logAction, logTrace, run, selectedCellId } from "../utils"
 import { Hud } from "./hud"
 
 export function Main() {
   const context = useContext(Context)!
-  const [captureHandle, setCaptureHandle] = createSignal<CaptureHandle | null>(null)
+  const [captureHandle, setCaptureHandle] = createSignal<CaptureSession | null>(null)
 
   async function onRecord() {
     const cellId = selectedCellId(context)
@@ -70,7 +70,7 @@ export function Main() {
       useDirectOutput()
       return
     }
-    const handle = startCapture(stream)
+    const handle = await startCapture(stream)
     setCaptureHandle(handle)
     logTrace("record-start-handle", { cellId })
 
@@ -103,7 +103,9 @@ export function Main() {
     context.transport.stop() // stop monitor playback if it was running
     // Capture is over — autoplay below uses speakers normally.
     useDirectOutput()
-    const blob = await handle.stop()
+    // TEMPORARY adapter — Task 8 wires both blobs
+    const result = await handle.stop()
+    const blob = result.mipBlob
     logTrace("record-stop-blob", { cellId, size: blob.size, type: blob.type })
     if (cellId === null) {
       logTrace("record-stop-abort", { reason: "no cellId" })
