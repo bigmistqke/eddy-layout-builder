@@ -106,7 +106,9 @@ export async function makeBitmapSource(
     logTrace("bitmap-source-empty", { clipId })
     return {
       source: {
-        latestFrame: () => null,
+        latestFrame(): BitmapFrame | null {
+          return null
+        },
         seek: () => {},
         reset: () => {},
         close: () => {},
@@ -180,7 +182,9 @@ async function spawnReader(
   })
   await ready
   return {
-    latestFrame: () => latest,
+    latestFrame(): BitmapFrame | null {
+      return latest
+    },
     seek(tSeconds: number): void {
       worker.postMessage({ type: "seek", tSeconds })
     },
