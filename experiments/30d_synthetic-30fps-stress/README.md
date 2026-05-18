@@ -99,33 +99,40 @@ Per pass:
   precision isn't guaranteed. `tickLagMs` exposes any drift so the
   reader can judge whether the input rate was actually 30 Hz.
 
-## Findings (2026-05-18, sha `0bdaef3`, Galaxy A15)
+## Findings (2026-05-18)
 
-Encoder keeps up with 30 fps cleanly at all three resolutions. The
-camera was the bottleneck in [exp 30](../30_capture-time-av1-encode/README.md),
-not the AV1 software encoder.
+Encoder keeps up with 30 fps cleanly at every resolution tested,
+including camera-native **720p**. The camera was the bottleneck in
+[exp 30](../30_capture-time-av1-encode/README.md), not the AV1
+software encoder.
+
+**Re-run with 720p added** (sha `103349c`, Galaxy A15):
 
 | Pass | submitted | encoded | pendingMax | add p95 | add max | tickLag p95 | finalize | webm B/s | roundTrip |
 |---|---|---|---|---|---|---|---|---|---|
-| 540p | 30.0 | 30.0 | **9** | 8.0 ms | 297 ms | 0.5 ms | 23 ms | 96 KB/s | ✓ 300/300 |
-| 270p | 30.0 | 30.0 | 1 | 4.4 ms | 6.1 ms | 1.4 ms | 17 ms | 32 KB/s | ✓ 300/300 |
-| 180p | 30.0 | 30.0 | 1 | 4.6 ms | 7.1 ms | 1.8 ms | 18 ms | 16 KB/s | ✓ 300/300 |
+| 720p | 30.0 | 30.0 | 1 | **2.8 ms** | 4.3 ms | 0.5 ms | 36 ms | 147 KB/s | ✓ 300/300 |
+| 540p | 30.0 | 30.0 | 1 | 3.4 ms | 7.6 ms | 0.8 ms | 30 ms | 96 KB/s | ✓ 300/300 |
+| 270p | 30.0 | 30.0 | 1 | 4.7 ms | 6.8 ms | 1.3 ms | 19 ms | 32 KB/s | ✓ 300/300 |
+| 180p | 30.0 | 30.0 | 1 | 4.6 ms | 11.8 ms | 1.9 ms | 18 ms | 16 KB/s | ✓ 300/300 |
+
+First run (sha `0bdaef3`, no 720p) saw `pendingMax = 9` and a 297 ms
+`addMax` spike at 540p — a one-off key-frame stall. The re-run shows
+`pendingMax = 1` across all passes; the spike doesn't reproduce.
 
 What this confirms:
-- **Encoder is realtime at 30 fps for all 3 mips.** No frames lost,
-  `encodedFps` exactly matches `submittedFps` (300/300 in every pass).
-- **270p and 180p have huge headroom.** `pendingMax = 1` means at no
-  point did a second frame stack up while the first was encoding —
-  the encoder finished each frame before the next arrived. p95 add
-  latency of ~4.5 ms vs a 33 ms frame budget = ~7× headroom.
-- **540p is realtime but tight.** `pendingMax = 9` and a single 297
-  ms add spike (likely a key frame; default 2 s key interval → exactly
-  one key frame per 60-frame pass × multiple key frames over the run
-  — one of them stalled the encoder briefly). The queue drained and
-  the run finished on time, but the headroom margin at full-mip res
-  is much smaller. If we picked 540p as the working encode res, we'd
-  want to either lower the key-frame frequency or accept transient
-  pendingAdds spikes near key frames.
+- **Encoder is realtime at 30 fps for all 4 resolutions including
+  camera-native 720p.** No frames lost, `encodedFps` exactly matches
+  `submittedFps` (300/300 in every pass).
+- **720p has the lowest add-latency p95** (2.8 ms) of any pass — a
+  bit counter-intuitive. Probably explained by amortization: at
+  smaller frame sizes the fixed per-frame overhead (sample wrap, mux
+  write, promise machinery) dominates; at 720p the actual encode work
+  is bigger but it's pipelined behind much less per-frame ceremony.
+  Either way, all resolutions have ≥ 7× headroom vs the 33 ms frame
+  budget.
+- **No pending queue growth at any resolution.** `pendingMax = 1`
+  everywhere — the encoder finished each frame before the next
+  arrived, top to bottom of the resolution range.
 - **Tick loop is honoring 30 Hz.** `tickLagP95 ≤ 2 ms` at all
   resolutions — the input schedule is real, not artifact-driven.
 - **Finalize stays cheap even with queued frames.** 17-23 ms — the
@@ -133,25 +140,29 @@ What this confirms:
   is just the muxer flush.
 
 Implications for phase 3:
-- **The on-the-fly capture-time AV1 path is fully unblocked** at the
-  typical eddy cell-mip resolutions (270p / 180p). Combined with exp
-  30's pipeline-works result, encode-as-you-capture is now a real
-  option for [phase 3](../../docs/superpowers/specs/2026-05-18-c2-phase3-design.md)
-  — replacing the proposed MediaRecorder + post-record-transcode path
-  with a single live pipeline that finishes within ~20 ms of record-
-  stop.
-- 540p as a working encode resolution is borderline; smaller mips
-  are unambiguously safe. Pick the encode res to match the actual
-  cell display size (typically 270p or smaller at K≥9), not the
-  camera native size.
-- Still open: encoder behavior **under concurrent playback load**
-  (next: [30b](../30b_capture-encode-under-playback/README.md)) and
-  **with synchronized audio** ([30c](../30c_audio-split-pipeline/README.md)).
+- **Canonical AV1 storage at camera-native 720p is viable.** The
+  encoder isn't a constraint on storage resolution — we can store
+  the full camera output, not a downscaled mip, and re-derive any
+  display res at decode time. This unlocks fullscreen single-cell
+  preview, future export, and re-edit at the captured quality
+  without the multi-mip-encode complexity from
+  [phase 3 spec](../../docs/superpowers/specs/2026-05-18-c2-phase3-design.md)'s
+  alternative paths.
+- The on-the-fly capture-time AV1 path is fully unblocked at every
+  resolution we'd plausibly use. Combined with exp 30's
+  pipeline-works result, encode-as-you-capture replaces the proposed
+  MediaRecorder + post-record-transcode path with a single live
+  pipeline that finishes within ~36 ms of record-stop.
+- Still open: encoder behavior **under concurrent playback load at
+  720p** ([30b](../30b_capture-encode-under-playback/README.md) only
+  tested 270p; if 720p is the new canonical res, 30b needs a 720p
+  re-run) and **with synchronized audio**
+  ([30c](../30c_audio-split-pipeline/README.md)).
 - Also still open: **sustained behavior past 10 s**. 30 fps × 10 s
   doesn't trigger thermal throttling on this device. A 60-90 s
-  follow-up should confirm the headroom holds — but 270p / 180p have
-  enough margin (~7×) that significant thermal degradation would still
-  leave realtime intact.
+  follow-up should confirm the headroom holds — but 720p with ~12×
+  headroom would tolerate significant thermal degradation before
+  losing realtime.
 
 Note for eddy implementation: keep the encoder fed with the
 fire-and-track pattern (don't `await` each `add()` serially; let the

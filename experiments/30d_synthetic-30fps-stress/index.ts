@@ -23,6 +23,7 @@ const params = {
   bitratePerPixel: 0.1,
   codec: "av1" as const,
   passes: [
+    { label: "720p", width: 1280, height: 720 },
     { label: "540p", width: 960, height: 544 },
     { label: "270p", width: 480, height: 272 },
     { label: "180p", width: 320, height: 184 },
