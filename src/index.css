@@ -38,4 +38,5 @@ body,
   --z-notch-backdrop: -1;
 
   background: var(--color-back);
+  -webkit-tap-highlight-color: transparent;
 }

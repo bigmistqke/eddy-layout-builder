@@ -49,6 +49,9 @@
   text-align: left;
   cursor: pointer;
   border-radius: calc(var(--radius-big) - var(--padding));
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 
   &:hover {
     background: var(--color-active-back);
@@ -147,6 +150,8 @@
   display: flex;
   align-items: stretch;
   gap: var(--padding);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .projectOpen {
