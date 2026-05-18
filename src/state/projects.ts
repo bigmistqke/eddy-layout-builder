@@ -1,5 +1,5 @@
 import { createMemo, createSignal, untrack, type Accessor } from "solid-js"
-import { blobToClip } from "../clips/clip"
+import { blobToClip, type Clip } from "../clips/clip"
 import type { ClipStore } from "../clips/store"
 import {
   deleteClipBlob,
@@ -11,9 +11,11 @@ import {
   setCurrentProjectId,
   writeClipBlob,
   writeManifest,
+  type CellRecord,
+  type Mip,
   type ProjectManifest,
 } from "../storage/opfs"
-import { wipeRgbaCache } from "../storage/rgba-cache"
+import { garbageCollectRgbaCache, deleteRgbaCache } from "../storage/rgba-cache"
 import type { Node } from "../types"
 import { createEntity } from "../utils"
 
@@ -51,10 +53,10 @@ export interface ProjectsStore {
   /** Persist the current project's manifest snapshot. Usually called
    *  by the auto-save effect; safe to call explicitly. */
   saveCurrent(): Promise<void>
-  /** Write a recorded blob to disk. Manifest update follows reactively
-   *  once the matching `clips.setClip` lands. */
-  saveClipBlob(cellId: string, blob: Blob): Promise<void>
-  /** Remove a clip blob from disk. */
+  /** Phase 3: persist one mip of a recorded clip. Called twice per
+   *  record-stop (once for 720p, once for 270p). */
+  saveClipBlob(cellId: string, mip: Mip, blob: Blob): Promise<void>
+  /** Remove all mips + the rgba cache for a clip. */
   removeClipBlob(cellId: string): Promise<void>
 }
 
@@ -66,6 +68,26 @@ function nextUntitledName(existing: ProjectManifest[]): string {
       return candidate
     }
   }
+}
+
+/** Build CellRecord[] from the current in-memory clip state. */
+function cellsFromClips(clipStore: ClipStore): CellRecord[] {
+  return untrack(clipStore.cellIds)
+    .map(cellId => {
+      const clip = clipStore.clips[cellId] as Clip | undefined
+      if (clip === undefined) {
+        return null
+      }
+      return {
+        cellId,
+        clipId: clip.clipId,
+        cacheWidth: clip.videoCacheMetadata.width,
+        cacheHeight: clip.videoCacheMetadata.height,
+        cacheFrames: clip.videoCacheMetadata.totalFrames,
+        cacheSourceFps: clip.videoCacheMetadata.sourceFps,
+      } satisfies CellRecord
+    })
+    .filter((c): c is CellRecord => c !== null)
 }
 
 export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
@@ -83,6 +105,7 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
 
   function snapshot(name: string, base: ProjectManifest | null): ProjectManifest {
     const now = Date.now()
+    const cells = cellsFromClips(deps.clips)
     return {
       id: base?.id ?? crypto.randomUUID(),
       name,
@@ -90,7 +113,8 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
       updatedAt: now,
       layout: deps.readLayout(),
       songLength: deps.readSongLength(),
-      cellIds: untrack(deps.clips.cellIds),
+      cells,
+      cellIds: cells.map(c => c.cellId),
       cellVolumes: { ...untrack(deps.clips.cellVolumes) },
     }
   }
@@ -110,12 +134,36 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
       deps.setSongLength(manifest.songLength)
       deps.clips.setCellVolumes(manifest.cellVolumes ?? {})
       deps.resetSelection()
+
+      // Build a quick lookup of CellRecord by cellId (for hot-path
+      // metadata). Legacy manifests have no `cells`; we treat them
+      // as cold-only.
+      const recordByCellId = new Map<string, CellRecord>()
+      for (const record of manifest.cells ?? []) {
+        recordByCellId.set(record.cellId, record)
+      }
       for (const cellId of manifest.cellIds) {
-        const blob = await readClipBlob(manifest.id, cellId)
+        // Prefer the 270p mip (phase 3+); fall back to legacy bare
+        // <cellId>.webm. The 720p file is canonical-only — bitmap
+        // pipeline doesn't decode it.
+        const blob =
+          (await readClipBlob(manifest.id, cellId, "270p")) ??
+          (await readClipBlob(manifest.id, cellId, null))
         if (blob === null) {
           continue
         }
-        const clip = await blobToClip(cellId, blob)
+        const record = recordByCellId.get(cellId)
+        const clip = await blobToClip(cellId, blob, {
+          persistedClipId: record?.clipId,
+          hotMetadata: record === undefined
+            ? undefined
+            : {
+                width: record.cacheWidth,
+                height: record.cacheHeight,
+                totalFrames: record.cacheFrames,
+                sourceFps: record.cacheSourceFps,
+              },
+        })
         deps.clips.setClip(cellId, clip)
       }
     } finally {
@@ -124,13 +172,21 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
   }
 
   async function init() {
-    // Crash recovery: any rgba file in OPFS predates this session and is
-    // stale by construction (phase 2 regenerates all rgba caches from
-    // persisted WebM blobs on project load). Wipe before loading so we
-    // don't delete files the just-loaded clips just created.
-    await wipeRgbaCache()
     const existing = await listProjects()
     setList(existing)
+
+    // Build the keep set BEFORE GC so we don't delete files for clips
+    // we're about to load. Includes EVERY clipId across EVERY project
+    // (not just the active one) — opening project B shouldn't blow
+    // away project A's cached frames.
+    const keep = new Set<string>()
+    for (const manifest of existing) {
+      for (const record of manifest.cells ?? []) {
+        keep.add(record.clipId)
+      }
+    }
+    await garbageCollectRgbaCache(keep)
+
     const currentId = await getCurrentProjectId()
     const target =
       (currentId !== null ? existing.find(p => p.id === currentId) : undefined) ?? existing[0]
@@ -140,12 +196,10 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
       await loadProjectIntoState(target)
       return
     }
-    // OPFS empty: adopt the current in-memory state as the first
-    // project. Avoids replacing the freshly-mounted layout entity with
-    // a different one — tests captured against initial state would
-    // otherwise race the async init.
     setIsLoading(true)
     try {
+      // Mirror snapshot()'s invariant: cellIds derives from cells.
+      const cells = cellsFromClips(deps.clips)
       const manifest: ProjectManifest = {
         id: crypto.randomUUID(),
         name: nextUntitledName(existing),
@@ -153,7 +207,8 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
         updatedAt: Date.now(),
         layout: deps.readLayout(),
         songLength: deps.readSongLength(),
-        cellIds: untrack(deps.clips.cellIds),
+        cells,
+        cellIds: cells.map(c => c.cellId),
       }
       setActiveId(manifest.id)
       upsertInList(manifest)
@@ -176,6 +231,7 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
         updatedAt: Date.now(),
         layout,
         songLength: null,
+        cells: [],
         cellIds: [],
       }
       deps.clips.clearAll()
@@ -215,13 +271,21 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
   }
 
   async function deleteProject(id: string) {
+    // Read manifest first so we know which clip files + rgba caches
+    // belong to this project. Then delete clip + rgba files
+    // explicitly (the OPFS deleteProjectOnDisk handles the project
+    // directory; the rgba files live in /rgba/, NOT under the project).
+    const manifest = await readManifest(id)
+    if (manifest !== null) {
+      for (const record of manifest.cells ?? []) {
+        await deleteRgbaCache(record.clipId).catch(() => {})
+      }
+    }
     await deleteProjectOnDisk(id)
     setList(current => current.filter(p => p.id !== id))
     if (activeId() !== id) {
       return
     }
-    // The active project was just deleted — fall back to the most
-    // recent remaining one, or bootstrap a fresh project if none left.
     const remaining = list()
     if (remaining.length === 0) {
       setActiveId(null)
@@ -241,12 +305,12 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
     await writeManifest(next)
   }
 
-  async function saveClipBlob(cellId: string, blob: Blob) {
+  async function saveClipBlob(cellId: string, mip: Mip, blob: Blob) {
     const id = activeId()
     if (id === null) {
       return
     }
-    await writeClipBlob(id, cellId, blob)
+    await writeClipBlob(id, cellId, mip, blob)
   }
 
   async function removeClipBlob(cellId: string) {
@@ -254,7 +318,9 @@ export function createProjectsStore(deps: ProjectsStoreDeps): ProjectsStore {
     if (id === null) {
       return
     }
-    await deleteClipBlob(id, cellId)
+    await deleteClipBlob(id, cellId, "720p")
+    await deleteClipBlob(id, cellId, "270p")
+    await deleteClipBlob(id, cellId, null)
   }
 
   return {

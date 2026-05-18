@@ -9,13 +9,13 @@ import {
 } from "../components/icons"
 import { Context } from "../context"
 import { useDirectOutput, useMediaStreamOutput } from "../media/audio-context"
-import { startCapture, type CaptureHandle } from "../media/capture"
+import { startCapture, type CaptureSession } from "../media/capture"
 import { logAction, logTrace, run, selectedCellId } from "../utils"
 import { Hud } from "./hud"
 
 export function Main() {
   const context = useContext(Context)!
-  const [captureHandle, setCaptureHandle] = createSignal<CaptureHandle | null>(null)
+  const [captureHandle, setCaptureHandle] = createSignal<CaptureSession | null>(null)
 
   async function onRecord() {
     const cellId = selectedCellId(context)
@@ -70,7 +70,7 @@ export function Main() {
       useDirectOutput()
       return
     }
-    const handle = startCapture(stream)
+    const handle = await startCapture(stream)
     setCaptureHandle(handle)
     logTrace("record-start-handle", { cellId })
 
@@ -103,18 +103,52 @@ export function Main() {
     context.transport.stop() // stop monitor playback if it was running
     // Capture is over — autoplay below uses speakers normally.
     useDirectOutput()
-    const blob = await handle.stop()
-    logTrace("record-stop-blob", { cellId, size: blob.size, type: blob.type })
+    const result = await handle.stop()
+    logTrace("record-stop-result", {
+      cellId,
+      canonicalSize: result.canonicalBlob.size,
+      mipSize: result.mipBlob.size,
+      duration: result.durationSeconds,
+      frames: result.frameCount,
+      codec: result.videoCodec,
+    })
     if (cellId === null) {
       logTrace("record-stop-abort", { reason: "no cellId" })
       return
     }
-    const clip = await blobToClip(cellId, blob)
-    logTrace("record-stop-clip-ready", { cellId, duration: clip.duration })
-    // Persist the raw blob to OPFS before staging the in-memory clip
-    // so a refresh mid-decode can't lose the recording. The manifest
-    // update inside saveClipBlob will include the new cellId.
-    await context.projects.saveClipBlob(cellId, blob)
+    // Build the clip from the MIP blob — bitmap pipeline always reads
+    // the mip; the 720p canonical is reserved for export / fullscreen.
+    const clip = await blobToClip(cellId, result.mipBlob)
+    logTrace("record-stop-clip-ready", {
+      cellId,
+      clipId: clip.clipId,
+      duration: clip.duration,
+      cacheMeta: clip.videoCacheMetadata,
+    })
+    // Persist both blobs in parallel before staging the clip so a
+    // mid-decode refresh can't lose either file. The manifest update
+    // (which gets the CellRecord with clipId + cache metadata) follows
+    // via setClip → save effect, picking up clip.clipId + clip.videoCacheMetadata.
+    //
+    // If either save fails, the other may have committed — clean up
+    // both before rethrowing so we don't leave an orphan blob with no
+    // matching manifest entry. The clips dir has no GC pass; only the
+    // rgba cache does.
+    try {
+      await Promise.all([
+        context.projects.saveClipBlob(cellId, "720p", result.canonicalBlob),
+        context.projects.saveClipBlob(cellId, "270p", result.mipBlob),
+      ])
+    } catch (error) {
+      logTrace("record-stop-save-failed", {
+        cellId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      await Promise.all([
+        context.projects.removeClipBlob(cellId).catch(() => {}),
+      ])
+      throw error
+    }
     logTrace("record-stop-saved", { cellId })
     context.clips.setClip(cellId, clip)
     if (context.songLength() === null) {

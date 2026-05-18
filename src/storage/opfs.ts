@@ -2,13 +2,32 @@ import type { Node } from "../types"
 
 /**
  * OPFS layout:
- *   /current.json                          { id }
+ *   /current.json                                  { id }
  *   /projects/<id>/manifest.json
- *   /projects/<id>/clips/<cellId>.webm
+ *   /projects/<id>/clips/<cellId>.720p.webm        Canonical 720p AV1 + opus
+ *   /projects/<id>/clips/<cellId>.270p.webm        Playback mip 270p AV1 + opus
+ *   /projects/<id>/clips/<cellId>.webm             Legacy single-mip (pre-phase 3)
  *
  * Pure async — no Solid signals. Callers stage IO; reactivity lives in
  * the projects store one layer above.
  */
+
+/** Two recorded mips per clip. Legacy single-mip clips don't carry
+ *  this and are read via the bare `<cellId>.webm` path. */
+export type Mip = "720p" | "270p"
+
+/** Per-cell persisted record. Carries the clipId (used to key the
+ *  rgba cache so it survives session reopen) and cache metadata so
+ *  the bitmap-source hot path can spawn its reader without
+ *  re-demuxing the mip WebM. */
+export interface CellRecord {
+  cellId: string
+  clipId: string
+  cacheWidth: number
+  cacheHeight: number
+  cacheFrames: number
+  cacheSourceFps: number
+}
 
 export interface ProjectManifest {
   id: string
@@ -17,10 +36,16 @@ export interface ProjectManifest {
   updatedAt: number
   layout: Node
   songLength: number | null
-  /** Cell ids that have a blob on disk under clips/. */
+  /** Phase 3+: per-cell records with clipId + cache metadata. Absent
+   *  on pre-phase-3 manifests; migration is handled in the projects
+   *  store (single-mip blobs treated as 270p mip, fresh clipId
+   *  generated on first load). */
+  cells?: CellRecord[]
+  /** Legacy field — list of cell ids with a blob on disk. Kept for
+   *  back-compat reading; new writes populate `cells` and derive this
+   *  from it. */
   cellIds: string[]
-  /** Per-cell volume (0..1+, default 1). Absent entries → default.
-   *  Optional for backward compat with pre-v2.audio manifests. */
+  /** Per-cell volume (0..1+, default 1). */
   cellVolumes?: Record<string, number>
 }
 
@@ -117,7 +142,18 @@ export async function writeManifest(manifest: ProjectManifest): Promise<void> {
   await writeJson(dir, MANIFEST_FILE, manifest)
 }
 
-export async function readClipBlob(id: string, cellId: string): Promise<Blob | null> {
+function clipFileName(cellId: string, mip: Mip | null): string {
+  return mip === null ? `${cellId}.webm` : `${cellId}.${mip}.webm`
+}
+
+/** Read a clip blob. Pass `mip` to read a phase-3 mip-specific file;
+ *  pass `null` to read a legacy single-mip blob. Returns null if not
+ *  found. */
+export async function readClipBlob(
+  id: string,
+  cellId: string,
+  mip: Mip | null,
+): Promise<Blob | null> {
   const projects = await tryGetDir(await getRoot(), PROJECTS_DIR)
   if (projects === null) {
     return null
@@ -131,27 +167,34 @@ export async function readClipBlob(id: string, cellId: string): Promise<Blob | n
     return null
   }
   try {
-    const handle = await clips.getFileHandle(`${cellId}.webm`)
+    const handle = await clips.getFileHandle(clipFileName(cellId, mip))
     return handle.getFile()
   } catch {
     return null
   }
 }
 
+/** Write a clip blob to one of the mip slots. */
 export async function writeClipBlob(
   id: string,
   cellId: string,
+  mip: Mip,
   blob: Blob,
 ): Promise<void> {
   const dir = await getProjectDir(id)
   const clips = await getOrCreateDir(dir, CLIPS_DIR)
-  const handle = await clips.getFileHandle(`${cellId}.webm`, { create: true })
+  const handle = await clips.getFileHandle(clipFileName(cellId, mip), { create: true })
   const writable = await handle.createWritable()
   await writable.write(blob)
   await writable.close()
 }
 
-export async function deleteClipBlob(id: string, cellId: string): Promise<void> {
+/** Delete one mip's blob. Silently no-ops if the file isn't there. */
+export async function deleteClipBlob(
+  id: string,
+  cellId: string,
+  mip: Mip | null,
+): Promise<void> {
   const projects = await tryGetDir(await getRoot(), PROJECTS_DIR)
   if (projects === null) {
     return
@@ -165,7 +208,7 @@ export async function deleteClipBlob(id: string, cellId: string): Promise<void> 
     return
   }
   try {
-    await clips.removeEntry(`${cellId}.webm`)
+    await clips.removeEntry(clipFileName(cellId, mip))
   } catch {
     // Already gone.
   }
