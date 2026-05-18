@@ -5,6 +5,10 @@
   ascent-override: 100%;
 }
 
+html {
+  font-size: 16px;
+}
+
 html,
 body,
 #root {
@@ -24,12 +28,12 @@ body,
   --color-disabled: rgb(110, 110, 110);
   --color-red: #e94949;
 
-  --radius-big: 25px;
-  --radius-small: 12px;
-  --padding: 5px;
+  --radius-big: 1.5625rem;
+  --radius-small: 0.75rem;
+  --padding: 0.3125rem;
 
-  --hud-height: 60px;
-  --hud-button-margin: 4px;
+  --hud-height: 3.75rem;
+  --hud-button-margin: 0.25rem;
 
   --z-selection-overlay: 100;
   --z-hud: 10;

@@ -27,7 +27,7 @@
   writing-mode: vertical-lr;
   direction: rtl;
   width: var(--hud-height);
-  height: 160px;
+  height: 10rem;
   flex: 0 0 auto;
   background: transparent;
   margin: 0;
@@ -39,31 +39,31 @@
   }
 
   &::-webkit-slider-runnable-track {
-    width: 4px;
+    width: 0.25rem;
     background: rgba(255, 255, 255, 0.25);
-    border-radius: 2px;
+    border-radius: 0.125rem;
   }
 
   &::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    height: 8px;
-    width: 24px;
-    border-radius: 4px;
+    height: 0.5rem;
+    width: 1.5rem;
+    border-radius: 0.25rem;
     background: var(--color-front);
-    margin-left: -10px;
+    margin-left: -0.625rem;
   }
 
   &::-moz-range-track {
-    width: 4px;
+    width: 0.25rem;
     background: rgba(255, 255, 255, 0.25);
-    border-radius: 2px;
+    border-radius: 0.125rem;
   }
 
   &::-moz-range-thumb {
-    height: 8px;
-    width: 24px;
-    border-radius: 4px;
+    height: 0.5rem;
+    width: 1.5rem;
+    border-radius: 0.25rem;
     border: none;
     background: var(--color-front);
   }
