@@ -23,7 +23,11 @@
 
   position: absolute;
   inset: 0;
-  padding: var(--padding);
+  padding:
+    max(var(--padding), env(safe-area-inset-top))
+    max(var(--padding), env(safe-area-inset-right))
+    max(var(--padding), env(safe-area-inset-bottom))
+    max(var(--padding), env(safe-area-inset-left));
   display: grid;
   gap: var(--padding);
   grid-template-columns: auto 1fr auto;

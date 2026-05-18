@@ -67,7 +67,7 @@
    any grid-placed HUD. */
 .bottomCenter {
   position: absolute;
-  bottom: var(--padding);
+  bottom: max(var(--padding), env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
 }
