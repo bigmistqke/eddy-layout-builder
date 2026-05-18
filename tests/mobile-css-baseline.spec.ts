@@ -21,7 +21,11 @@ test("mobile baseline: viewport meta is honored, touch targets ≥ 44px, dialog 
   // 2) Record-start button is a meaningful touch target (WCAG 2.5.5
   // recommends 44×44 CSS pixels minimum). At the 16px rem base and
   // --hud-height: 3.75rem, the button is 60×60 CSS px.
+  // Wait for the button to be visible explicitly — under full-suite
+  // run with stateful OPFS leak from prior tests, the app may take
+  // longer to mount the record button than in isolation.
   const recordButton = page.locator('[data-action="record-start"]').first()
+  await recordButton.waitFor({ state: "visible", timeout: 10_000 })
   const boundingBox = await recordButton.boundingBox()
   expect(boundingBox).not.toBeNull()
   expect(boundingBox!.width).toBeGreaterThanOrEqual(44)
