@@ -88,3 +88,48 @@ export async function wipeRgbaCache(): Promise<void> {
     throw error
   }
 }
+
+/** Delete every rgba cache file whose clipId is NOT in `keep`.
+ *  Used at app startup once the projects manifest list has been read,
+ *  so we can drop orphan files (from crashes, deleted projects, manual
+ *  fiddling) without nuking the cached frames for clips referenced by
+ *  any current project's manifest.
+ *
+ *  Safer than the phase 2 `wipeRgbaCache()` hammer because the hot-path
+ *  reuse (phase 3 Task 5) only works if the cache file survives to the
+ *  next session — so we must NOT delete files for clips a manifest
+ *  still references.
+ *
+ *  Errors per-file are swallowed (best-effort GC); only catastrophic
+ *  errors (root dir unreadable) propagate. */
+export async function garbageCollectRgbaCache(keep: Set<string>): Promise<void> {
+  let dir: FileSystemDirectoryHandle
+  try {
+    const root = await getRoot()
+    dir = await root.getDirectoryHandle(RGBA_DIR_NAME, { create: false })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "NotFoundError") {
+      return
+    }
+    throw error
+  }
+  for await (const [name, entry] of dir.entries()) {
+    if (entry.kind !== "file") {
+      continue
+    }
+    // File names are `<clipId>.bin`. Strip the suffix to compare.
+    if (!name.endsWith(".bin")) {
+      continue
+    }
+    const clipId = name.slice(0, -".bin".length)
+    if (keep.has(clipId)) {
+      continue
+    }
+    try {
+      await dir.removeEntry(name)
+    } catch {
+      // Best-effort; another tab or a worker may have removed it
+      // already.
+    }
+  }
+}
