@@ -172,6 +172,69 @@ Still open before phase 3 lands:
   Worth a quick re-run with `getUserMedia` once 30c lands.
 - Long-run thermal sustainment (60-90 s).
 
+## Re-run with WebGL resize (2026-05-18, sha `6974e0e`)
+
+Per [exp 31](../31_resize-shootout/README.md), WebGL canvas-transfer
+was the fastest sync-correct resize technique (0.7 ms p50 in
+isolation). Swapped 30g's `createImageBitmap-low` for
+`webgl-canvas-transfer-sync` (transferToImageBitmap variant —
+required because 30g uses fire-and-track without per-frame awaits,
+which would alias a wrapped canvas).
+
+| K=9 metric | createImageBitmap | WebGL-transfer | Δ |
+|---|---|---|---|
+| Encoder HIGH add p95 | 10.2 ms | **7.5 ms** | **−27%** |
+| Encoder HIGH add max | 23.7 ms | **16.2 ms** | −32% |
+| Encoder HIGH finalize | 63.2 ms | 63.7 ms | ≈ |
+| Encoder LOW add p95 | 4.1 ms | **2.8 ms** | −32% |
+| Encoder LOW add max | 17.0 ms | 8.4 ms | −51% |
+| Encoder LOW finalize | 30.7 ms | 34.1 ms | +3 ms |
+| Resize p95 (isolated) | 2.5 ms | 2.9 ms | +0.4 ms |
+| TickLag p95 | 0.9 ms | 0.6 ms | −33% |
+| Decoder min | 29.9 fps | 30.1 fps | + |
+| Decoder mean | 30.01 fps | 30.12 fps | + |
+
+What this confirms:
+- **Both encoders see meaningful improvement** (~30% reduction in
+  add p95) even though the isolated resize measurement is slightly
+  higher under contention than `createImageBitmap` was.
+- **Pipeline tickLag dropped 33%** — main thread is less blocked
+  overall.
+- **Decoders gained slightly** — confirmed by both min and mean.
+- **Round-trip and storage unchanged** (300/300 each encoder,
+  ~1.47 MB high + ~317 KB low).
+
+What this reveals:
+- **Wall-clock resize cost under contention ≠ isolation cost.** Exp 31
+  measured WebGL at 0.7-0.8 ms p50 in isolation; here under K=9
+  decoder contention it sits at ~2.9 ms p95 — encoders compete with
+  the resize step for GPU/SoC resources.
+- **WebGL's GPU work overlaps better with the encoders** than
+  createImageBitmap does. Even though the wall-clock per-call
+  measurement isn't dramatically lower, the encoders' downstream
+  cost drops significantly — suggesting createImageBitmap blocks
+  more aggressively on something the encoder also needs.
+- The takeaway from the standalone resize benchmark
+  ([exp 31](../31_resize-shootout/README.md)) is directionally
+  correct (WebGL > createImageBitmap) but the magnitude under
+  realistic concurrent workload is different than the isolation
+  numbers suggested.
+
+Phase 3 recommendation updated:
+- **Use WebGL canvas-transfer for the dual-encode resize** — adopted
+  here, with confirmed gains in encoder add latency and tickLag.
+- **Use the `transferToImageBitmap` variant**, not the canvas-wrap
+  variant — required when the consumer is asynchronous (fire-and-
+  track encoder pattern). The wrap variant would alias the canvas
+  across in-flight VideoFrames and produce corrupted output. Worth
+  capturing this in a `[[feedback_webgl_resize_aliasing]]` memory
+  later.
+- **30g + 30b (270p) + 30f (workers) + 31 (resize) together fully
+  validate the capture-time architecture**: dual encode at 720p+270p,
+  WebGL transfer-to-bitmap resize, decoders in workers at 270p. The
+  one remaining piece is audio
+  ([30c](../30c_audio-split-pipeline/README.md)).
+
 ## Reproduce
 
 ```sh

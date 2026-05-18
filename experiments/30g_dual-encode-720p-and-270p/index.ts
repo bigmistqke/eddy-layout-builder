@@ -1,8 +1,8 @@
 // dual-encode-720p-and-270p — two simultaneous AV1 encoders fed from
 // the same synthetic 720p source. Encoder A keeps native 720p (for
 // export/fullscreen); encoder B writes a 270p mip (for cell playback)
-// via createImageBitmap resize. K=4/9 270p decoders in workers
-// simulate the playback workload concurrently.
+// via WebGL2 canvas-wrap resize (the winner from exp 31). K=4/9 270p
+// decoders in workers simulate the playback workload concurrently.
 
 import {
   ALL_FORMATS,
@@ -282,6 +282,106 @@ function submitToEncoder(rig: EncoderRig, sample: VideoSample): void {
     })
 }
 
+interface ResizeRig {
+  canvas: OffscreenCanvas
+  gl: WebGL2RenderingContext
+  texture: WebGLTexture
+}
+
+// WebGL2 canvas-wrap resize — the winner from exp 31 (0.8ms p50 sync).
+// Upload the source frame as TEXTURE_2D, draw a full-canvas quad on a
+// target-res GL canvas, gl.finish(), wrap canvas as VideoFrame.
+function setupResizeRig(width: number, height: number): ResizeRig {
+  const canvas = new OffscreenCanvas(width, height)
+  const glOrNull = canvas.getContext("webgl2", { antialias: false, premultipliedAlpha: true })
+  if (glOrNull === null) {
+    throw new Error("setupResizeRig: WebGL2 unavailable")
+  }
+  const gl: WebGL2RenderingContext = glOrNull
+  const vsSource = `#version 300 es
+in vec2 a_pos;
+out vec2 v_uv;
+void main() {
+  v_uv = vec2((a_pos.x + 1.0) * 0.5, (1.0 - a_pos.y) * 0.5);
+  gl_Position = vec4(a_pos, 0.0, 1.0);
+}
+`
+  const fsSource = `#version 300 es
+precision mediump float;
+in vec2 v_uv;
+uniform sampler2D u_tex;
+out vec4 outColor;
+void main() {
+  outColor = texture(u_tex, v_uv);
+}
+`
+  function compile(type: number, source: string): WebGLShader {
+    const shader = gl.createShader(type)
+    if (shader === null) {
+      throw new Error("compile: createShader")
+    }
+    gl.shaderSource(shader, source)
+    gl.compileShader(shader)
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      throw new Error(`compile: ${gl.getShaderInfoLog(shader) ?? ""}`)
+    }
+    return shader
+  }
+  const vs = compile(gl.VERTEX_SHADER, vsSource)
+  const fs = compile(gl.FRAGMENT_SHADER, fsSource)
+  const program = gl.createProgram()
+  if (program === null) {
+    throw new Error("setupResizeRig: createProgram")
+  }
+  gl.attachShader(program, vs)
+  gl.attachShader(program, fs)
+  gl.linkProgram(program)
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw new Error(`setupResizeRig: link ${gl.getProgramInfoLog(program) ?? ""}`)
+  }
+  gl.useProgram(program)
+  const quad = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
+  const buf = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+  gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW)
+  const aPos = gl.getAttribLocation(program, "a_pos")
+  gl.enableVertexAttribArray(aPos)
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0)
+  const texture = gl.createTexture()
+  if (texture === null) {
+    throw new Error("setupResizeRig: createTexture")
+  }
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+  gl.viewport(0, 0, width, height)
+  return { canvas, gl, texture }
+}
+
+// Uses transferToImageBitmap to detach an independent bitmap per
+// call — avoids the canvas-aliasing problem when the encoder reads
+// the VideoFrame asynchronously (multiple in-flight frames must not
+// share the same evolving canvas).
+function resizeWithWebgl(rig: ResizeRig, source: VideoFrame, timestampUs: number): VideoFrame {
+  rig.gl.bindTexture(rig.gl.TEXTURE_2D, rig.texture)
+  rig.gl.texImage2D(
+    rig.gl.TEXTURE_2D,
+    0,
+    rig.gl.RGBA,
+    rig.gl.RGBA,
+    rig.gl.UNSIGNED_BYTE,
+    source,
+  )
+  rig.gl.drawArrays(rig.gl.TRIANGLE_STRIP, 0, 4)
+  rig.gl.finish()
+  const bitmap = rig.canvas.transferToImageBitmap()
+  const out = new VideoFrame(bitmap, { timestamp: timestampUs })
+  bitmap.close()
+  return out
+}
+
 async function finalizeEncoder(rig: EncoderRig): Promise<EncoderStats> {
   const drainStart = performance.now()
   while (rig.stats.pendingAdds > 0) {
@@ -368,6 +468,10 @@ async function runForK(
     params.lowResolution.width,
     params.lowResolution.height,
   )
+  const resizeRig = setupResizeRig(
+    params.lowResolution.width,
+    params.lowResolution.height,
+  )
 
   const tickIntervalMs = 1000 / params.targetFps
   const totalFrames = params.encodeSeconds * params.targetFps
@@ -396,20 +500,13 @@ async function runForK(
     const highSample = new VideoSample(highFrame.clone())
     submitToEncoder(encoderHigh, highSample)
 
-    // Branch B: createImageBitmap with resize → wrap as VideoFrame →
-    // feed to the low encoder. The browser may GPU-accelerate this
-    // resize; if not, the cost shows up in resizeTimings + encoderLow
-    // backpressure.
+    // Branch B: WebGL2 canvas-wrap resize → wrap as VideoFrame → feed
+    // to the low encoder. Per exp 31, this is the fastest production-
+    // viable resize on this device (~0.8ms p50 sync).
     const resizeStart = performance.now()
     try {
-      const bitmap = await createImageBitmap(highFrame, {
-        resizeWidth: params.lowResolution.width,
-        resizeHeight: params.lowResolution.height,
-        resizeQuality: "low",
-      })
+      const lowFrame = resizeWithWebgl(resizeRig, highFrame, timestampUs)
       resizeTimings.push(performance.now() - resizeStart)
-      const lowFrame = new VideoFrame(bitmap, { timestamp: timestampUs })
-      bitmap.close()
       const lowSample = new VideoSample(lowFrame)
       submitToEncoder(encoderLow, lowSample)
     } catch (error) {
