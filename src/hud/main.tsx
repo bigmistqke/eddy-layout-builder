@@ -129,10 +129,26 @@ export function Main() {
     // mid-decode refresh can't lose either file. The manifest update
     // (which gets the CellRecord with clipId + cache metadata) follows
     // via setClip → save effect, picking up clip.clipId + clip.videoCacheMetadata.
-    await Promise.all([
-      context.projects.saveClipBlob(cellId, "720p", result.canonicalBlob),
-      context.projects.saveClipBlob(cellId, "270p", result.mipBlob),
-    ])
+    //
+    // If either save fails, the other may have committed — clean up
+    // both before rethrowing so we don't leave an orphan blob with no
+    // matching manifest entry. The clips dir has no GC pass; only the
+    // rgba cache does.
+    try {
+      await Promise.all([
+        context.projects.saveClipBlob(cellId, "720p", result.canonicalBlob),
+        context.projects.saveClipBlob(cellId, "270p", result.mipBlob),
+      ])
+    } catch (error) {
+      logTrace("record-stop-save-failed", {
+        cellId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      await Promise.all([
+        context.projects.removeClipBlob(cellId).catch(() => {}),
+      ])
+      throw error
+    }
     logTrace("record-stop-saved", { cellId })
     context.clips.setClip(cellId, clip)
     if (context.songLength() === null) {

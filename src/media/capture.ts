@@ -159,10 +159,13 @@ export async function startCapture(stream: MediaStream): Promise<CaptureSession>
   // unhandledrejection. Recorded into a flag the stop() path
   // surfaces in the error message.
   const audioErrors: string[] = []
+  let audioFailed = false
   rigHigh.audioSource.errorPromise.catch((error: unknown) => {
+    audioFailed = true
     audioErrors.push(`high: ${error instanceof Error ? error.message : String(error)}`)
   })
   rigLow.audioSource.errorPromise.catch((error: unknown) => {
+    audioFailed = true
     audioErrors.push(`low: ${error instanceof Error ? error.message : String(error)}`)
   })
 
@@ -345,6 +348,11 @@ export async function startCapture(stream: MediaStream): Promise<CaptureSession>
       }
       if (audioErrors.length > 0) {
         logTrace("capture-stop-audio-errors", { audioErrors })
+      }
+      if (audioFailed) {
+        throw new Error(
+          `CaptureSession.stop: audio capture failed during recording — ${audioErrors.join("; ")}`,
+        )
       }
       return {
         canonicalBlob,
