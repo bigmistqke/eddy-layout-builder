@@ -197,3 +197,13 @@
     color: var(--color-back);
   }
 }
+
+/* Reduced-transparency a11y fallback (spec §6) — swap the dialog
+   backdrop's blur for a solid semi-transparent fill when the user
+   has opted in at the OS level. */
+@media (prefers-reduced-transparency: reduce) {
+  .dialog::backdrop {
+    backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.5);
+  }
+}

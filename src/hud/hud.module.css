@@ -118,3 +118,13 @@
   }
 }
 
+/* Reduced-transparency a11y fallback (spec §6) — swap the backdrop
+   blur for a solid semi-transparent fill when the user has opted in
+   at the OS level. */
+@media (prefers-reduced-transparency: reduce) {
+  .hud {
+    backdrop-filter: none;
+    background: rgba(27, 27, 27, 0.85);
+  }
+}
+
