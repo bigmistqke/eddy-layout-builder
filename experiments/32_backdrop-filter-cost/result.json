@@ -1,0 +1,41 @@
+{
+  "ranAt": "2026-05-19T09:05:57.307Z",
+  "git": {
+    "sha": "a7fdd10",
+    "dirty": true
+  },
+  "experiment": "backdrop-filter-cost",
+  "params": {
+    "viewport": {
+      "width": 384,
+      "height": 699
+    },
+    "frames": 300,
+    "filter": "blur(10px) brightness(1.1) invert(0.25)"
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 384,
+      "height": 699
+    }
+  },
+  "result": {
+    "baseline": {
+      "label": "baseline",
+      "samples": 300,
+      "p50Ms": 16.600000023841858,
+      "p95Ms": 19.5,
+      "maxMs": 180.80000001192093
+    },
+    "filtered": {
+      "label": "filtered",
+      "samples": 300,
+      "p50Ms": 16.600000023841858,
+      "p95Ms": 19.19999998807907,
+      "maxMs": 141.60000002384186
+    },
+    "costP50": 0,
+    "costP95": -0.30000001192092896
+  }
+}

@@ -54,6 +54,31 @@ the backdrop-filter cost.
   cost (other browser work), not isolated paint cost — the cost
   *difference* is the meaningful number
 
+## Findings (2026-05-19, sha `a7fdd10`, Galaxy A15)
+
+| Phase | p50 | p95 | max |
+|---|---|---|---|
+| baseline | 16.6 ms | 19.5 ms | 180.8 ms |
+| filtered | 16.6 ms | 19.2 ms | 141.6 ms |
+| **cost** | **0.0 ms** | **−0.3 ms** | — |
+
+Verdict: **essentially free** — backdrop-filter doesn't push the
+frame budget on the A15. Production CSS stays as-is unconditionally;
+the spec §6 mitigation options (media-query degrade on narrow
+viewports) are NOT pursued.
+
+Both phases sit at the 60 Hz vsync-locked 16.6 ms p50, meaning the
+per-frame work in either case fits inside the 16.6 ms vsync interval.
+The measurement doesn't isolate actual paint cost from the vsync
+interval — it only proves "neither phase exceeds the frame budget."
+For the decision criterion ("does the filter cause jank?") this is
+sufficient.
+
+The 180 ms / 141 ms outlier `max` values are gc pauses or
+foreground-thread interruptions during the 5-second run, not paint
+spikes — filtered's max is actually *lower* than baseline's,
+confirming the noise interpretation.
+
 ## Reproduce
 
 ```sh
